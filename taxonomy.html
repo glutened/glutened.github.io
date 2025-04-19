@@ -1,0 +1,3066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pocket Monster Taxonomy 2.0</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background-color: #f5f5f5;
+      padding: 20px;
+      max-width: 1200px;
+      margin-right: auto;
+  margin-left: 4px; /* Adds space on the left, moving content to the right */
+  padding-right: 220px; /* Makes room for the fixed active-filters box */
+    }
+    .hidden {
+      display: none;
+    }
+    .pokemon-species-wrapper {
+  display: inline-block;
+  margin-top: auto;
+  padding: 4px;
+  white-space: nowrap;
+
+  border-radius: 10px;
+  background-color: #dedede;
+  font-weight: normal !important;
+}
+    .attribute-icon {
+      width: 16px;
+      height: 16px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    .type-icon {
+      margin-right: 2px;
+      min-width: 80px;
+    }
+
+    .region-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .egg-group-item {
+      display: inline-flex;
+      align-items: right;
+   font-weight: lighter;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    
+    .filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+  width: 84.2%;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0); /* Completely transparent background */
+  border-radius: 8px;
+  box-shadow: none; /* No shadow when invisible */
+  max-height: 35px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  /* Make entire container invisible except for the label */
+  opacity: 0;
+}
+
+.filter-container:hover {
+  max-height: 500px;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 1); /* Solid background when hovered */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  opacity: 1; /* Show the container on hover */
+}
+
+
+
+
+
+
+  /* Set initial state of all superscripts */
+sup {
+  display: inline-block;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.5s ease, opacity 0.3s ease;
+  vertical-align: super;
+  font-size: smaller;
+}
+
+/* When hovering over the parent of a superscript */
+*:hover > sup {
+  
+    max-width: 200px; /* Adjust based on your longest superscript */
+  opacity: 1;
+}
+.pokemon-species .hashtag {
+  font-weight: bold;
+}
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .filter-group h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .filter-group2 h3 {
+      margin-top: 0px;
+      margin-bottom: 10px;
+      font-size: 16px;
+     
+    }
+
+    .filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  width: 100%;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 5px;
+  pointer-events: auto;
+  position: relative;
+  z-index: 5;
+}
+ 
+.filter-chip:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+}
+  
+    .filter-chip.selected {
+      background-color: #4a90e2;
+      color: white;
+      border-color: #3a80d2;
+    }
+    
+    .active-filters {
+  padding: 10px;
+  background-color: #e8f4fd;
+  border-radius: 8px;
+  position: fixed;
+  right: 20px;
+  top: 24%;
+  transform: translateY(-50%);
+  width: 170px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+    
+    .active-filters h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    
+    .active-filter-chip {
+      display: inline-flex;
+      align-items: center;      padding: 5px 10px;
+      font-size: 14px;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 15px;
+    }
+
+    .active-filter-chip .remove {
+      margin-left: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .pokemon-container {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 9px;
+
+    }
+    
+    .pokemon-card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 10px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    
+    .pokemon-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .pokemon-card img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      margin: 0 auto;
+     
+      display: block;
+    }
+    
+    .pokemon-card h3 {
+    font-size: 16px; 
+    margin: 110px 0 0 0; 
+    text-align: left; 
+   
+}
+    .pokemon-info {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    
+    .type-badge {
+      font-size: 0px;
+      min-width: 80px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: space-between;
+     
+      position: fixed;
+  right: 5px;
+  top: 170px;
+ 
+  width: 190px;
+  max-height: 880vh;
+  overflow-y: auto;
+ 
+    }
+    
+    .sort-options button {
+      padding: 8px 12px;
+      margin-left: 5px;
+      margin-top: 5px;
+      width: 70px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      
+      
+    }
+    
+    .clear-button {
+      padding: 8px 12px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 85.7%;
+     margin-top: 560px;
+      position: fixed;
+    }
+
+    .sort-options {
+       
+       
+     
+      position: fixed;
+  right: 5px;
+  top: 370px;
+ padding: 10px;
+  width: 190px;
+  max-height: 800px;
+
+    }
+    .sort-options button:hover, .clear-button:hover {
+      background-color: #3a80d2;
+    }
+    
+    .clear-button {
+      background-color: #e74c3c;
+  
+    }
+    
+    .clear-button:hover {
+      background-color: #c0392b;
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #777;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .main-info {
+      flex: 3;
+      min-width: 100px;
+      max-width: 120px;
+      height: 135px;
+      
+    }
+
+    .side-info {
+      flex: 2;
+      text-align: left;
+      float: right;
+      max-width: 80px;
+      font-size: 12px;
+    }
+
+    .attribute-label {
+      font-weight: bold;
+      font-size: 12px;
+      
+    }
+
+    .pokemon-stats {
+      margin-top: 10px;
+      font-size: 12px;
+      transition: max-height 0.3s ease-out;
+      overflow: hidden;
+    }
+
+    .pokemon-stats.hidden {
+      max-height: 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+    }
+
+    .stat-item {
+      background-color: #f8f8f8;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .pokemon-egg-groups hidden {
+visibility: hidden;
+
+    }
+    .pokemon-egg-groups, .pokemon-abilities, {
+      font-size: 12px;
+     
+      
+      margin-top: 15px;
+  
+ 
+  text-align: right !important; 
+ 
+    
+     
+     
+    }
+ 
+    .pokemon-abilities {
+        
+        font-size: 10px;
+  display: inline-block;
+  justify-content: flex-end;
+  white-space: nowrap;
+  overflow: clip;
+  text-overflow: ellipsis;
+  text-align: right; 
+  min-width: 0;
+}
+    .pokemon-number-species {
+      margin-top: 5px;
+     
+   
+      
+     
+      font-weight: normal !important;
+    }
+ .clean-mode *:not(img, h3, .pokemon-types, .pokemon-types *) {
+  visibility: hidden !important;
+}
+
+    
+.pokemon-species {
+  font-style: italic;
+  font-size: 12px;
+  font-weight: normal !important;
+  margin-left: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px; /* Adjust this value as needed */
+}
+    .attribute-label {
+      margin-right: 4px;
+      font-size: 12px;
+     
+      display: flex;
+      justify-content: left;
+    }
+  
+
+
+    .clickable {
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 3px;
+      transition: background-color 0.2s;
+    }
+    .unclickable {
+      
+      padding: 2px 4px;
+      border-radius: 3px;
+      transition: background-color 0.2s;
+    }
+
+    .clickable:hover {
+      background-color: #e8f4fd;
+    }
+
+    .controls {
+      align-items: left;
+    }
+
+    .toggle-stats {
+      margin-left: auto;
+      padding: 8px 12px;
+      background-color: #9b59b6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 86%;
+     margin-top: 170px;
+      position: fixed;
+      display: none; /* Initially hidden */
+    }
+
+    .toggle-stats:hover {
+      background-color: #8e44ad;
+    }
+
+    .pokemon-card {
+      display: flex;
+      min-width: 230px;
+     
+      flex-direction: column;
+     
+    }
+  
+    .filter-options.collapsed {
+  display: none;
+}
+
+.collapsible-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.expand-icon {
+  font-size: 0.8em;
+  margin-left: 5px;
+  transition: transform 0.3s;
+}
+
+.collapsible-header.expanded .expand-icon {
+  transform: rotate(180deg);
+}
+.variant-filter-group .filter-chip {
+  font-size: 14px; /* Adjust this value to your preferred size */
+}
+
+
+    .pokemon-types {
+      display: flex;
+      justify-content: left;
+      gap: 5px;
+      margin-top: 5px;
+      margin-bottom: 2px;
+    }
+    // Update CSS for new elements
+  const moveStyles = document.createElement('style');
+  moveStyles.textContent = `
+    .pokemon-moves {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: left;
+    }
+    
+    .move-item {
+      font-size: 1.1em;
+      padding: 2px 6px;
+      border-radius: 12px;
+      color: white;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: left;
+    }
+    
+    .move-item:hover {
+      background-color: white;
+      cursor: pointer;
+      color: black;
+      box-shadow: inset 0 0 0 1.5px #000;  
+    }
+    
+   
+    
+    .move-item.vc {
+      background-color: #dae8fc;
+    }
+    .move-item.normal { background-color: #9FA19F; }
+.type-fire { background-color: #E62829; }
+.type-normal { background-color: #9FA19F; }
+.type-water { background-color: #2980EF; }
+.type-electric { background-color: #FAC000; }
+.type-grass { background-color: #3FA129; }
+.type-ice { background-color: #3DCEF3; }
+.type-fighting { background-color: #FF8000; }
+.type-poison { background-color: #9141CB; }
+.type-ground { background-color: #915121; }
+.type-flying { background-color: #81B9EF; }
+.type-psychic { background-color: #EF4179; }
+.type-bug { background-color: #91A119; }
+.type-rock { background-color: #AFA981; }
+.type-ghost { background-color: #704170; }
+.type-dragon { background-color: #5060E1; }
+.type-dark { background-color: #624D4E; }
+.type-steel { background-color: #60A1B8; }
+.type-fairy { background-color: #EF70EF; }
+
+
+.category-special { font-weight: 500; font-style: italic;}
+.category-physical { font-weight: 900; }
+.category-status { font-weight: 100;  text-decoration: underline; text-decoration-style: dotted;
+   
+   
+    }
+    
+
+.learn-method {
+      font-size: 0.8em;
+      margin-left: 4px;
+      opacity: 0.8;
+      background: rgba(0,0,0,0.3);
+      padding: 1px 4px;
+      border-radius: 8px;
+    }
+  
+
+
+/* Learn method colors */
+.move-item.L { border: 2px solid #ffdd57
+
+    .loading-indicator {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      z-index: 1000;
+    }
+    
+    .error-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #ff6b6b;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      z-index: 1000;
+      animation: fadeIn 0.3s, fadeOut 0.3s 4.7s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    
+    #movesFilters {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    #movesFilters.collapsed {
+      display: none;
+    }
+    
+    .filter-toggle {
+      background: none;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .control-container {
+      display: flex;
+      gap: 8px;
+      margin: 10px 0;
+      justify-content: center;
+    }
+    
+    .control-button {
+      padding: 8px 12px;
+      background-color: #4e6a8f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .control-button:hover {
+      background-color: #3a5273;
+    }
+    
+    .control-button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+  `;
+  
+  document.head.appendChild(moveStyles);
+  </style>
+</head>
+<body>
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <h1 style="white-space: nowrap; margin: 10;">Pokémon Taxonomy</h1>
+        <span style="max-width: 380px; display: inline-block; font-size: 14px;">Select an attribute to add or remove filter. Hover to top for filter menu. Click inside results boxes for quick navigation.</span>
+      </div>
+    
+<div class="controls">   
+    <div class="sort-options">  <div class="filter-group variant-filter-group">
+      <h3 class="collapsible-header">
+        Hide Forms <span class="expand-icon">≡</span>
+      </h3>
+      <div class="filter-options collapsed" id="variantExcludeFilters">
+        <!-- Variant options will be populated here -->
+      </div>
+    </div>
+    <br>&nbsp;Order by:&nbsp;<br> <button onclick="sortPokemon('name')">Name</button>
+        <button onclick="sortPokemon('number')">Number</button>
+        <button onclick="sortPokemon('type')">Type</button>
+        <button onclick="sortPokemon('color')">Color</button>
+        <button onclick="sortPokemon('shape')">Shape</button>
+      <button onclick="sortPokemon('height')">Height</button>
+     
+    
+     
+    
+ 
+    </div>
+   
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="
+    position: fixed;
+    bottom: 16px;
+    right: 10px;
+    padding: 5px 7px;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 1000;
+  ">
+    ↑
+  </button>
+
+
+
+
+
+  
+  
+  </div><div style="position: absolute; top: 0; left: 0; width: 100px; height: 50px; background-color: #f5f5f5; z-index: 0;"></div>
+  <button class="clear-button" onclick="clearAllFilters()">Reset</button>
+  <button class="toggle-stats" onclick="toggleStats()">Show/Hide Moves</button>
+  <button id="loadMovesButton" class="control-button">Load Moves - Optional</button>
+
+
+
+
+  <div class="active-filters" id="activeFilters">
+    <h3>Active Filters:</h3>
+    <div id="activeFiltersList">
+      <span class="no-filters">No filters applied</span>
+    </div>
+  </div>
+    
+  <div class="filter-container">
+    
+    <div class="filter-group2">
+      <h3>Types: 'and'</h3>
+      <div class="filter-options" id="typeFilters">
+        <!-- Types will be populated here -->
+      </div>
+    </div>
+    
+    <div class="filter-group">
+      <h3>Regions: 'or'</h3>
+      <div class="filter-options" id="regionFilters">
+        <!-- Regions will be populated here -->
+      </div>
+    </div>
+    
+    <div class="filter-group">
+      <h3>Colors: 'or'</h3>
+      <div class="filter-options" id="colorFilters">
+        <!-- Colors will be populated here -->
+      </div>
+    </div>
+   
+    <div class="filter-group">
+      <h3>Shapes: 'or'</h3>
+      <div class="filter-options" id="shapeFilters">
+        <!-- Shapes will be populated here -->
+      </div>
+    </div>
+    
+    <div class="filter-group">
+      <h3>Egg Groups: 'and'</h3>
+      <div class="filter-options" id="eggGroupFilters">
+        <!-- Egg Groups will be populated here -->
+      </div>
+    </div>
+  
+  </div>
+
+ 
+  <div id="controlPanel">
+    
+    <button id="showMovesButton" class="toggle-stats">Show/Hide Moves</button>
+  </div>
+
+  <div id="movesDisplay" style="margin-top: 20px; display: none;">
+    <h3>Moves Data</h3>
+    <p>Your moves data will appear here.</p>
+  </div>
+  <script>
+    // Get button elements
+    const loadMovesButton = document.getElementById('loadMovesButton');
+    const showMovesButton = document.getElementById('showMovesButton');
+    const movesDisplay = document.getElementById('movesDisplay');
+    
+    // Add event listener to Load Moves button
+    loadMovesButton.addEventListener('click', function() {
+      // Simulate loading move data
+      console.log('Loading move data...');
+      
+      // Show a loading message
+      loadMovesButton.textContent = 'Loading...';
+      loadMovesButton.disabled = true;
+      
+      // Simulate a delay for data loading (replace with actual data loading)
+      setTimeout(function() {
+        // Once data is loaded, permanently disable the Load button
+        loadMovesButton.textContent = 'Data Loaded';
+        loadMovesButton.disabled = true;
+        loadMovesButton.classList.add('disabled');
+        
+        // Show the Show Moves button
+        showMovesButton.style.display = 'inline-block';
+        
+        console.log('Move data loaded successfully');
+      }, 1000); // Simulated 1 second delay
+    });
+    
+    // Add event listener to Show Moves button
+    showMovesButton.addEventListener('click', function() {
+      toggleStats();
+    });
+    
+    // Function to toggle stats/moves display
+    function toggleStats() {
+      // Toggle the visibility of the moves display
+      if (movesDisplay.style.display === 'none') {
+        movesDisplay.style.display = 'block';
+        showMovesButton.textContent = 'Hide Moves';
+      } else {
+        movesDisplay.style.display = 'none';
+        showMovesButton.textContent = 'Show Moves';
+      }
+    }
+  </script>
+  <div class="pokemon-container" id="pokemonContainer">
+    <!-- Pokemon cards will be populated here -->
+    <div class="no-results">Loading Pokémon data...</div>
+  </div>
+  
+  <script src="pokemon-data.js"></script>
+  <script>
+  
+  const style = document.createElement('style');
+    style.textContent = `
+      /* Target only images within the card */
+      .pokemon-card .pokemon-types img {
+        width: auto;
+        height: 16px;
+        
+        max-width: 80px;
+        object-fit: contain;
+      }
+      .pokemon-card .main-info { 
+  overflow: hidden; 
+}
+      .pokemon-card .pokemon-region img,
+      .pokemon-card .pokemon-color img,
+      .pokemon-card .pokemon-shape img,
+      .pokemon-card .pokemon-egg-groups img {
+        float: right;
+        width: 18px;
+        height: 18px;
+        object-fit: contain;
+        vertical-align: middle;
+      }
+      .pokemon-card .pokemon-egg-groups {
+    margin-left: 5px;
+    text-align: right; 
+      }
+      /* Optional: Add specific styling for the main Pokemon image */
+      .pokemon-card .main-info > img:first-child {
+        width: 96px;
+        height: 96px;
+        float: left;
+        max-width: 96px;
+        max-height: 96px;
+      }
+    `;
+    document.head.appendChild(style);
+  
+
+   
+   
+ // Define Pokémon generations with their corresponding regions
+const pokemonGenerations = {
+  1: { start: 1, end: 151.999, region: "Kanto" },
+  2: { start: 152, end: 251.999, region: "Johto" },
+  3: { start: 252, end: 386.999, region: "Hoenn" },
+  4: { start: 387, end: 493.999, region: "Sinnoh" },
+  5: { start: 494, end: 649.999, region: "Unova" },
+  6: { start: 650, end: 721.999, region: "Kalos" },
+  7: { start: 722, end: 809.999, region: "Alola" },
+  8: { start: 810, end: 898.999, region: "Galar" },
+  10: { start: 899, end: 905.999, region: "Hisui" },
+  9: { start: 906, end: 1025, region: "Paldea" }
+};
+
+// Special forms mapping
+const specialForms = {
+  "Alola": "Alola",
+  "Galar": "Galar",
+  "Meganium": "Johto",
+  "Hisuian": "Hisui",
+  "Hisui": "Hisui",
+  "Cosplay": "Hoenn",
+  "Rayquaza": "Hoenn",
+  "Latias": "Hoenn",
+  "Latios": "Hoenn",
+  "Metagross": "Hoenn",
+  "Salamence": "Hoenn",
+  "Glalie": "Hoenn",
+  "Altaria": "Hoenn",
+  "Camerupt": "Hoenn",
+  "Sharpedo": "Hoenn",
+  "Sableye": "Hoenn",
+  "Swampert": "Hoenn",
+  "Sceptile": "Hoenn",
+  "Mega Diancie": "Hoenn",
+  "Mega Audino": "Hoenn",
+  "Mega Gallade": "Hoenn",
+  "Mega Lopunny": "Hoenn",
+  "Mega Steelix": "Hoenn",
+  "Mega Slowbro": "Hoenn",
+  "Mega Pidgeot": "Hoenn",
+  "Mega Beedrill": "Hoenn",
+  "Enamorus": "Hisui",
+  "Basculegion": "Hisui",
+  "Paldean": "Paldea",
+  "Wishiwashi": "Alola",
+  "Mega": "Kalos",
+  "Gigantamax": "Galar",
+  "Gmax": "Galar",
+  "Calyrex": "Galar",
+  "G-Max": "Galar",
+  "Ursaluna ": "Kitakami",
+  "Origin Giratina": "Sinnoh",
+  "Origin": "Hisui",
+  "Dipplin": "Kitakami",
+  "Poltchageist": "Kitakami",
+  "Sinistcha": "Kitakami",
+  "Okidogi": "Kitakami",
+  "Munkidori": "Kitakami",
+  "Fezandipiti": "Kitakami",
+  "Ogerpon": "Kitakami",
+  "Pecharunt": "Kitakami",
+  "Archaludon": "Kitakami",
+  "Hydrapple": "Kitakami",
+  "White-Striped": "Hisui"
+};
+
+// Function to determine the region of a Pokémon
+function getRegion(num) {
+  for (const gen in pokemonGenerations) {
+    const { start, end, region } = pokemonGenerations[gen];
+    if (num >= start && num <= end) return region;
+  }
+  return "Unknown";
+}
+
+// Function to check if a Pokémon name contains a special form and assign its region
+function getSpecialRegion(name) {
+  for (const key in specialForms) {
+    if (name.includes(key)) return specialForms[key];
+  }
+  return null;
+}
+// Set up collapsible filter groups
+document.querySelectorAll('.collapsible-header').forEach(header => {
+  header.addEventListener('click', function() {
+    // Toggle expanded class on header
+    this.classList.toggle('expanded');
+    
+    // Toggle collapsed class on the filter options container
+    const filterOptions = this.parentElement.querySelector('.filter-options');
+    filterOptions.classList.toggle('collapsed');
+  });
+});
+// Function to assign regions to all Pokémon in the dataset
+function assignRegions(pokemonData) {
+  for (const key in pokemonData) {
+    const pokemon = pokemonData[key];
+    const specialRegion = getSpecialRegion(pokemon.name);
+    pokemon.region = specialRegion || getRegion(pokemon.num);
+  }
+}// Assign regions to all Pokémon in the dataset
+assignRegions(pokemonData);
+
+console.log(pokemonData); // Check results
+
+
+    // Function to extract abilities from the new format (0, 1, H structure)
+    function extractAbilities(abilitiesObj) {
+      if (!abilitiesObj) return [];
+      
+      // If it's already an array, return it
+      if (Array.isArray(abilitiesObj)) return abilitiesObj;
+      
+      // If it's an object with numbered keys, convert to array
+      const abilities = [];
+      for (const key in abilitiesObj) {
+        abilities.push(abilitiesObj[key]);
+      }
+      return abilities;
+    }
+    function getPokemonIdentifier(pokemon) {
+  if (pokemon.baseForme && pokemon.baseForme.trim()) {
+    return `${pokemon.num} ${pokemon.baseForme}`;
+  } else if (pokemon.forme && pokemon.forme.trim()) {
+    return pokemon.forme;
+  } else {
+    return pokemon.num;
+  }
+}
+    // Helper function to convert shape numbers to names
+    function getShapeName(shapeNum) {
+      const shapeNames = {
+        1: "Round",
+        2: "Serpent",
+        3: "Fins",
+        4: "Arms",
+        5: "Upright",
+        6: "Tailed",
+        7: "Legs",
+        8: "4-Legs",
+        9: "Wings",
+        10: "Tentacle",
+        11: "Multi",
+        12: "Bipedal",
+        13: "4-Wings",
+        14: "Crawling"
+      };
+      return shapeNames[shapeNum] || `Shape ${shapeNum}`;
+    }
+    
+    // Define all types
+    const allTypes = [
+    "Bug", "Dragon", "Fairy", "Fire", "Ghost", "Ground", "Normal", "Psychic", "Steel",
+"Dark", "Electric", "Fighting", "Flying", "Grass", "Ice", "Poison", "Rock", "Water"
+
+
+    ];
+
+    // Define all regions
+    const allRegions = [
+      "Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola","Galar", "Hisui", "Paldea" , "Kitakami"
+    ];
+
+    // Extract unique colors from Pokemon data
+    function getAllColors() {
+      const colors = new Set();
+      Object.values(pokemonData).forEach(pokemon => {
+        if (pokemon.color) colors.add(pokemon.color);
+      });
+      return Array.from(colors).sort();
+    }
+    // Extract unique variant types from Pokemon data
+function getAllVariantTypes() {
+  const variants = new Set();
+  Object.values(pokemonData).forEach(pokemon => {
+    if (pokemon.variant) variants.add(pokemon.variant);
+  });
+  return Array.from(variants).sort();
+}
+    // Extract unique shapes from Pokemon data
+    function getAllShapes() {
+      const shapes = new Set();
+      Object.values(pokemonData).forEach(pokemon => {
+        if (pokemon.shape) {
+          const shapeName = typeof pokemon.shape === 'number' ? 
+            getShapeName(pokemon.shape) : pokemon.shape;
+          shapes.add(shapeName);
+        }
+      });
+      return Array.from(shapes).sort();
+    }
+    
+    // Extract unique egg groups from Pokemon data
+    function getAllEggGroups() {
+      const eggGroups = new Set();
+      Object.values(pokemonData).forEach(pokemon => {
+        if (pokemon.eggGroups && Array.isArray(pokemon.eggGroups)) {
+          pokemon.eggGroups.forEach(group => eggGroups.add(group));
+        }
+      });
+      return Array.from(eggGroups).sort();
+    }
+
+    // Current filters
+    let activeFilters = {
+      types: [],
+      regions: [],
+      colors: [],
+      shapes: [],
+      abilities: [],
+      eggGroups: [],
+      variantExclude: [] // New filter for excluding variants
+    };
+
+    // Add filter constraints
+    const filterConstraints = {
+      types: 2,       // Maximum 2 types can be selected
+      regions: null,     // Maximum 1 region can be selected
+      eggGroups: 2,   // Maximum 2 egg groups can be selected
+      abilities: 2,   // Maximum 2 abilities can be selected
+      colors: null,   // No limit
+      shapes: null,    // No limit
+      variantExclude: 6 // Maximum 3 variant types can be excluded
+    };
+    // Extract unique variant types from Pokemon data
+function getAllVariantTypes() {
+  return ["Minor", "Item", "Gmax", "Mega",  "Battle",  "Natural"];
+}
+    // Stats visibility
+    let statsVisible = false;
+
+  
+   
+    // Function to toggle a filter
+    function toggleFilter(filterType, value) {
+      // Check if we're removing or adding
+      if (activeFilters[filterType].includes(value)) {
+        // Remove filter if already active
+        activeFilters[filterType] = activeFilters[filterType].filter(item => item !== value);
+      } else {
+        // Check constraints before adding
+        if (filterConstraints[filterType] !== null && 
+            activeFilters[filterType].length >= filterConstraints[filterType]) {
+          // Remove the oldest filter
+          activeFilters[filterType].shift();
+        }
+        // Add filter
+        activeFilters[filterType].push(value);
+      }
+      
+      // Update UI
+      updateFilterUI(filterType);
+      renderPokemonList();
+      updateActiveFilters();
+    }
+    
+    // Update filter UI based on active filters
+    function updateFilterUI(filterType) {
+      // Clear all selections of this type
+      const selector = filterType === 'types' ? '.filter-chip[data-type]' :
+                       filterType === 'regions' ? '.filter-chip[data-region]' :
+                       filterType === 'colors' ? '.filter-chip[data-color]' :
+                       filterType === 'variantExclude' ? 'Exclude Variant' :
+                       filterType === 'shapes' ? '.filter-chip[data-shape]' :
+                       filterType === 'eggGroups' ? '.filter-chip[data-egggroup]' :
+                       filterType === 'abilities' ? '.filter-chip[data-ability]' : '';
+      
+      if (selector) {
+        document.querySelectorAll(selector).forEach(chip => {
+          const value = chip.getAttribute(selector.match(/\[(.*?)\]/)[1]);
+          chip.classList.toggle('selected', activeFilters[filterType].includes(value));
+        });
+      }
+    }
+
+    // Update the active filters display
+    function updateActiveFilters() {
+      const activeFiltersList = document.getElementById('activeFiltersList');
+      activeFiltersList.innerHTML = '';
+      
+      let hasFilters = false;
+      
+      for (const [filterType, values] of Object.entries(activeFilters)) {
+        if (values.length > 0) {
+          hasFilters = true;
+          values.forEach(value => {
+            const filterChip = document.createElement('div');
+            filterChip.className = 'active-filter-chip';
+            
+            let displayType = filterType === 'types' ? 'Type' : 
+                              filterType === 'regions' ? 'Region' :
+                              filterType === 'colors' ? 'Color' :
+                              filterType === 'shapes' ? 'Shape' :
+                              filterType === 'abilities' ? 'Ability' :
+                               filterType === 'variantExclude' ? 'Exclude Variant' :
+                              filterType === 'eggGroups' ? 'Egg Group' : filterType;
+            
+            filterChip.innerHTML = `${displayType}: ${value} <span class="remove">×</span>`;
+            filterChip.querySelector('.remove').addEventListener('click', function() {
+              toggleFilter(filterType, value);
+            });
+            activeFiltersList.appendChild(filterChip);
+          });
+        }
+      }
+      
+      if (!hasFilters) {
+        activeFiltersList.innerHTML = '<span class="no-filters">No filters applied</span>';
+      }
+    }
+
+    // Clear all filters
+    function clearAllFilters() {
+      for (const filterType in activeFilters) {
+        activeFilters[filterType] = [];
+      }
+      
+      // Reset all filter UI
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.classList.remove('selected');
+      });
+      
+      renderPokemonList();
+      updateActiveFilters();
+    }
+    // Fixed getIconHTML function
+    function getIconHTML(iconType, value) {
+      const basePath = 'icons/';
+      const iconMap = {
+        region: {
+          'Kanto': 'kanto.png',
+          'Johto': 'johto.png',
+          'Hoenn': 'hoenn.png',
+          'Sinnoh': 'sinnoh.png',
+          'Unova': 'unova.png',
+          'Kalos': 'kalos.png',
+          'Alola': 'alola.png',
+          'Galar': 'galar.png',
+          'Hisui': 'hisui.png',
+          'Paldea': 'paldea.png',
+          'Kitakami': 'kitakami.png',
+          'default': 'region-default.png'
+        },
+        type: {
+          'Normal': 'type-normal.png',
+          'Fire': 'type-fire.png',
+          'Water': 'type-water.png',
+          'Electric': 'type-electric.png',
+          'Grass': 'type-grass.png',
+          'Poison': 'type-poison.png',
+          'Dark': 'type-dark.png',
+          'Bug': 'type-bug.png',
+          'Flying': 'type-flying.png',
+          'Fairy': 'type-fairy.png',
+          'Ice': 'type-ice.png',
+          'Fighting': 'type-fighting.png',
+          'Ground': 'type-ground.png',
+          'Ghost': 'type-ghost.png',
+          'Dragon': 'type-dragon.png',
+          'Steel': 'type-steel.png',
+          'Rock': 'type-rock.png',
+          'Psychic': 'type-psychic.png',
+          'default': 'type-default.png'
+        },
+        eggGroup: {
+          'Field': 'egg-field.png',
+          'Fairy': 'egg-fairy.png',
+          'Bug': 'egg-bug.png',
+          'Flying': 'egg-flying.png',
+          'Water 3': 'egg-water3.png',
+          'Dragon': 'egg-dragon.png',
+          'Water 1': 'egg-water1.png',
+          'Water 2': 'egg-water2.png',
+          'Grass': 'egg-grass.png',
+          'Amorphous': 'egg-amorphous.png',
+          'Mineral': 'egg-mineral.png',
+          'Plant': 'egg-plant.png',
+          'Human-Like': 'egg-humanshape.png',
+          'Monster': 'egg-monster.png',
+          'Ditto': 'egg-ditto.png',
+          'default': 'egg-noegg.png'
+        },
+        color: {
+          'Yellow': 'color-yellow.png',
+          'Red': 'color-red.png',
+          'White': 'color-white.png',
+          'Green': 'color-green.png',
+          'Gray': 'color-gray.png',
+          'Pink': 'color-pink.png',
+          'Blue': 'color-blue.png',
+          'Black': 'color-black.png',
+          'Purple': 'color-purple.png',
+          'Brown': 'color-brown.png',
+          'default': 'color-default.png'
+        },
+        variant: {
+  'Item': 'variant-item.png',
+  'Minor': 'variant-minor.png',
+  'Battle': 'variant-battle.png',
+  'Gmax': 'variant-gmax.png',
+  'Mega': 'variant-mega.png',
+  'Natural': 'variant-base.png',
+  'default': 'variant-default.png'
+},
+        shape: {
+          'Round': 'shape-round.png',
+          'Serpent': 'shape-serpent.png',
+          'Fins': 'shape-fins.png',
+          'Arms': 'shape-arms.png',
+          'Upright': 'shape-upright.png',
+          'Tailed': 'shape-tailed.png',
+          'Legs': 'shape-legs.png',
+          '4-Legs': 'shape-4-legs.png',
+          'Wings': 'shape-wings.png',
+          'Tentacle': 'shape-tentacles.png',
+          'Multi': 'shape-composite.png',
+          'Bipedal': 'shape-bipedal.png',
+          '4-Wings': 'shape-4-wings.png',
+          'Crawling': 'shape-crawling.png',
+          '1': 'shape-round.png',
+          '2': 'shape-serpent.png',
+          '3': 'shape-fins.png',
+          '4': 'shape-arms.png',
+          '5': 'shape-upright.png',
+          '6': 'shape-tailed.png',
+          '7': 'shape-legs.png',
+          '8': 'shape-4-legs.png',
+          '9': 'shape-wings.png',
+          '10': 'shape-tentacles.png',
+          '11': 'shape-composite.png',
+          '12': 'shape-bipedal.png',
+          '13': 'shape-4-wings.png',
+          '14': 'shape-crawling.png',
+          'default': 'shape-default.png'
+        }
+      };
+      
+      const iconPath = iconMap[iconType] && iconMap[iconType][value] ? 
+        iconMap[iconType][value] : 
+        (iconMap[iconType] && iconMap[iconType]['default'] ? iconMap[iconType]['default'] : '');
+      
+      // If we have an icon path, return the img tag, otherwise return empty string
+      if (iconPath) {
+        return `<img src="${basePath}${iconPath}" alt="${value}" class="${iconType}-icon attribute-icon">`;
+      }
+      return '';
+    }
+
+    // Toggle stats visibility
+    function toggleStats() {
+      statsVisible = !statsVisible;
+      document.querySelectorAll('.pokemon-stats').forEach(stats => {
+        if (statsVisible) {
+          stats.classList.remove('hidden');
+        } else {
+          stats.classList.add('hidden');
+        }
+      });
+    }document.addEventListener('DOMContentLoaded', () => {
+  // Initially hide abilities and label
+  const elements = document.querySelectorAll('.pokemon-abilities .ability, .pokemon-abilities .attribute-label');
+  elements.forEach(element => element.classList.add('visible'));
+
+  // Create the toggle button
+  const toggleButton = document.createElement('button');
+  toggleButton.textContent = '';
+  toggleButton.addEventListener('click', toggleAbilitiesVisibility);document.addEventListener('keydown', function(event) {if (event.key === ' ' || event.code === 'Space') {event.preventDefault();  toggleAbilitiesVisibility();
+  }
+});
+  document.body.prepend(toggleButton);
+});
+
+// Create the toggle button
+const toggleButton = document.createElement("button");
+toggleButton.textContent = "";
+toggleButton.addEventListener("click", toggleCleanMode);
+
+document.addEventListener("keydown", function (event) {
+  if (event.key.toLowerCase() === "q" && !event.target.matches("button")) {
+    event.preventDefault();
+    toggleCleanMode();
+  }
+});
+
+document.body.prepend(toggleButton);
+
+function toggleCleanMode() {
+  const elements = document.querySelectorAll(
+    ".side-info, .pokemon-abilities, .pokemon-egg-groups, .pokemon-egg-groups hidden, .pokemon-region, .pokemon-color, .pokemon-shape, .pokemon-height, .attribute-label"
+  );
+  elements.forEach((element) => {
+    element.classList.toggle("hidden");
+  });
+}
+
+    // Helper function to generate Types HTML
+    function getTypesHTML(types) {
+      if (!types || types.length === 0) return 'N/A';
+      return types.map(type => 
+        `<span class="type-badge type-${type} clickable" data-filter-type="types" data-filter-value="${type}">
+          ${getIconHTML('type', type)} ${type}
+        </span>`
+      ).join('');
+    }
+    
+    // Helper function to generate Abilities HTML
+    function getAbilitiesHTML(abilitiesObj) {
+      const abilities = extractAbilities(abilitiesObj);
+      let html = '';
+
+      if (abilities.length === 0) return 'N/A';
+
+      abilities.forEach((ability, index) => {
+        html += `<span class="ability clickable" data-filter-type="abilities" data-filter-value="${ability}">
+                  ${ability}${index < abilities.length - 1 ? ', ' : ''}
+                </span>`;
+      });
+
+      return html;
+    }
+
+    function toggleAbilitiesVisibility() {
+  const elements = document.querySelectorAll('.pokemon-abilities .ability, .pokemon-abilities .attribute-label, .pokemon-egg-groups');
+  elements.forEach(element => {
+    element.classList.toggle('hidden');
+  });
+}    
+    // Helper function to generate Egg Groups HTML
+    function getEggGroupsHTML(eggGroups) {
+      if (!eggGroups || eggGroups.length === 0) return 'N/A';
+      return eggGroups.map(group => 
+        `<span class="clickable egg-group-item" data-filter-type="eggGroups" data-filter-value="${group}">
+          ${getIconHTML('eggGroup', group)} &thinsp;${group}
+        </span>`
+      ).join('');
+    }
+
+    // Render the Pokemon list based on active filters
+    function renderPokemonList() {
+      const container = document.getElementById('pokemonContainer');
+      container.innerHTML = '';
+      let pokemonToDisplay = Object.values(pokemonData);
+      
+      // Apply type filters - AND logic between types
+      if (activeFilters.types.length > 0) {
+        pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+          // Pokemon must have ALL selected types
+          return activeFilters.types.every(type => pokemon.types.includes(type));
+        });
+      }
+      
+      // Apply region filters
+      if (activeFilters.regions.length > 0) {
+        pokemonToDisplay = pokemonToDisplay.filter(pokemon =>
+          activeFilters.regions.includes(pokemon.region)
+        );
+      }
+      
+      // Apply abilities filters
+      if (activeFilters.abilities.length > 0) {
+        pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+          const pokemonAbilities = extractAbilities(pokemon.abilities);
+          return activeFilters.abilities.every(ability => pokemonAbilities.includes(ability));
+        });
+      }
+      
+      // Apply colors filters
+      if (activeFilters.colors.length > 0) {
+        pokemonToDisplay = pokemonToDisplay.filter(pokemon =>
+          activeFilters.colors.includes(pokemon.color)
+        );
+      }
+      // Apply variant exclusion filters
+if (activeFilters.variantExclude.length > 0) {
+  pokemonToDisplay = pokemonToDisplay.filter(pokemon => 
+    !pokemon.variant || !activeFilters.variantExclude.includes(pokemon.variant)
+  );
+}
+      // Apply shapes filters
+      if (activeFilters.shapes.length > 0) {
+        pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+          const shapeName = typeof pokemon.shape === 'number' ? 
+            getShapeName(pokemon.shape) : pokemon.shape;
+          return activeFilters.shapes.includes(shapeName);
+        });
+      }
+      
+      // Apply egg group filters
+   
+      
+      
+      if (activeFilters.eggGroups.length > 0) {
+        pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+          // Check if any of the pokemon's egg groups match any of the selected egg groups
+         
+          return pokemon.eggGroups && 
+                 activeFilters.eggGroups.every(group => pokemon.eggGroups.includes(group));
+        });
+      }
+      
+      // Display filtered Pokemon
+      if (pokemonToDisplay.length === 0) {
+        container.innerHTML = '<div class="no-results">No Pokémon match your filters</div>';
+        return;
+      }
+      
+      pokemonToDisplay.forEach(pokemon => {
+        const card = document.createElement('div');
+        card.className = 'pokemon-card';
+        
+        // Extract abilities for this pokemon
+        const abilities = extractAbilities(pokemon.abilities);
+        
+        // Extract shape name from shape number if needed
+        const shapeName = typeof pokemon.shape === 'number' ? 
+          getShapeName(pokemon.shape) : pokemon.shape;
+        
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="main-info">
+                <img 
+  src="images/${pokemon.num}.webp" 
+  alt="${pokemon.name}" 
+  loading="lazy"
+  onerror="this.onerror=null; this.src='images/${pokemon.num}.svg'"
+>
+              <h3>${pokemon.name}</h3>
+              
+             
+            </div>
+            <div class="side-info">
+              <div class="pokemon-region clickable" data-filter-type="regions" data-filter-value="${pokemon.region || ''}">
+                <span class="attribute-label">Region:</span> ${getIconHTML('region', pokemon.region)} ${pokemon.region || 'Unknown'}
+              </div>
+              <div class="pokemon-color clickable" data-filter-type="colors" data-filter-value="${pokemon.color || ''}">
+                <span class="attribute-label">Color:</span> ${getIconHTML('color', pokemon.color)} ${pokemon.color || 'Unknown'}
+              </div>
+              <div class="pokemon-shape clickable" data-filter-type="shapes" data-filter-value="${shapeName || ''}">
+                <span class="attribute-label">Shape:</span> ${getIconHTML('shape', pokemon.shape)} ${shapeName || ''}
+              </div>
+              <div class="pokemon-height unclickable" data-filter-type="height" data-filter-value="${pokemon.height || ''}">
+              <span class="attribute-label">Height:</span> ${pokemon.height || pokemon.heightm || 0}m
+              </div>
+            </div>
+          </div>      </div><div class="pokemon-types">
+                ${getTypesHTML(pokemon.types)}
+              </div>
+              
+              <div class="pokemon-egg-groups">
+            <span class="attribute-label">Egg:  ${getEggGroupsHTML(pokemon.eggGroups)}</span>
+          
+           
+</div>
+    
+
+
+<div class="pokemon-abilities">
+                <span class="attribute-label"></span>
+                ${getAbilitiesHTML(pokemon.abilities)}
+              </div> <div class="pokemon-species-wrapper"><span class="attribute-label">
+  <span class="pokemon-number"> &nbsp;#${getPokemonIdentifier(pokemon)}</span>
+  <span class="pokemon-species">${pokemon.species} Pokémon</span>
+</div>
+          <div class="pokemon-stats ${statsVisible ? '' : 'hidden'}">
+            <span class="attribute-label">Base Stats:</span>
+            <div class="stats-grid">
+              <div class="stat-item">HP: ${(pokemon.stats && pokemon.stats.hp) || (pokemon.baseStats && pokemon.baseStats.hp) || 0}</div>
+              <div class="stat-item">ATK: ${(pokemon.stats && pokemon.stats.atk) || (pokemon.baseStats && pokemon.baseStats.atk) || 0}</div>
+              <div class="stat-item">DEF: ${(pokemon.stats && pokemon.stats.def) || (pokemon.baseStats && pokemon.baseStats.def) || 0}</div>
+              <div class="stat-item">SP.ATK: ${(pokemon.stats && pokemon.stats.spa) || (pokemon.baseStats && pokemon.baseStats.spa) || 0}</div>
+              <div class="stat-item">SP.DEF: ${(pokemon.stats && pokemon.stats.spd) || (pokemon.baseStats && pokemon.baseStats.spd) || 0}</div>
+              <div class="stat-item">SPD: ${(pokemon.stats && pokemon.stats.spe) || (pokemon.baseStats && pokemon.baseStats.spe) || 0}</div>
+            </div>
+     
+         
+          
+        `;
+       
+;
+        // Add event listeners for clickable elements
+        card.querySelectorAll('.clickable').forEach(element => {
+          element.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const filterType = this.getAttribute('data-filter-type');
+            const filterValue = this.getAttribute('data-filter-value');
+            if (filterType && filterValue && filterValue !== 'Unknown' && filterValue !== '') {
+              toggleFilter(filterType, filterValue);
+            }
+          });
+        });
+        
+        container.appendChild(card);
+      });
+    }
+    
+    // Sort Pokemon list
+    function sortPokemon(sortBy) {
+      const container = document.getElementById('pokemonContainer');
+      const cards = Array.from(container.children);
+      
+      if (cards.length <= 1 || cards[0].classList.contains('no-results')) return;
+      
+      cards.sort((a, b) => {
+        const nameA = a.querySelector('h3').textContent;
+        const nameB = b.querySelector('h3').textContent;
+        
+        const pokemonA = Object.values(pokemonData).find(p => p.name === nameA);
+        const pokemonB = Object.values(pokemonData).find(p => p.name === nameB);
+        
+        if (!pokemonA || !pokemonB) return 0;
+        
+        if (sortBy === 'number') {
+          return pokemonA.num - pokemonB.num;
+        } 
+        else if (sortBy === 'height') {
+          return pokemonA.heightm - pokemonB.heightm;
+        }
+        
+        else if (sortBy === 'color') {
+          return pokemonA.color.localeCompare(pokemonB.color);
+        }
+
+        else if (sortBy === 'shape') {
+            return pokemonA.shape - pokemonB.shape;
+        } 
+        else if (sortBy === 'name') {
+          return nameA.localeCompare(nameB);
+        } 
+      
+        
+        else if (sortBy === 'type') {
+          return pokemonA.types[0].localeCompare(pokemonB.types[0]);
+        }
+        
+      });
+      
+      // Clear and re-append sorted cards
+      container.innerHTML = '';
+      cards.forEach(card => container.appendChild(card));
+    }
+  </script><script>
+  // Flag to track if learnset data is loaded
+  let learnsetLoaded = false;
+  
+  // Function to load the learnset data
+  function loadLearnsetData(callback) {
+    if (learnsetLoaded) {
+      if (callback) callback();
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = 'learnsetData.js';
+    script.onload = function() {
+      // Once loaded, merge the data
+      Object.keys(pokemonData).forEach(pokemonId => {
+        if (learnsetData[pokemonId]) {
+          pokemonData[pokemonId].learnset = learnsetData[pokemonId].learnset;
+          pokemonData[pokemonId].eventData = learnsetData[pokemonId].eventData;
+          pokemonData[pokemonId].encounters = learnsetData[pokemonId].encounters;
+        }
+      });
+      
+      learnsetLoaded = true;
+      if (callback) callback();
+    };
+    
+    document.head.appendChild(script);
+  }
+  
+  // Function to extract moves from learnset data
+function extractMoves(learnset) {
+  if (!learnset) return [];
+  return Object.keys(learnset);
+}
+
+// Extract unique moves from Pokemon data
+function getAllMoves() {
+  const moves = new Set();
+  
+  // Only extract moves if learnset data is loaded
+  if (learnsetLoaded) {
+    Object.values(pokemonData).forEach(pokemon => {
+      if (pokemon.learnset) {
+        const pokemonMoves = extractMoves(pokemon.learnset);
+        pokemonMoves.forEach(move => moves.add(move));
+      }
+    });
+  }
+  
+  return Array.from(moves).sort();
+}
+
+// Add moves to active filters
+activeFilters.moves = [];
+
+// Add filter constraint for moves
+filterConstraints.moves = 10; // Maximum 2 moves can be selected
+
+// Update the populateFilterOptions function to include moves
+function populateFilterOptions() {
+  // Original code for other filters...
+  // [Keep all your existing code for populating other filters]
+  
+  // Populate type filters
+  const typeFiltersContainer = document.getElementById('typeFilters');
+  allTypes.forEach(type => {
+    const typeChip = document.createElement('div');
+    typeChip.className = 'filter-chip';
+    typeChip.setAttribute('data-type', type);
+    typeChip.innerHTML = `<span class="type-badge type-${type}">${getIconHTML('type', type)} ${type}</span>`;
+    typeChip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+      toggleFilter('types', type);
+    });
+    typeFiltersContainer.appendChild(typeChip);
+  });
+
+  // Populate region filters
+  const regionFiltersContainer = document.getElementById('regionFilters');
+  allRegions.forEach(region => {
+    const regionChip = document.createElement('div');
+    regionChip.className = 'filter-chip';
+    regionChip.setAttribute('data-region', region);
+    regionChip.innerHTML = `${getIconHTML('region', region)} ${region}`;
+    regionChip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+      toggleFilter('regions', region);
+    });
+    regionFiltersContainer.appendChild(regionChip);
+  });
+  
+  // Populate color filters
+  const colorFiltersContainer = document.getElementById('colorFilters');
+  getAllColors().forEach(color => {
+    const colorChip = document.createElement('div');
+    colorChip.className = 'filter-chip';
+    colorChip.setAttribute('data-color', color);
+    colorChip.innerHTML = `${getIconHTML('color', color)} ${color}`;
+    colorChip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+      toggleFilter('colors', color);
+    });
+    colorFiltersContainer.appendChild(colorChip);
+  });
+  // Populate variant exclude filters
+const variantFiltersContainer = document.getElementById('variantExcludeFilters');
+getAllVariantTypes().forEach(variant => {
+  const variantChip = document.createElement('div');
+  variantChip.className = 'filter-chip';
+  variantChip.setAttribute('data-variant', variant);
+  variantChip.innerHTML = `${getIconHTML('variant', variant)} ${variant}`;
+  variantChip.addEventListener('click', function() {
+    this.classList.toggle('selected');
+    toggleFilter('variantExclude', variant);
+  });
+  variantFiltersContainer.appendChild(variantChip);
+});
+  // Populate shape filters
+  const shapeFiltersContainer = document.getElementById('shapeFilters');
+  getAllShapes().forEach(shape => {
+    const shapeChip = document.createElement('div');
+    shapeChip.className = 'filter-chip';
+    shapeChip.setAttribute('data-shape', shape);
+    shapeChip.innerHTML = `${getIconHTML('shape', shape)} ${shape}`;
+    shapeChip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+      toggleFilter('shapes', shape);
+    });
+    shapeFiltersContainer.appendChild(shapeChip);
+  });
+  
+  // Populate egg group filters
+  const eggGroupFiltersContainer = document.getElementById('eggGroupFilters');
+  getAllEggGroups().forEach(eggGroup => {
+    const eggGroupChip = document.createElement('div');
+    eggGroupChip.className = 'filter-chip';
+    eggGroupChip.setAttribute('data-egggroup', eggGroup);
+    eggGroupChip.innerHTML = `${getIconHTML('eggGroup', eggGroup)} ${eggGroup}`;
+    eggGroupChip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+      toggleFilter('eggGroups', eggGroup);
+    });
+    eggGroupFiltersContainer.appendChild(eggGroupChip);
+  });
+}
+
+// Add function to populate the moves filter
+function populateMovesFilter() {
+  const movesFiltersContainer = document.getElementById('movesFilters');
+  // Clear existing content
+  movesFiltersContainer.innerHTML = '';
+  
+  getAllMoves().forEach(move => {
+    const moveChip = document.createElement('div');
+    moveChip.className = 'filter-chip';
+    moveChip.setAttribute('data-move', move);
+    // Format move name for display (capitalize first letter, remove dashes)
+    const displayName = move.split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    moveChip.innerHTML = `${displayName}`;
+    moveChip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+      toggleFilter('moves', move);
+    });
+    movesFiltersContainer.appendChild(moveChip);
+  });
+}
+
+// Add move filtering to renderPokemonList
+function renderPokemonList() {
+  const container = document.getElementById('pokemonContainer');
+  container.innerHTML = '';
+  let pokemonToDisplay = Object.values(pokemonData);
+  
+  // Apply type filters - AND logic between types
+  if (activeFilters.types.length > 0) {
+    pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+      // Pokemon must have ALL selected types
+      return activeFilters.types.every(type => pokemon.types.includes(type));
+    });
+  }
+  
+  // Apply region filters
+  if (activeFilters.regions.length > 0) {
+    pokemonToDisplay = pokemonToDisplay.filter(pokemon =>
+      activeFilters.regions.includes(pokemon.region)
+    );
+  }
+  
+  // Apply abilities filters
+  if (activeFilters.abilities.length > 0) {
+    pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+      const pokemonAbilities = extractAbilities(pokemon.abilities);
+      return activeFilters.abilities.every(ability => pokemonAbilities.includes(ability));
+    });
+  }
+  
+  // Apply colors filters
+  if (activeFilters.colors.length > 0) {
+    pokemonToDisplay = pokemonToDisplay.filter(pokemon =>
+      activeFilters.colors.includes(pokemon.color)
+    );
+  }
+  // Apply variant exclusion filters
+if (activeFilters.variantExclude.length > 0) {
+  pokemonToDisplay = pokemonToDisplay.filter(pokemon =>
+    !pokemon.variant || !activeFilters.variantExclude.includes(pokemon.variant)
+  );
+}
+  // Apply shapes filters
+  if (activeFilters.shapes.length > 0) {
+    pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+      const shapeName = typeof pokemon.shape === 'number' ? 
+        getShapeName(pokemon.shape) : pokemon.shape;
+      return activeFilters.shapes.includes(shapeName);
+    });
+  }
+  
+  // Apply egg group filters
+  if (activeFilters.eggGroups.length > 0) {
+    pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+      // Check if any of the pokemon's egg groups match any of the selected egg groups
+      return pokemon.eggGroups && 
+             activeFilters.eggGroups.every(group => pokemon.eggGroups.includes(group));
+    });
+  }
+  
+// Apply moves filters - Updated logic
+if (activeFilters.moves.length > 0 && learnsetLoaded) {
+  pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+    if (!pokemon.learnset) return false;
+    
+    // Check if Pokemon can learn ALL selected moves via currently visible methods
+    return activeFilters.moves.every(move => {
+      // If the Pokemon doesn't have this move at all, it fails the filter
+      if (!pokemon.learnset[move]) return false;
+      
+      // Check the learn methods for this move
+      const learnMethods = pokemon.learnset[move];
+      
+      // Check if any of the learn methods are currently visible
+      return learnMethods.some(method => {
+        const methodType = method[0];
+        
+        // Level-up moves are always visible
+        if (methodType === 'L') return true;
+        
+        // Egg moves are always visible
+        if (methodType === 'E') return true;
+        
+        // Evolution moves are always visible
+        if (methodType === 'S') return true;
+        
+        // TM moves are only visible if showTMMoves is true
+        if (methodType === 'M') return showTMMoves;
+        
+        // Tutor moves are only visible if showTutorMoves is true
+        if (methodType === 'T') return showTutorMoves;
+        
+        // Virtual Console moves are only visible if showVCMoves is true
+        if (methodType === 'V') return showVCMoves;
+        
+        // Any other method type is considered visible by default
+        return true;
+      });
+    });
+  
+
+      // Pokemon must be able to learn ALL selected moves
+      return activeFilters.moves.every(move => pokemon.learnset[move]);
+    });
+  }
+  
+  // Display filtered Pokemon
+  if (pokemonToDisplay.length === 0) {
+    container.innerHTML = '<div class="no-results">No Pokémon match your filters</div>';
+    return;
+  }
+  
+  // [Keep the rest of your render function as is]
+  pokemonToDisplay.forEach(pokemon => {
+    const card = document.createElement('div');
+    card.className = 'pokemon-card';
+    
+    // Extract abilities for this pokemon
+    const abilities = extractAbilities(pokemon.abilities);
+    
+    // Extract shape name from shape number if needed
+    const shapeName = typeof pokemon.shape === 'number' ? 
+      getShapeName(pokemon.shape) : pokemon.shape;
+    
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="main-info">
+          <img 
+            src="images/${pokemon.num}.webp" 
+            alt="${pokemon.name}" 
+            loading="lazy"
+            onerror="this.onerror=null; this.src='images/${pokemon.num}.svg'"
+          >
+          <h3>${pokemon.name}</h3>
+        </div>
+        <div class="side-info">
+          <div class="pokemon-region clickable" data-filter-type="regions" data-filter-value="${pokemon.region || ''}">
+            <span class="attribute-label">Region:</span> ${getIconHTML('region', pokemon.region)} ${pokemon.region || 'Unknown'}
+          </div>
+          <div class="pokemon-color clickable" data-filter-type="colors" data-filter-value="${pokemon.color || ''}">
+            <span class="attribute-label">Color:</span> ${getIconHTML('color', pokemon.color)} ${pokemon.color || 'Unknown'}
+          </div>
+          <div class="pokemon-shape clickable" data-filter-type="shapes" data-filter-value="${shapeName || ''}">
+            <span class="attribute-label">Shape:</span> ${getIconHTML('shape', pokemon.shape)} ${shapeName || ''}
+          </div>
+          <div class="pokemon-height unclickable" data-filter-type="height" data-filter-value="${pokemon.height || ''}">
+          <span class="attribute-label">Height:</span> ${pokemon.height || pokemon.heightm || 0}m
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="pokemon-types">
+        ${getTypesHTML(pokemon.types)}
+      </div>
+      
+      <div class="pokemon-egg-groups">
+        <span class="attribute-label">Egg:  ${getEggGroupsHTML(pokemon.eggGroups)}</span>
+      </div>
+
+      <div class="pokemon-abilities">
+        <span class="attribute-label"></span>
+        ${getAbilitiesHTML(pokemon.abilities)}
+      </div>
+      
+      <div class="pokemon-stats ${statsVisible ? '' : 'hidden'}">
+        <span class="attribute-label">Moves:</span>
+        ${getMovesHTML(pokemon.learnset)}
+      </div>
+       
+      <div class="pokemon-species-wrapper">
+        <span class="attribute-label">
+        <span class="pokemon-number"> &nbsp;#${getPokemonIdentifier(pokemon)}</span>
+        <span class="pokemon-species">${pokemon.species} Pokémon</span>
+      </div>
+      
+      <div class="pokemon-stats ${statsVisible ? '' : 'hidden'}">
+        <span class="attribute-label">Base Stats:</span>
+        <div class="stats-grid">
+            <div class="stat-item">HP: ${(pokemon.stats && pokemon.stats.hp) || (pokemon.baseStats && pokemon.baseStats.hp) || 0}</div>
+              <div class="stat-item">ATK: ${(pokemon.stats && pokemon.stats.atk) || (pokemon.baseStats && pokemon.baseStats.atk) || 0}</div>
+              <div class="stat-item">DEF: ${(pokemon.stats && pokemon.stats.def) || (pokemon.baseStats && pokemon.baseStats.def) || 0}</div>
+              <div class="stat-item">SP.ATK: ${(pokemon.stats && pokemon.stats.spa) || (pokemon.baseStats && pokemon.baseStats.spa) || 0}</div>
+              <div class="stat-item">SP.DEF: ${(pokemon.stats && pokemon.stats.spd) || (pokemon.baseStats && pokemon.baseStats.spd) || 0}</div>
+              <div class="stat-item">SPD: ${(pokemon.stats && pokemon.stats.spe) || (pokemon.baseStats && pokemon.baseStats.spe) || 0}</div>
+        </div>
+      </div>
+    `;
+
+    // Add event listeners for clickable elements
+    card.querySelectorAll('.clickable').forEach(element => {
+      element.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const filterType = this.getAttribute('data-filter-type');
+        const filterValue = this.getAttribute('data-filter-value');
+        if (filterType && filterValue && filterValue !== 'Unknown' && filterValue !== '') {
+          toggleFilter(filterType, filterValue);
+        }
+      });
+    });
+    
+    container.appendChild(card);
+  });
+}// Helper function to display moves
+function getMovesHTML(learnset) {
+  if (!learnset || Object.keys(learnset).length === 0) return 'None';
+  
+  return Object.keys(learnset).slice(0, 500).map(move => {
+    // Custom display names for multi-word moves
+    let displayName;
+    
+    // Dictionary of special cases for multi-word moves
+    const moveDisplayNames = {
+     
+    "karatechop": "Karate Chop",
+    "doubleslap": "Double Slap",
+    "cometpunch": "Comet Punch",
+    "megapunch": "Mega Punch",
+    "payday": "Pay Day",
+    "firepunch": "Fire Punch",
+    "icepunch": "Ice Punch",
+    "thunderpunch": "Thunder Punch",
+    "visegrip": "Vise Grip",
+    "razorwind": "Razor Wind",
+    "swordsdance": "Swords Dance",
+    "wingattack": "Wing Attack",
+    "vinewhip": "Vine Whip",
+    "doublekick": "Double Kick",
+    "megakick": "Mega Kick",
+    "jumpkick": "Jump Kick",
+    "rollingkick": "Rolling Kick",
+    "sandattack": "Sand Attack",
+    "hornattack": "Horn Attack",
+    "furyattack": "Fury Attack",
+    "horndrill": "Horn Drill",
+    "bodyslam": "Body Slam",
+    "takedown": "Take Down",
+    "tailwhip": "Tail Whip",
+    "poisonsting": "Poison Sting",
+    "pinmissile": "Pin Missile",
+    "sonicboom": "Sonic Boom",
+    "watergun": "Water Gun",
+    "hydropump": "Hydro Pump",
+    "icebeam": "Ice Beam",
+    "bubblebeam": "Bubble Beam",
+    "aurorabeam": "Aurora Beam",
+    "hyperbeam": "Hyper Beam",
+    "drillpeck": "Drill Peck",
+    "lowkick": "Low Kick",
+    "seismictoss": "Seismic Toss",
+    "megadrain": "Mega Drain",
+    "leechseed": "Leech Seed",
+    "razorleaf": "Razor Leaf",
+    "solarbeam": "Solar Beam",
+    "poisonpowder": "Poison Powder",
+    "stunspore": "Stun Spore",
+    "sleeppowder": "Sleep Powder",
+    "petaldance": "Petal Dance",
+    "stringshot": "String Shot",
+    "dragonrage": "Dragon Rage",
+    "firespin": "Fire Spin",
+    "thundershock": "Thunder Shock",
+    "thunderwave": "Thunder Wave",
+    "rockthrow": "Rock Throw",
+    "quickattack": "Quick Attack",
+    "nightshade": "Night Shade",
+    "doubleteam": "Double Team",
+    "confuseray": "Confuse Ray",
+    "defensecurl": "Defense Curl",
+    "lightscreen": "Light Screen",
+    "focusenergy": "Focus Energy",
+    "mirrormove": "Mirror Move",
+    "eggbomb": "Egg Bomb",
+    "boneclub": "Bone Club",
+    "fireblast": "Fire Blast",
+    "skullbash": "Skull Bash",
+    "spikecannon": "Spike Cannon",
+    "highjumpkick": "High Jump Kick",
+    "dreameater": "Dream Eater",
+    "poisongas": "Poison Gas",
+    "leechlife": "Leech Life",
+    "lovelykiss": "Lovely Kiss",
+    "skyattack": "Sky Attack",
+    "dizzypunch": "Dizzy Punch",
+    "acidarmor": "Acid Armor",
+    "furyswipes": "Fury Swipes",
+    "rockslide": "Rock Slide",
+    "hyperfang": "Hyper Fang",
+    "triattack": "Tri Attack",
+    "superfang": "Super Fang",
+    "triplekick": "Triple Kick",
+    "spiderweb": "Spider Web",
+    "mindreader": "Mind Reader",
+    "flamewheel": "Flame Wheel",
+    "conversion2": "Conversion 2",
+    "cottonspore": "Cotton Spore",
+    "powdersnow": "Powder Snow",
+    "machpunch": "Mach Punch",
+    "scaryface": "Scary Face",
+    "feintattack": "Feint Attack",
+    "sweetkiss": "Sweet Kiss",
+    "bellydrum": "Belly Drum",
+    "sludgebomb": "Sludge Bomb",
+    "zapcannon": "Zap Cannon",
+    "destinybond": "Destiny Bond",
+    "perishsong": "Perish Song",
+    "icywind": "Icy Wind",
+    "bonerush": "Bone Rush",
+    "gigadrain": "Giga Drain",
+    "falseswipe": "False Swipe",
+    "milkdrink": "Milk Drink",
+    "furycutter": "Fury Cutter",
+    "steelwing": "Steel Wing",
+    "meanlook": "Mean Look",
+    "sleeptalk": "Sleep Talk",
+    "healbell": "Heal Bell",
+    "painsplit": "Pain Split",
+    "sacredfire": "Sacred Fire",
+    "dynamicpunch": "Dynamic Punch",
+    "dragonbreath": "Dragon Breath",
+    "batonpass": "Baton Pass",
+    "rapidspin": "Rapid Spin",
+    "sweetscent": "Sweet Scent",
+    "irontail": "Iron Tail",
+    "metalclaw": "Metal Claw",
+    "vitalthrow": "Vital Throw",
+    "morningsun": "Morning Sun",
+    "hiddenpower": "Hidden Power",
+    "crosschop": "Cross Chop",
+    "raindance": "Rain Dance",
+    "sunnyday": "Sunny Day",
+    "mirrorcoat": "Mirror Coat",
+    "psychup": "Psych Up",
+    "extremespeed": "Extreme Speed",
+    "ancientpower": "Ancient Power",
+    "shadowball": "Shadow Ball",
+    "futuresight": "Future Sight",
+    "rocksmash": "Rock Smash",
+    "beatup": "Beat Up",
+    "fakeout": "Fake Out",
+    "spitup": "Spit Up",
+    "heatwave": "Heat Wave",
+    "focuspunch": "Focus Punch",
+    "smellingsalts": "Smelling Salts",
+    "followme": "Follow Me",
+    "naturepower": "Nature Power",
+    "helpinghand": "Helping Hand",
+    "roleplay": "Role Play",
+    "magiccoat": "Magic Coat",
+    "brickbreak": "Brick Break",
+    "knockoff": "Knock Off",
+    "skillswap": "Skill Swap",
+    "secretpower": "Secret Power",
+    "armthrust": "Arm Thrust",
+    "tailglow": "Tail Glow",
+    "lusterpurge": "Luster Purge",
+    "mistball": "Mist Ball",
+    "featherdance": "Feather Dance",
+    "teeterdance": "Teeter Dance",
+    "blazekick": "Blaze Kick",
+    "mudsport": "Mud Sport",
+    "iceball": "Ice Ball",
+    "needlearm": "Needle Arm",
+    "slackoff": "Slack Off",
+    "hypervoice": "Hyper Voice",
+    "poisonfang": "Poison Fang",
+    "crushclaw": "Crush Claw",
+    "blastburn": "Blast Burn",
+    "hydrocannon": "Hydro Cannon",
+    "meteormash": "Meteor Mash",
+    "weatherball": "Weather Ball",
+    "faketears": "Fake Tears",
+    "aircutter": "Air Cutter",
+    "odorsleuth": "Odor Sleuth",
+    "rocktomb": "Rock Tomb",
+    "silverwind": "Silver Wind",
+    "metalsound": "Metal Sound",
+    "grasswhistle": "Grass Whistle",
+    "cosmicpower": "Cosmic Power",
+    "waterspout": "Water Spout",
+    "signalbeam": "Signal Beam",
+    "shadowpunch": "Shadow Punch",
+    "skyuppercut": "Sky Uppercut",
+    "sandtomb": "Sand Tomb",
+    "sheercold": "Sheer Cold",
+    "muddywater": "Muddy Water",
+    "bulletseed": "Bullet Seed",
+    "aerialace": "Aerial Ace",
+    "iciclespear": "Icicle Spear",
+    "irondefense": "Iron Defense",
+    "dragonclaw": "Dragon Claw",
+    "frenzyplant": "Frenzy Plant",
+    "bulkup": "Bulk Up",
+    "mudshot": "Mud Shot",
+    "poisontail": "Poison Tail",
+    "volttackle": "Volt Tackle",
+    "magicalleaf": "Magical Leaf",
+    "watersport": "Water Sport",
+    "calmmind": "Calm Mind",
+    "leafblade": "Leaf Blade",
+    "dragondance": "Dragon Dance",
+    "rockblast": "Rock Blast",
+    "shockwave": "Shock Wave",
+    "waterpulse": "Water Pulse",
+    "doomdesire": "Doom Desire",
+    "psychoboost": "Psycho Boost",
+    "miracleeye": "Miracle Eye",
+    "wakeupslap": "Wake-Up Slap",
+    "hammerarm": "Hammer Arm",
+    "gyroball": "Gyro Ball",
+    "healingwish": "Healing Wish",
+    "naturalgift": "Natural Gift",
+    "metalburst": "Metal Burst",
+    "closecombat": "Close Combat",
+    "psychoshift": "Psycho Shift",
+    "trumpcard": "Trump Card",
+    "healblock": "Heal Block",
+    "wringout": "Wring Out",
+    "powertrick": "Power Trick",
+    "gastroacid": "Gastro Acid",
+    "luckychant": "Lucky Chant",
+    "mefirst": "Me First",
+    "powerswap": "Power Swap",
+    "guardswap": "Guard Swap",
+    "lastresort": "Last Resort",
+    "worryseed": "Worry Seed",
+    "suckerpunch": "Sucker Punch",
+    "toxicspikes": "Toxic Spikes",
+    "heartswap": "Heart Swap",
+    "aquaring": "Aqua Ring",
+    "magnetrise": "Magnet Rise",
+    "flareblitz": "Flare Blitz",
+    "forcepalm": "Force Palm",
+    "aurasphere": "Aura Sphere",
+    "rockpolish": "Rock Polish",
+    "poisonjab": "Poison Jab",
+    "darkpulse": "Dark Pulse",
+    "nightslash": "Night Slash",
+    "aquatail": "Aqua Tail",
+    "seedbomb": "Seed Bomb",
+    "airslash": "Air Slash",
+    "bugbuzz": "Bug Buzz",
+    "dragonpulse": "Dragon Pulse",
+    "dragonrush": "Dragon Rush",
+    "powergem": "Power Gem",
+    "drainpunch": "Drain Punch",
+    "vacuumwave": "Vacuum Wave",
+    "focusblast": "Focus Blast",
+    "energyball": "Energy Ball",
+    "bravebird": "Brave Bird",
+    "earthpower": "Earth Power",
+    "gigaimpact": "Giga Impact",
+    "nastyplot": "Nasty Plot",
+    "bulletpunch": "Bullet Punch",
+    "iceshard": "Ice Shard",
+    "shadowclaw": "Shadow Claw",
+    "thunderfang": "Thunder Fang",
+    "icefang": "Ice Fang",
+    "firefang": "Fire Fang",
+    "shadowsneak": "Shadow Sneak",
+    "mudbomb": "Mud Bomb",
+    "psychocut": "Psycho Cut",
+    "zenheadbutt": "Zen Headbutt",
+    "mirrorshot": "Mirror Shot",
+    "flashcannon": "Flash Cannon",
+    "rockclimb": "Rock Climb",
+    "trickroom": "Trick Room",
+    "dracometeor": "Draco Meteor",
+    "lavaplume": "Lava Plume",
+    "leafstorm": "Leaf Storm",
+    "powerwhip": "Power Whip",
+    "rockwrecker": "Rock Wrecker",
+    "crosspoison": "Cross Poison",
+    "gunkshot": "Gunk Shot",
+    "ironhead": "Iron Head",
+    "magnetbomb": "Magnet Bomb",
+    "stoneedge": "Stone Edge",
+    "stealthrock": "Stealth Rock",
+    "grassknot": "Grass Knot",
+    "bugbite": "Bug Bite",
+    "chargebeam": "Charge Beam",
+    "woodhammer": "Wood Hammer",
+    "aquajet": "Aqua Jet",
+    "attackorder": "Attack Order",
+    "defendorder": "Defend Order",
+    "healorder": "Heal Order",
+    "headsmash": "Head Smash",
+    "doublehit": "Double Hit",
+    "roaroftime": "Roar of Time",
+    "spacialrend": "Spacial Rend",
+    "lunardance": "Lunar Dance",
+    "crushgrip": "Crush Grip",
+    "magmastorm": "Magma Storm",
+    "darkvoid": "Dark Void",
+    "seedflare": "Seed Flare",
+    "ominouswind": "Ominous Wind",
+    "shadowforce": "Shadow Force",
+    "honeclaws": "Hone Claws",
+    "wideguard": "Wide Guard",
+    "guardsplit": "Guard Split",
+    "powersplit": "Power Split",
+    "wonderroom": "Wonder Room",
+    "ragepowder": "Rage Powder",
+    "magicroom": "Magic Room",
+    "smackdown": "Smack Down",
+    "stormthrow": "Storm Throw",
+    "flameburst": "Flame Burst",
+    "sludgewave": "Sludge Wave",
+    "quiverdance": "Quiver Dance",
+    "heavyslam": "Heavy Slam",
+    "electroball": "Electro Ball",
+    "flamecharge": "Flame Charge",
+    "lowsweep": "Low Sweep",
+    "acidspray": "Acid Spray",
+    "foulplay": "Foul Play",
+    "simplebeam": "Simple Beam",
+    "afteryou": "After You",
+    "echoedvoice": "Echoed Voice",
+    "chipaway": "Chip Away",
+    "clearsmog": "Clear Smog",
+    "storedpower": "Stored Power",
+    "quickguard": "Quick Guard",
+    "allyswitch": "Ally Switch",
+    "shellsmash": "Shell Smash",
+    "healpulse": "Heal Pulse",
+    "skydrop": "Sky Drop",
+    "shiftgear": "Shift Gear",
+    "circlethrow": "Circle Throw",
+    "reflecttype": "Reflect Type",
+    "finalgambit": "Final Gambit",
+    "waterpledge": "Water Pledge",
+    "firepledge": "Fire Pledge",
+    "grasspledge": "Grass Pledge",
+    "voltswitch": "Volt Switch",
+    "strugglebug": "Struggle Bug",
+    "frostbreath": "Frost Breath",
+    "dragontail": "Dragon Tail",
+    "workup": "Work Up",
+    "wildcharge": "Wild Charge",
+    "drillrun": "Drill Run",
+    "dualchop": "Dual Chop",
+    "heartstamp": "Heart Stamp",
+    "hornleech": "Horn Leech",
+    "sacredsword": "Sacred Sword",
+    "razorshell": "Razor Shell",
+    "heatcrash": "Heat Crash",
+    "leaftornado": "Leaf Tornado",
+    "cottonguard": "Cotton Guard",
+    "nightdaze": "Night Daze",
+    "tailslap": "Tail Slap",
+    "headcharge": "Head Charge",
+    "geargrind": "Gear Grind",
+    "searingshot": "Searing Shot",
+    "technoblast": "Techno Blast",
+    "relicsong": "Relic Song",
+    "secretsword": "Secret Sword",
+    "boltstrike": "Bolt Strike",
+    "blueflare": "Blue Flare",
+    "fierydance": "Fiery Dance",
+    "freezeshock": "Freeze Shock",
+    "iceburn": "Ice Burn",
+    "iciclecrash": "Icicle Crash",
+    "fusionflare": "Fusion Flare",
+    "fusionbolt": "Fusion Bolt",
+    "flyingpress": "Flying Press",
+    "matblock": "Mat Block",
+    "stickyweb": "Sticky Web",
+    "fellstinger": "Fell Stinger",
+    "phantomforce": "Phantom Force",
+    "nobleroar": "Noble Roar",
+    "iondeluge": "Ion Deluge",
+    "paraboliccharge": "Parabolic Charge",
+    "forest'scurse": "Forest's Curse",
+    "petalblizzard": "Petal Blizzard",
+    "disarmingvoice": "Disarming Voice",
+    "partingshot": "Parting Shot",
+    "drainingkiss": "Draining Kiss",
+    "craftyshield": "Crafty Shield",
+    "flowershield": "Flower Shield",
+    "grassyterrain": "Grassy Terrain",
+    "mistyterrain": "Misty Terrain",
+    "playrough": "Play Rough",
+    "fairywind": "Fairy Wind",
+    "fairylock": "Fairy Lock",
+    "kingsshield": "King's Shield",
+    "playnice": "Play Nice",
+    "diamondstorm": "Diamond Storm",
+    "steameruption": "Steam Eruption",
+    "hyperspacehole": "Hyperspace Hole",
+    "watershuriken": "Water Shuriken",
+    "mysticalfire": "Mystical Fire",
+    "spikyshield": "Spiky Shield",
+    "aromaticmist": "Aromatic Mist",
+    "eerieimpulse": "Eerie Impulse",
+    "venomdrench": "Venom Drench",
+    "magneticflux": "Magnetic Flux",
+    "happyhour": "Happy Hour",
+    "electricterrain": "Electric Terrain",
+    "dazzlinggleam": "Dazzling Gleam",
+    "holdhands": "Hold Hands",
+    "baby-dolleyes": "Baby-Doll Eyes",
+    "holdback": "Hold Back",
+    "power-uppunch": "Power-Up Punch",
+    "oblivionwing": "Oblivion Wing",
+    "thousandarrows": "Thousand Arrows",
+    "thousandwaves": "Thousand Waves",
+    "land'swrath": "Land's Wrath",
+    "lightofruin": "Light of Ruin",
+    "originpulse": "Origin Pulse",
+    "precipiceblades": "Precipice Blades",
+    "dragonascent": "Dragon Ascent",
+    "hyperspacefury": "Hyperspace Fury",
+    "shoreup": "Shore Up",
+    "firstimpression": "First Impression",
+    "banefulbunker": "Baneful Bunker",
+    "spiritshackle": "Spirit Shackle",
+    "darkestlariat": "Darkest Lariat",
+    "sparklingaria": "Sparkling Aria",
+    "icehammer": "Ice Hammer",
+    "floralhealing": "Floral Healing",
+    "highhorsepower": "High Horsepower",
+    "strengthsap": "Strength Sap",
+    "solarblade": "Solar Blade",
+    "toxicthread": "Toxic Thread",
+    "laserfocus": "Laser Focus",
+    "gearup": "Gear Up",
+    "throatchop": "Throat Chop",
+    "pollenpuff": "Pollen Puff",
+    "anchorshot": "Anchor Shot",
+    "psychicterrain": "Psychic Terrain",
+    "firelash": "Fire Lash",
+    "powertrip": "Power Trip",
+    "burnup": "Burn Up",
+    "speedswap": "Speed Swap",
+    "smartstrike": "Smart Strike",
+    "revelationdance": "Revelation Dance",
+    "coreenforcer": "Core Enforcer",
+    "tropkick": "Trop Kick",
+    "beakblast": "Beak Blast",
+    "clangingscales": "Clanging Scales",
+    "dragonhammer": "Dragon Hammer",
+    "brutalswing": "Brutal Swing",
+    "auroraveil": "Aurora Veil",
+    "sinisterarrowraid": "Sinister Arrow Raid",
+    "maliciousmoonsault": "Malicious Moonsault",
+    "oceanicoperetta": "Oceanic Operetta",
+    "guardianofalola": "Guardian of Alola",
+    "soulstealing7starstrike": "Soul-Stealing 7-Star Strike",
+    "stokedsparksurfer": "Stoked Sparksurfer",
+    "pulverizingpancake": "Pulverizing Pancake",
+    "extremeevoboost": "Extreme Evoboost",
+    "genesissupernova": "Genesis Supernova",
+    "shelltrap": "Shell Trap",
+    "fleurcannon": "Fleur Cannon",
+    "psychicfangs": "Psychic Fangs",
+    "stompingtantrum": "Stomping Tantrum",
+    "shadowbone": "Shadow Bone",
+    "prismaticlaser": "Prismatic Laser",
+    "spectralthief": "Spectral Thief",
+    "sunsteelstrike": "Sunsteel Strike",
+    "moongeistbeam": "Moongeist Beam",
+    "tearfullook": "Tearful Look",
+    "zingzap": "Zing Zap",
+    "naturesmadness": "Nature's Madness",
+    "10000000voltthunderbolt": "10 000 000 Volt Thunderbolt",
+    "mindblown": "Mind Blown",
+    "plasmafists": "Plasma Fists",
+    "photongeyser": "Photon Geyser",
+    "lightthatburnsthesky": "Light That Burns the Sky",
+    "searingsunrazesmash": "Searing Sunraze Smash",
+    "menacingmoonrazemaelstrom": "Menacing Moonraze Maelstrom",
+    "letssnuggleforever": "Let's Snuggle Forever",
+    "splinteredstormshards": "Splintered Stormshards",
+    "clangoroussoulblaze": "Clangorous Soulblaze",
+    "zippyzap": "Zippy Zap",
+    "splishysplash": "Splishy Splash",
+    "floatyfall": "Floaty Fall",
+    "pikapapow": "Pika Papow",
+    "bouncybubble": "Bouncy Bubble",
+    "buzzybuzz": "Buzzy Buzz",
+    "sizzlyslide": "Sizzly Slide",
+    "glitzyglow": "Glitzy Glow",
+    "baddybad": "Baddy Bad",
+    "sappyseed": "Sappy Seed",
+    "freezyfrost": "Freezy Frost",
+    "sparklyswirl": "Sparkly Swirl",
+    "veeveevolley": "Veevee Volley",
+    "doubleironbash": "Double Iron Bash",
+    "maxguard": "Max Guard",
+    "dynamaxcannon": "Dynamax Cannon",
+    "snipeshot": "Snipe Shot",
+    "jawlock": "Jaw Lock",
+    "stuffcheeks": "Stuff Cheeks",
+    "noretreat": "No Retreat",
+    "tarshot": "Tar Shot",
+    "magicpowder": "Magic Powder",
+    "dragondarts": "Dragon Darts",
+    "boltbeak": "Bolt Beak",
+    "fishiousrend": "Fishious Rend",
+    "courtchange": "Court Change",
+    "clangoroussoul": "Clangorous Soul",
+    "bodypress": "Body Press",
+    "drumbeating": "Drum Beating",
+    "snaptrap": "Snap Trap",
+    "pyroball": "Pyro Ball",
+    "behemothblade": "Behemoth Blade",
+    "behemothbash": "Behemoth Bash",
+    "aurawheel": "Aura Wheel",
+    "breakingswipe": "Breaking Swipe",
+    "branchpoke": "Branch Poke",
+    "appleacid": "Apple Acid",
+    "gravapple": "Grav Apple",
+    "spiritbreak": "Spirit Break",
+    "strangesteam": "Strange Steam",
+    "lifedew": "Life Dew",
+    "falsesurrender": "False Surrender",
+    "meteorassault": "Meteor Assault",
+    "steelbeam": "Steel Beam",
+    "expandingforce": "Expanding Force",
+    "steelroller": "Steel Roller",
+    "scaleshot": "Scale Shot",
+    "meteorbeam": "Meteor Beam",
+    "shellsidearm": "Shell Side Arm",
+    "mistyexplosion": "Misty Explosion",
+    "grassyglide": "Grassy Glide",
+    "risingvoltage": "Rising Voltage",
+    "terrainpulse": "Terrain Pulse",
+    "skittersmack": "Skitter Smack",
+    "burningjealousy": "Burning Jealousy",
+    "lashout": "Lash Out",
+    "corrosivegas": "Corrosive Gas",
+    "flipturn": "Flip Turn",
+    "tripleaxel": "Triple Axel",
+    "dualwingbeat": "Dual Wingbeat",
+    "scorchingsands": "Scorching Sands",
+    "junglehealing": "Jungle Healing",
+    "wickedblow": "Wicked Blow",
+    "surgingstrikes": "Surging Strikes",
+    "thundercage": "Thunder Cage",
+    "dragonenergy": "Dragon Energy",
+    "freezingglare": "Freezing Glare",
+    "fierywrath": "Fiery Wrath",
+    "thunderouskick": "Thunderous Kick",
+    "glaciallance": "Glacial Lance",
+    "astralbarrage": "Astral Barrage",
+    "eeriespell": "Eerie Spell",
+    "direclaw": "Dire Claw",
+    "psyshieldbash": "Psyshield Bash",
+    "powershift": "Power Shift",
+    "stoneaxe": "Stone Axe",
+    "springtidestorm": "Springtide Storm",
+    "mysticalpower": "Mystical Power",
+    "ragingfury": "Raging Fury",
+    "wavecrash": "Wave Crash",
+    "mountaingale": "Mountain Gale",
+    "victorydance": "Victory Dance",
+    "headlongrush": "Headlong Rush",
+    "barbbarrage": "Barb Barrage",
+    "esperwing": "Esper Wing",
+    "bittermalice": "Bitter Malice",
+    "triplearrows": "Triple Arrows",
+    "infernalparade": "Infernal Parade",
+    "ceaselessedge": "Ceaseless Edge",
+    "bleakwindstorm": "Bleakwind Storm",
+    "wildboltstorm": "Wildbolt Storm",
+    "sandsearstorm": "Sandsear Storm",
+    "lunarblessing": "Lunar Blessing",
+    "takeheart": "Take Heart",
+    "terablast": "Tera Blast",
+    "silktrap": "Silk Trap",
+    "axekick": "Axe Kick",
+    "lastrespects": "Last Respects",
+    "luminacrash": "Lumina Crash",
+    "orderup": "Order Up",
+    "jetpunch": "Jet Punch",
+    "spicyextract": "Spicy Extract",
+    "spinout": "Spin Out",
+    "populationbomb": "Population Bomb",
+    "icespinner": "Ice Spinner",
+    "glaiverush": "Glaive Rush",
+    "revivalblessing": "Revival Blessing",
+    "saltcure": "Salt Cure",
+    "tripledive": "Triple Dive",
+    "mortalspin": "Mortal Spin",
+    "filletaway": "Fillet Away",
+    "kowtowcleave": "Kowtow Cleave",
+    "flowertrick": "Flower Trick",
+    "torchsong": "Torch Song",
+    "aquastep": "Aqua Step",
+    "ragingbull": "Raging Bull",
+    "makeitrain": "Make It Rain",
+    "hydrosteam": "Hydro Steam",
+    "collisioncourse": "Collision Course",
+    "electrodrift": "Electro Drift",
+    "shedtail": "Shed Tail",
+    "chillyreception": "Chilly Reception",
+    "tidyup": "Tidy Up",
+    "chillingwater": "Chilling Water",
+    "hyperdrill": "Hyper Drill",
+    "twinbeam": "Twin Beam",
+    "ragefist": "Rage Fist",
+    "armorcannon": "Armor Cannon",
+    "bitterblade": "Bitter Blade",
+    "doubleshock": "Double Shock",
+    "gigatonhammer": "Gigaton Hammer",
+    "aquacutter": "Aqua Cutter",
+    "blazingtorque": "Blazing Torque",
+    "wickedtorque": "Wicked Torque",
+    "noxioustorque": "Noxious Torque",
+    "combattorque": "Combat Torque",
+    "magicaltorque": "Magical Torque",
+    "bloodmoon": "Blood Moon",
+    "matchagotcha": "Matcha Gotcha",
+    "syrupbomb": "Syrup Bomb",
+    "ivycudgel": "Ivy Cudgel",
+    "electroshot": "Electro Shot",
+    "terastarstorm": "Tera Starstorm",
+    "ficklebeam": "Fickle Beam",
+    "burningbulwark": "Burning Bulwark",
+    "mightycleave": "Mighty Cleave",
+    "tachyoncutter": "Tachyon Cutter",
+    "hardpress": "Hard Press",
+    "dragoncheer": "Dragon Cheer",
+    "alluringvoice": "Alluring Voice",
+    "temperflare": "Temper Flare",
+    "supercellslam": "Supercell Slam",
+    "psychicnoise": "Psychic Noise",
+    "upperhand": "Upper Hand",
+    "malignantchain": "Malignant Chain",
+    "doubleedge": "Double-Edge",
+    "selfdestruct": "Self-Destruct",
+    "softboiled": "Soft-Boiled",
+    "mudslap": "Mud-Slap",
+    "lockon": "Lock-On",
+    "willowisp": "Will-O-Wisp",
+    "uturn": "U-turn",
+    "xscissor": "X-Scissor",
+    "vcreate": "V-create",
+    "trickortreat": "Trick-or-Treat",
+    "freezedry": "Freeze-Dry",
+    "topsyturvy": "Topsy-Turvy",
+    "multiattack": "Multi-Attack"
+
+      // Add more as needed
+    };
+    
+    // Use the custom display name if available, otherwise use default formatting
+    if (moveDisplayNames[move]) {
+      displayName = moveDisplayNames[move];
+    } else {
+      displayName = move.split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    
+    const learnMethod = learnset[move][0];
+    
+    // Continue with the rest of your function
+    // ...
+    // Get method type
+    const methodType = learnMethod[0];
+    
+    const methodDisplay = {
+      'L': 'Lv',
+      'M': 'TM',
+      'T': 'Tu',
+      'E': 'Egg',
+      'S': 'Sp',
+      'V': 'VC'
+    };
+
+    const methodClass = methodDisplay[methodType] ? 
+      methodDisplay[methodType].toLowerCase() : 'other';
+      
+    // Check if this is a TM, Tutor, or VC move that should be hidden initially
+    const shouldHide = (methodType === 'M' || methodType === 'T' || methodType === 'V');
+    
+    // Retrieve move type and category dynamically
+    const moveData = pokemonMoves.find(m => m.name === move) || { type: "normal", category: "status" };
+    const moveTypeClass = `type-${moveData.type.toLowerCase()}`;
+    const categoryClass = `category-${moveData.category.toLowerCase()}`;
+
+    return `<span class="move-item clickable ${methodClass} ${moveTypeClass} ${categoryClass}" 
+            data-filter-type="moves" data-filter-value="${move}" 
+            style="${shouldHide ? 'display: none;' : ''}">
+            ${displayName} <small class="learn-method">${getLearnMethodText(learnMethod)}</small>
+            </span>`;
+  }).join('');
+}
+
+// Function to get descriptive text for learn method
+function getLearnMethodText(method) {
+  if (method.startsWith('L')) return `Lv.${method.substring(1)}`;
+
+  const methodMap = {
+    'M': 'TM',
+    'T': 'Tu',
+    'E': 'Egg',
+    'S': 'Sp',
+    'V': 'VC'
+  };
+
+  return methodMap[method[0]] || method;
+}
+
+// Add toggle function for moves visibility
+let movesVisible = false;
+
+function toggleMoves() {
+  movesVisible = !movesVisible;
+  document.querySelectorAll('.pokemon-moves').forEach(moves => {
+    if (movesVisible) {
+      moves.classList.remove('hidden');
+    } else {
+      moves.classList.add('hidden');
+    }
+  });
+  
+  // Update button text
+  const toggleMovesButton = document.getElementById('toggleMovesButton');
+  if (toggleMovesButton) {
+    toggleMovesButton.textContent = movesVisible ? 'Hide Moves' : 'Show Moves';
+  }
+}
+
+// Function to load the learnset data
+function loadLearnsetData(callback) {
+  if (learnsetLoaded) {
+    if (callback) callback();
+    return;
+  }
+  
+   // Create a loading indicator
+   const loadingIndicator = document.createElement('div');
+   loadingIndicator.className = 'loading-indicator';
+   loadingIndicator.textContent = 'Loading move data...';
+   document.body.appendChild(loadingIndicator);
+   
+  // Create a script element to load the JS file
+  const script = document.createElement('script');
+  script.src = 'moveset-data.js';
+  script.onload = function() {
+    // This assumes moveset-data.js sets a global variable called movesetData
+    if (typeof movesetData !== 'undefined') {
+      // Once loaded, merge the data
+      Object.keys(movesetData).forEach(pokemonId => {
+        if (pokemonData[pokemonId]) {
+          pokemonData[pokemonId].learnset = movesetData[pokemonId].learnset;
+        }
+      });
+      
+      learnsetLoaded = true;
+      document.body.removeChild(loadingIndicator);
+      
+      
+      // Add the moves filter section
+      addMovesFilterSection();
+       // Show the moves filter section
+       const movesFilterSection = document.getElementById('movesFilterSection');
+       if (movesFilterSection) {
+         movesFilterSection.style.display = 'block';
+       }
+       
+       if (callback) callback();
+     } else {
+       console.error('Move data not found in the loaded script');
+       handleMoveDataError();
+     }
+   };
+   
+   script.onerror = function() {
+     console.error('Error loading move data script');
+     handleMoveDataError();
+   };
+   
+   document.head.appendChild(script);
+ }
+ 
+ function handleMoveDataError() {
+   document.body.removeChild(document.querySelector('.loading-indicator'));
+   
+   // Create error notification
+   const errorNotification = document.createElement('div');
+   errorNotification.className = 'error-notification';
+   errorNotification.textContent = 'Failed to load move data. Please try again later.';
+   document.body.appendChild(errorNotification);
+   
+    // Remove notification after 5 seconds
+    setTimeout(() => {
+      if (document.body.contains(errorNotification)) {
+        document.body.removeChild(errorNotification);
+      }
+    }, 5000);
+  }
+
+// Add moves filter section to the page
+function addMovesFilterSection() {
+  // Show the moves filter section that already exists in HTML
+  const movesSection = document.getElementById('movesFilterSection');
+  if (movesSection) {
+    movesSection.style.display = 'block';
+  }
+  
+  // Set up event listener for the filter toggle if it exists
+  const toggleButton = document.getElementById('movesFilterToggle');
+  if (toggleButton) {
+    toggleButton.addEventListener('click', function() {
+      const filtersDiv = document.getElementById('movesFilters');
+      filtersDiv.classList.toggle('collapsed');
+      this.textContent = filtersDiv.classList.contains('collapsed') ? '+' : '-';
+      
+      // Populate moves filter if it's empty and being expanded
+      if (!filtersDiv.classList.contains('collapsed') && filtersDiv.children.length === 0) {
+        populateMovesFilter();
+      }
+    });
+  }
+  
+  // Show the moves toggle button
+  const toggleMovesButton = document.getElementById('toggleMovesButton');
+  if (toggleMovesButton) {
+    toggleMovesButton.style.display = 'inline-block';
+    toggleMovesButton.addEventListener('click', toggleMoves);
+  }
+  
+  // Add keyboard shortcut for toggling moves
+  document.addEventListener('keydown', function(event) {
+    if (event.key.toLowerCase() === 'm' && !event.target.matches('input, textarea, select, button')) {
+      event.preventDefault();
+      toggleMoves();
+    }
+  });
+}
+
+// Global variables for toggle state - start with all special moves hidden
+let showTMMoves = false;
+let showTutorMoves = false;
+let showVCMoves = false;
+
+// Function to toggle TM and Tutor moves with keyboard shortcut
+function setupMoveToggleKeyboardShortcut() {
+  console.log("Setting up move toggle keyboard shortcut");
+  
+  document.addEventListener('keydown', function(event) {
+    // Only trigger on 'b' key when not in form elements
+    if (event.key.toLowerCase() === 'b' && !event.target.matches('input, textarea, select, button')) {
+      event.preventDefault();
+      
+      console.log("B key pressed - toggling TM & Tutor & VC moves");
+      toggleTMAndTutorMoves();
+    }
+  });
+}
+
+// Function to toggle TM and Tutor moves visibility
+function toggleTMAndTutorMoves() {
+  showTMMoves = !showTMMoves;
+  showTutorMoves = !showTutorMoves;
+  showVCMoves = !showVCMoves;
+  
+  console.log("Toggling TM & Tutor & VC visibility:", { showTMMoves, showTutorMoves, showVCMoves });
+  
+  // Direct DOM selection using textContent of the learn-method span
+  document.querySelectorAll('.move-item').forEach(moveItem => {
+    const methodSpan = moveItem.querySelector('.learn-method');
+    
+    if (methodSpan) {
+      const methodText = methodSpan.textContent.trim();
+      
+      // Check if this is a TM, Tutor, or VC move
+      if (methodText === 'TM') {
+        moveItem.style.display = showTMMoves ? '' : 'none';
+      } else if (methodText === 'Tu') {
+        moveItem.style.display = showTutorMoves ? '' : 'none';
+      } else if (methodText === 'VC') {
+        moveItem.style.display = showVCMoves ? '' : 'none';
+      }
+    }
+  });
+  
+  // Show feedback to user - more detailed message
+  const statusText = showTMMoves ? 'Showing' : 'Hiding';
+  showToggleNotification(`${statusText} TM, Tutor & VC Moves`);
+  
+  // Update the shortcut info text to reflect the current state
+  const shortcutInfo = document.getElementById('keyboardShortcutInfo');
+  if (shortcutInfo) {
+    shortcutInfo.textContent = `Press B to ${showTMMoves ? 'hide' : 'show'} TM, Tutor & VC moves`;
+  }
+}
+
+// Function to display notification
+function showToggleNotification(message) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.textContent = message;
+  notification.style.position = 'fixed';
+  notification.style.top = '20px';
+  notification.style.left = '50%';
+  notification.style.transform = 'translateX(-50%)';
+  notification.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+  notification.style.color = 'white';
+  notification.style.padding = '10px 20px';
+  notification.style.borderRadius = '5px';
+  notification.style.zIndex = '9999';
+  
+  // Add to document
+  document.body.appendChild(notification);
+  
+  // Remove after delay
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.5s ease';
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        document.body.removeChild(notification);
+      }
+    }, 500);
+  }, 2000);
+}
+
+// Function to add keyboard shortcut info to UI
+function addKeyboardShortcutInfo() {
+  console.log("Adding keyboard shortcut info");
+  
+  // Find the control container
+  const controlContainer = document.querySelector('.control-container');
+  if (!controlContainer) {
+    console.error("Control container not found");
+    return;
+  }
+  
+  // Create the info element if it doesn't exist
+  if (!document.getElementById('keyboardShortcutInfo')) {
+    const shortcutInfo = document.createElement('div');
+    shortcutInfo.id = 'keyboardShortcutInfo';
+    shortcutInfo.className = 'shortcut-info';
+    shortcutInfo.textContent = 'Press B to show TM, Tutor & VC moves';
+    shortcutInfo.style.margin = '10px 0';
+    shortcutInfo.style.fontStyle = 'italic';
+    shortcutInfo.style.color = '#666';
+    
+    controlContainer.appendChild(shortcutInfo);
+    console.log("Keyboard shortcut info added");
+  }
+}
+
+// Fix issue with click events on moves toggling visibility
+function fixMoveClickEvents() {
+  // Add a delegated event listener for move items
+  document.addEventListener('click', function(e) {
+    // Check if click was on a move item
+    if (e.target.classList.contains('move-item') || e.target.closest('.move-item')) {
+      // Get the move item element
+      const moveItem = e.target.classList.contains('move-item') ? 
+        e.target : e.target.closest('.move-item');
+      
+      // Get the method span
+      const methodSpan = moveItem.querySelector('.learn-method');
+      
+      if (methodSpan) {
+        const methodText = methodSpan.textContent.trim();
+        
+        // If this is a TM, Tutor, or VC move and the click doesn't match the filter type/value pattern
+        if ((methodText === 'TM' || methodText === 'Tu' || methodText === 'VC') && 
+            (!e.target.hasAttribute('data-filter-type') || !e.target.hasAttribute('data-filter-value'))) {
+          
+          // Prevent the click from toggling visibility
+          e.stopPropagation();
+          e.preventDefault();
+          
+          // Maybe add some specific handling for these moves if needed
+          console.log(`Clicked on ${methodText} move: ${moveItem.textContent.trim()}`);
+        }
+      }
+    }
+  }, true); // Use capture phase to intercept before other handlers
+}
+
+// Initialize everything once the learnset data is loaded
+function initializeMoveToggle() {
+  // Wait until the document is fully loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onDocumentReady);
+  } else {
+    onDocumentReady();
+  }
+  
+  function onDocumentReady() {
+    console.log("Document ready, setting up move toggle");
+    
+    setupMoveToggleKeyboardShortcut();
+    addKeyboardShortcutInfo();
+  }
+}
+
+// Update the main DOM content loaded event
+document.addEventListener('DOMContentLoaded', function() {
+  // Set up the load moves button
+  const loadMovesButton = document.getElementById('loadMovesButton');
+  if (loadMovesButton) {
+    loadMovesButton.addEventListener('click', function() {
+      loadLearnsetData(() => {
+        this.disabled = true;
+        this.textContent = 'Moves Data Loaded';
+        renderPokemonList(); // Re-render to show moves filters
+      });
+    });
+  }
+  
+  // Set up the toggle moves button
+  const toggleMovesButton = document.getElementById('toggleMovesButton');
+  if (toggleMovesButton) {
+    toggleMovesButton.addEventListener('click', toggleMoves);
+  }
+  
+  // Set up the toggle stats button
+  const toggleStatsButton = document.getElementById('toggleStatsButton');
+  if (toggleStatsButton) {
+    toggleStatsButton.addEventListener('click', function() {
+      toggleStats();
+      this.textContent = statsVisible ? 'Hide Stats' : 'Show Stats';
+    });
+  }
+  
+  // Add keyboard shortcut for toggling stats
+  document.addEventListener('keydown', function(event) {
+  if (event.key === ' ' && !event.target.matches('input, textarea, select, button')) {
+    event.preventDefault();
+    toggleStats();
+    if (toggleStatsButton) {
+      toggleStatsButton.textContent = statsVisible ? 'Hide Stats' : 'Show Stats';
+    }
+  }
+});
+  
+  // Run initial setup
+  populateFilterOptions();
+  renderPokemonList();
+  updateActiveFilters();
+  
+  // Initialize move toggle features
+  initializeMoveToggle();
+  fixMoveClickEvents();
+});
+
+// Add event listeners for clickable elements
+function addClickableListeners(card) {
+  card.querySelectorAll('.clickable').forEach(element => {
+    element.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const filterType = this.getAttribute('data-filter-type');
+      const filterValue = this.getAttribute('data-filter-value');
+      if (filterType && filterValue && filterValue !== 'Unknown' && filterValue !== '') {
+        toggleFilter(filterType, filterValue);
+      }
+    });
+  });
+}
+  
+
+</script>
+</body>
+</html>
