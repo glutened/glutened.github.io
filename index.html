@@ -11,7 +11,27 @@
       padding: 20px;
       background-color: #f5f5f5;
     }
-    
+    .blog-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .blog-link a {
+            display: inline-block;
+            padding: 10px 15px;
+            
+            color: black;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+          
+        }
+        
+        .blog-link a:hover {
+          color:#dbdf00;
+  
+        }
     .container {
       max-width: 1200px;
       margin: 0 auto;
@@ -155,7 +175,13 @@
     }
   </style>
 </head>
-<body>
+<body><div class="header">
+  <div class="blog-link">
+      <a href="https://grad.substack.com" target="_blank">blog</a>
+      <a href="mailto:email@daviddot.com" class="link-button">contact</a>
+       
+  </div>
+</div>
   <div class="container">
     <h1>David Taylor's Knowledge Graph</h1>
     <div class="sticky-notes">
@@ -168,8 +194,8 @@
         <div class="sticky-note email" id="email-sticky">
           <button class="close-btn">&times;</button>
           <p>
-            <strong>Glad we met at Information Architecture Conference 2025</strong><br> </p><p>
-            Fan mail welcome at: <a href="mailto:email@daviddot.com">email@daviddot.com</a>
+            <strong>Glad we met at Information Architecture Conference 2025.</strong><br> </p><p>
+            
           </p>
          
             <a href="https://www.linkedin.com/in/hiredavidtaylor/" target="_blank">Let's connect on LinkedIn</a>
