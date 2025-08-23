@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Semantic Search Pokemon Ontology - DAVID: INFO ARCHITECT</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      line-height: 1.6;
+    }
+    
+    .blog-link {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+    
+    .blog-link a {
+      display: inline-block;
+      padding: 10px 15px;
+      color: black;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    
+    .blog-link a:hover {
+      color: #dbdf00;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .hero-section {
+      background: linear-gradient(135deg, #6c63ff 0%, #5a54d9 100%);
+      color: white;
+      padding: 60px 40px;
+      text-align: center;
+    }
+    
+    .project-title {
+      font-size: 3rem;
+      margin: 0 0 20px 0;
+      font-weight: bold;
+    }
+    
+    .project-subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin: 0;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      background-color: #dbdf00;
+      color: #333;
+      padding: 8px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    
+    .content-section {
+      padding: 40px;
+    }
+    
+    .project-overview {
+      font-size: 1.1rem;
+      color: #555;
+      margin-bottom: 40px;
+    }
+    
+    .photo-entry {
+      margin: 50px 0;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 40px;
+    }
+    
+    .photo-entry:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .photo-container {
+      margin-bottom: 20px;
+    }
+    
+    .project-image {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: block;
+      object-fit: contain;
+    }
+    
+    .project-image:hover {
+      transform: scale(1.01);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    @media (max-width: 768px) {
+      .project-title {
+        font-size: 2rem;
+      }
+      
+      .content-section {
+        padding: 20px;
+      }
+      
+      .hero-section {
+        padding: 40px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="blog-link">
+    <a href="index.html">← Back to Main</a>
+    <a href="https://grad.substack.com" target="_blank">blog</a>
+    <a href="https://podcasts.apple.com/us/podcast/co-design-with-mom-users-who-matter-most/id1817758084" target="_blank">podcast</a>
+    <a href="mailto:email@daviddot.com">contact</a>
+  </div>
+
+  <div class="container">
+    <div class="hero-section">
+      <h1 class="project-title">Semantic Search Pokemon Ontology</h1>
+      <p class="project-subtitle">160,000 words of Pokedex descriptions, 1025 Pokemon, gotta tag em all</p>
+      <span class="status-badge">Coming Soon</span>
+    </div>
+
+    <div class="content-section">
+      <p class="project-overview">
+        Pop quiz, which Pokemon live near glaciers and contain fur? Who knows? For the past 30 years Pokemon flavor text has not been standardized, sometimes even recycling text. It's a major pain to scan through the 30-ish Pokedex entries of every Pokemon trying to find new information. Not to mention trying to compare separate Pokemon. Here are screenshots of the dozens programs AI coded for me to help make this project a reality. What started with a script to pull in all text entries then turned into another code to deduplicate entries. Which then led to another single-use program AI made to count word frequency of each Pokemon species, another tool to categorize, another to merge and keep track of terms because I don't have access to PoolParty - not that I'd use the advanced features anyway... I even signed up for a free Google API key.
+      </p>
+
+      <div class="photo-entry">
+        <div class="photo-container">
+          <img class="project-image" src="1.jpg" alt="">
+        </div>
+      </div>
+
+      <div class="photo-entry">
+        <div class="photo-container">
+          <img class="project-image" src="2.jpg" alt="">
+        </div>
+      </div>
+
+      <div class="photo-entry">
+        <div class="photo-container">
+          <img class="project-image" src="3.jpg" alt="">
+        </div>
+      </div>
+
+      <div class="photo-entry">
+        <div class="photo-container">
+          <img class="project-image" src="4.jpg" alt="">
+        </div>
+      </div>
+
+      <div class="photo-entry">
+        <div class="photo-container">
+          <img class="project-image" src="5.jpg" alt="">
+        </div>
+      </div>
+
+      <div class="photo-entry">
+        <div class="photo-container">
+          <img class="project-image" src="6.jpg" alt="">
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
