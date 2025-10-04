@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>FHE Ideas</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <style>
+    :root {
+        --bg: #f7fbff;
+        --card: #fff;
+        --accent: #0b6fd6;
+        --muted: #6d7680
+    }
+
+    body {
+        font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+        background: var(--bg);
+        margin: 18px;
+        color: #0b1720
+    }
+
+    .wrap {
+        max-width: 1100px;
+        margin: 0 auto
+    }
+
+    h1 {
+        margin: 0 0 6px;
+        font-size: 20px
+    }
+
+    p.lead {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 13px
+    }
+
+    .grid {
+        display: flex;
+        gap: 18px;
+        align-items: flex-start
+    }
+
+    .panel {
+        background: var(--card);
+        padding: 12px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(10, 20, 30, 0.05);
+        flex: 1
+    }
+
+    .panel.small {
+        flex: 0 0 360px
+    }
+
+    #batchList {
+        list-style: none;
+        padding: 10px;
+        margin: 10px 0 0;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px
+    }
+
+    #batchList li {
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #e6eef8;
+        background: linear-gradient(#fff, #fbfeff);
+        cursor: pointer;
+        text-align: center;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none
+    }
+
+    #batchList li.selected {
+        background: #eaf4ff;
+        outline: 3px solid rgba(11, 111, 214, 0.12);
+        transform: translateY(-2px)
+    }
+
+    .controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px
+    }
+
+    button {
+        background: var(--accent);
+        color: #fff;
+        border: 0;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600
+    }
+
+    button.secondary {
+        background: #f2f7ff;
+        color: var(--accent);
+        border: 1px solid rgba(11, 111, 214, 0.08)
+    }
+
+    .status {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 13px
+    }
+
+    .progress {
+        height: 10px;
+        background: #eef6ff;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 8px
+    }
+
+    .progress > i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, var(--accent), #3b97f1);
+        transition: width .35s
+    }
+
+    ol#favorites {
+        padding-left: 18px;
+        margin: 10px 0 0 0;
+        max-height: 520px;
+        overflow: auto
+    }
+
+    ol#favorites li {
+        background: #fff;
+        margin: 8px 0;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #e6f0fb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: grab
+    }
+
+    .small-btn {
+        background: transparent;
+        border: 1px solid #e1e8f6;
+        padding: 6px 8px;
+        border-radius: 6px;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 13px
+    }
+
+    .eliminated-list {
+        margin-top: 8px;
+        max-height: 220px;
+        overflow: auto;
+        border-top: 1px dashed #eef4fb;
+        padding-top: 8px
+    }
+
+    .elim-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03)
+    }
+
+    input[type="text"], textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #e6eef8;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 14px
+    }
+
+    textarea {
+        min-height: 80px;
+        resize: vertical
+    }
+
+    label {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 500
+    }
+
+    .share-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px
+    }
+
+    @media (max-width: 880px) {
+        .grid {
+            flex-direction:column
+        }
+
+        .panel.small {
+            flex:1
+        }
+
+        #batchList {
+            grid-template-columns: repeat(2, 1fr)
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>🧪 This SCIENTIFIC Algorithm Will Find Your Top 5 FHE Activities (Yes It's Real Science, Trust Us)</h1>
+        <p class="lead">It's like if Marie Kondo and a NASA scientist had a baby and that baby ranked FHE ideas for the Saddleback YSA Ward.</p>
+
+        <div class="grid">
+            <div class="panel">
+                <strong>Pick one or more each round</strong>
+                <ul id="batchList" aria-live="polite"></ul>
+
+                <div class="controls">
+                    <button id="pickBtn">Pick</button>
+                    <button id="passBtn" class="secondary">Pass</button>
+                    <button id="undoBtn" class="secondary">Undo</button>
+                    <button id="redoBtn" class="secondary">Redo</button>
+                </div>
+
+                <div class="status">
+                    <div>
+                        Available: 
+                        <span id="availableCount">0</span>
+                         · Favorites: 
+                        <span id="favCount">0</span>
+                    </div>
+                    <div class="progress" title="Progress">
+                        <i id="progressBar"></i>
+                    </div>
+                    <div id="roundNote" class="status" style="margin-top:6px;color:var(--muted);font-size:13px"></div>
+                </div>
+            </div>
+
+            <div class="panel small">
+                <strong>Found favorites</strong>
+                <ol id="favorites" aria-live="polite"></ol>
+
+                <div class="share-buttons" id="shareButtons" style="display:none">
+                    <button onclick="shareEmail()" class="secondary">Email Results</button>
+                    <button onclick="shareSMS()" class="secondary">Text Results</button>
+                </div>
+
+                <details style="margin-top:10px">
+                    <summary style="color:var(--muted)">Eliminated items (rescue eligible)</summary>
+                    <div class="eliminated-list" id="eliminatedList"></div>
+                </details>
+
+                <div style="margin-top:10px;display:flex;gap:8px">
+                    <button id="rescueAll" class="secondary">Rescue eligible</button>
+                    <button id="resetBtn" class="secondary">Reset</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <strong>Submit a New Activity Idea</strong>
+                <div style="margin-top:10px">
+                    <label>Your Name</label>
+                    <input type="text" id="nameInput" placeholder="Enter your name">
+                </div>
+                <div style="margin-top:10px">
+                    <label>Activity Idea</label>
+                    <textarea id="ideaInput" placeholder="Describe your activity idea..."></textarea>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px">
+                    <button onclick="submitViaEmail()" class="secondary">Email Idea</button>
+                    <button onclick="submitViaSMS()" class="secondary">Text Idea</button>
+                </div>
+                <div id="messageBox" style="margin-top:8px;color:var(--muted);font-size:13px"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /* -------- DATA (activities) -------- */
+    const ITEMS = [
+    "Board Games", "Nature Walk", "Nerf Guns", "Family Feud", "Charades", "Nursing Home", "Small Group Dinners", "Local Band", "Frisbee Golf", "Capture The Flag","Thrift Swap", "Cookie Decorating", 
+    "Four Square", "Volleyball", "Poetry Slam", "Pancakes", "AI Workshop", "Career Panel", "Meal Delivery", "Dodgeball",
+    "Mental Health", "Karaoke Night", "City Council Meeting","Burn Stuff", "Sardines", "PowerPoint Night",
+     "Pickelball", "Arts & Crafts",
+     "Chair Soccer", "Video Games"
+    ];
+
+    /* -------- STATE --------
+    state.current: items waiting in the current round (to be batched)
+    state.evaluating: current batch displayed
+    state.survived: survivors collected during the round
+    state.eliminated: { id: { eliminatedBy: [ids] } }
+    state.favorites: ordered array
+    history & redoStack store snapshots for undo/redo
+    settings.batchSize: 6
+    ----------------------------------*/
+    let state = {
+        current: [],
+        evaluating: [],
+        survived: [],
+        eliminated: {},
+        favorites: [],
+        history: [],
+        redoStack: [],
+        settings: {
+            batchSize: 6
+        }
+    };
+
+    /* -------- utilities -------- */
+    const deep = v => JSON.parse(JSON.stringify(v));
+    const shuffle = arr => arr.slice().sort(() => Math.random() - 0.5);
+    const unique = arr => Array.from(new Set(arr));
+    const idFor = s => s; // id is the name string
+
+    function availableItems() {
+        return ITEMS.filter(i => !state.favorites.includes(i) && !state.eliminated[i]);
+    }
+
+    /* -------- history (undo/redo) -------- */
+    function snapshot() {
+        state.history.push(deep({
+            current: state.current,
+            evaluating: state.evaluating,
+            survived: state.survived,
+            eliminated: state.eliminated,
+            favorites: state.favorites
+        }));
+        if (state.history.length > 300)
+            state.history.shift();
+        state.redoStack = [];
+        renderControls();
+    }
+    function undo() {
+        if (!state.history.length)
+            return;
+        state.redoStack.push(deep({
+            current: state.current,
+            evaluating: state.evaluating,
+            survived: state.survived,
+            eliminated: state.eliminated,
+            favorites: state.favorites
+        }));
+        const s = state.history.pop();
+        state.current = s.current;
+        state.evaluating = s.evaluating;
+        state.survived = s.survived;
+        state.eliminated = s.eliminated;
+        state.favorites = s.favorites;
+        renderAll();
+    }
+    function redo() {
+        if (!state.redoStack.length)
+            return;
+        state.history.push(deep({
+            current: state.current,
+            evaluating: state.evaluating,
+            survived: state.survived,
+            eliminated: state.eliminated,
+            favorites: state.favorites
+        }));
+        const s = state.redoStack.pop();
+        state.current = s.current;
+        state.evaluating = s.evaluating;
+        state.survived = s.survived;
+        state.eliminated = s.eliminated;
+        state.favorites = s.favorites;
+        renderAll();
+    }
+
+    /* -------- core flow (batch-elimination) -------- */
+
+    function startNewRound() {
+        // pool is all available (not favorites, not eliminated)
+        state.current = shuffle(availableItems());
+        state.evaluating = [];
+        state.survived = [];
+        // if only one candidate, it's logically the next favorite
+        if (state.current.length === 1) {
+            // automatically promote to favorite (but snapshot first)
+            snapshot();
+            addFavorite(state.current[0]);
+            return;
+        }
+        if (state.current.length === 0) {
+            // nothing to do
+            renderAll();
+            return;
+        }
+        loadNextBatch();
+        renderAll();
+    }
+
+    function loadNextBatch() {
+        state.evaluating = state.current.splice(0, state.settings.batchSize);
+        renderBatch();
+    }
+
+    function processPicked(pickedIds) {
+        if (!state.evaluating || !state.evaluating.length)
+            return;
+        // survivors are the picked items; if none picked (pass), everyone survives this batch
+        const picked = unique(pickedIds || []);
+        if (picked.length === 0) {
+            state.survived = state.survived.concat(state.evaluating);
+        } else {
+            // add picked to survivors
+            state.survived = state.survived.concat(picked);
+            // losers are those in evaluating not in picked
+            const losers = state.evaluating.filter(i => picked.indexOf(i) === -1);
+            losers.forEach(loser => {
+                if (!state.eliminated[loser])
+                    state.eliminated[loser] = {
+                        eliminatedBy: []
+                    };
+                // union picked with existing eliminatedBy
+                state.eliminated[loser].eliminatedBy = unique(state.eliminated[loser].eliminatedBy.concat(picked));
+            });
+        }
+        // clear evaluating
+        state.evaluating = [];
+        // if no more batches this round, finalize round (survived -> next round's pool)
+        if (state.current.length === 0) {
+            finalizeRound();
+        } else {
+            loadNextBatch();
+        }
+        renderAll();
+    }
+
+    function finalizeRound() {
+        // prepare next round's pool from survivors (unique)
+        state.current = unique(state.survived.slice());
+        state.survived = [];
+        // If after this the pool is empty: no candidates remain (done)
+        if (state.current.length === 0) {
+            renderAll();
+            return;
+        }
+        // If pool is a single item, it's the logically next favorite
+        if (state.current.length === 1) {
+            addFavorite(state.current[0]);
+            return;
+        }
+        // otherwise continue with next batch of the new round
+        loadNextBatch();
+    }
+
+    /* When a favorite is added, some eliminated items may become eligible to return:
+       An eliminated item returns if every item that eliminated it is now a favorite.
+    */
+    function rescueEligibleEliminated() {
+        const toRescue = [];
+        Object.keys(state.eliminated).forEach(id => {
+            const eliminators = state.eliminated[id].eliminatedBy || [];
+            if (eliminators.length === 0)
+                return;
+            const allElimsAreFavs = eliminators.every(e => state.favorites.includes(e));
+            if (allElimsAreFavs)
+                toRescue.push(id);
+        });
+        toRescue.forEach(id => delete state.eliminated[id]);
+        // If we aren't mid-batch and there are rescued items, ensure a round starts that will include them
+        if (state.evaluating.length === 0 && state.current.length === 0 && toRescue.length) {
+            startNewRound();
+        }
+    }
+
+    /* Add a favorite (only when logically determined) */
+    function addFavorite(itemId) {
+        if (!itemId)
+            return;
+        if (state.favorites.includes(itemId))
+            return;
+        // remove from any holder
+        // ensure snapshot handled by caller
+        state.favorites.push(itemId);
+        delete state.eliminated[itemId]; // clear eliminated if somehow present
+        // rescue others that become eligible
+        rescueEligibleEliminated();
+        // begin new round for remaining available items if any
+        if (availableItems().length > 0) {
+            startNewRound();
+        } else {
+            // finished
+            state.current = [];
+            state.evaluating = [];
+            renderAll();
+        }
+    }
+
+    /* Manual rescue via UI */
+    function rescueItem(id) {
+        if (state.eliminated[id])
+            delete state.eliminated[id];
+        if (!state.current.includes(id) && !state.favorites.includes(id)) {
+            state.current.unshift(id);
+        }
+        renderAll();
+    }
+
+    /* Remove a favorite (brings it back into pool) */
+    function removeFavorite(id) {
+        state.favorites = state.favorites.filter(f => f !== id);
+        // put back into pool to be re-evaluated
+        if (!state.current.includes(id))
+            state.current.unshift(id);
+        // start a round if necessary
+        if (state.evaluating.length === 0)
+            startNewRound();
+        else
+            renderAll();
+    }
+
+    /* --------- Rendering --------- */
+    const batchListEl = document.getElementById('batchList');
+    const favoritesEl = document.getElementById('favorites');
+    const eliminatedListEl = document.getElementById('eliminatedList');
+    const availableCountEl = document.getElementById('availableCount');
+    const favCountEl = document.getElementById('favCount');
+    const progressBarEl = document.getElementById('progressBar');
+    const roundNoteEl = document.getElementById('roundNote');
+
+    function renderBatch() {
+        batchListEl.innerHTML = '';
+        state.evaluating.forEach(id => {
+            const li = document.createElement('li');
+            li.textContent = id;
+            li.dataset.id = id;
+            li.tabIndex = 0;
+            li.addEventListener('click', () => li.classList.toggle('selected'));
+            li.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    li.classList.toggle('selected');
+                }
+            });
+            batchListEl.appendChild(li);
+        });
+        renderControls();
+    }
+
+    function renderFavorites() {
+        favoritesEl.innerHTML = '';
+        state.favorites.forEach(name => {
+            const li = document.createElement('li');
+            li.dataset.id = name;
+            const label = document.createElement('span');
+            label.textContent = name;
+            const right = document.createElement('div');
+            right.style.display = 'flex';
+            right.style.gap = '8px';
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'small-btn';
+            removeBtn.textContent = 'Remove';
+            removeBtn.onclick = () => {
+                snapshot();
+                removeFavorite(name);
+            };
+            right.appendChild(removeBtn);
+            li.appendChild(label);
+            li.appendChild(right);
+            li.draggable = true;
+            favoritesEl.appendChild(li);
+        });
+        
+        // Show/hide share buttons
+        const shareButtonsEl = document.getElementById('shareButtons');
+        if (shareButtonsEl) {
+            shareButtonsEl.style.display = state.favorites.length ? 'flex' : 'none';
+        }
+    }
+
+    /* Favorites drag & drop reordering */
+    let draggingEl = null;
+    favoritesEl.addEventListener('dragstart', e => {
+        draggingEl = e.target.closest('li');
+        if (draggingEl)
+            draggingEl.classList.add('dragging');
+    });
+    favoritesEl.addEventListener('dragend', () => {
+        if (draggingEl)
+            draggingEl.classList.remove('dragging');
+        draggingEl = null;
+        updateFavoritesOrderFromDOM();
+    });
+    favoritesEl.addEventListener('dragover', e => {
+        e.preventDefault();
+        const after = getDragAfterElement(favoritesEl, e.clientY);
+        const dragging = document.querySelector('.dragging');
+        if (!dragging)
+            return;
+        if (after == null)
+            favoritesEl.appendChild(dragging);
+        else
+            favoritesEl.insertBefore(dragging, after);
+    });
+    function getDragAfterElement(container, y) {
+        const els = [...container.querySelectorAll('li:not(.dragging)')];
+        let closest = null,
+            closestOffset = Number.NEGATIVE_INFINITY;
+        els.forEach(child => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closestOffset) {
+                closestOffset = offset;
+                closest = child;
+            }
+        });
+        return closest;
+    }
+    function updateFavoritesOrderFromDOM() {
+        const newOrder = [...favoritesEl.querySelectorAll('li')].map(li => li.dataset.id);
+        if (newOrder.length && JSON.stringify(newOrder) !== JSON.stringify(state.favorites)) {
+            snapshot();
+            state.favorites = newOrder;
+            rescueEligibleEliminated();
+            renderAll();
+        }
+    }
+
+    function renderEliminated() {
+        eliminatedListEl.innerHTML = '';
+        const keys = Object.keys(state.eliminated);
+        if (!keys.length) {
+            eliminatedListEl.innerHTML = '<div style="color:var(--muted)">None</div>';
+            return;
+        }
+        keys.forEach(id => {
+            const row = document.createElement('div');
+            row.className = 'elim-item';
+            const left = document.createElement('div');
+            left.innerHTML = `<strong>${id}</strong><div style="color:var(--muted);font-size:13px">eliminated by: ${state.eliminated[id].eliminatedBy.join(', ')}</div>`;
+            const right = document.createElement('div');
+            const rescueBtn = document.createElement('button');
+            rescueBtn.className = 'small-btn';
+            rescueBtn.textContent = 'Rescue';
+            rescueBtn.onclick = () => {
+                snapshot();
+                rescueItem(id);
+            };
+            right.appendChild(rescueBtn);
+            row.appendChild(left);
+            row.appendChild(right);
+            eliminatedListEl.appendChild(row);
+        });
+    }
+
+    function renderControls() {
+        availableCountEl.textContent = availableItems().length;
+        favCountEl.textContent = state.favorites.length;
+        const progressPercent = Math.round((state.favorites.length / ITEMS.length) * 100);
+        progressBarEl.style.width = Math.min(100, Math.max(0, progressPercent)) + '%';
+        roundNoteEl.textContent = state.evaluating.length ? `Round in progress — showing ${state.evaluating.length} items (batch)` : (state.current.length ? `Round queued — ${state.current.length} items waiting` : `No active batch`);
+        document.getElementById('pickBtn').disabled = !state.evaluating.length;
+        document.getElementById('passBtn').disabled = !state.evaluating.length;
+        document.getElementById('undoBtn').disabled = state.history.length === 0;
+        document.getElementById('redoBtn').disabled = state.redoStack.length === 0;
+    }
+
+    function renderAll() {
+        // if there's no evaluating but current has candidates, load next batch
+        if (!state.evaluating.length && state.current.length)
+            loadNextBatch();
+        renderBatch();
+        renderFavorites();
+        renderEliminated();
+        renderControls();
+    }
+
+    /* -------- Sharing & Submission -------- */
+    const RECIPIENT_EMAIL = 'email@daviddot.com';
+    const RECIPIENT_PHONE = '+13106124412';
+
+    function shareEmail() {
+        if (!state.favorites.length) {
+            alert('No favorites to share yet!');
+            return;
+        }
+        const subject = encodeURIComponent('My Top Activity Picks');
+        const body = encodeURIComponent(`Here are my favorite activities:\n\n${state.favorites.map((item, i) => `${i + 1}. ${item}`).join('\n')}`);
+        window.location.href = `mailto:${RECIPIENT_EMAIL}?subject=${subject}&body=${body}`;
+    }
+
+    function shareSMS() {
+        if (!state.favorites.length) {
+            alert('No favorites to share yet!');
+            return;
+        }
+        const message = encodeURIComponent(`My top activities: ${state.favorites.slice(0, 5).join(', ')}`);
+        window.location.href = `sms:${RECIPIENT_PHONE}?body=${message}`;
+    }
+
+    function submitViaEmail() {
+        const name = document.getElementById('nameInput').value.trim();
+        const idea = document.getElementById('ideaInput').value.trim();
+        const msgBox = document.getElementById('messageBox');
+        
+        if (!name || !idea) {
+            msgBox.textContent = 'Please fill in both fields';
+            msgBox.style.color = '#d32f2f';
+            return;
+        }
+        
+        const subject = encodeURIComponent('New Activity Idea from ' + name);
+        const body = encodeURIComponent(`Name: ${name}\n\nActivity Idea:\n${idea}`);
+        window.location.href = `mailto:${RECIPIENT_EMAIL}?subject=${subject}&body=${body}`;
+        
+        msgBox.textContent = 'Opening email...';
+        msgBox.style.color = 'var(--muted)';
+    }
+
+    function submitViaSMS() {
+        const name = document.getElementById('nameInput').value.trim();
+        const idea = document.getElementById('ideaInput').value.trim();
+        const msgBox = document.getElementById('messageBox');
+        
+        if (!name || !idea) {
+            msgBox.textContent = 'Please fill in both fields';
+            msgBox.style.color = '#d32f2f';
+            return;
+        }
+        
+        const message = encodeURIComponent(`${name}: ${idea}`);
+        window.location.href = `sms:${RECIPIENT_PHONE}?body=${message}`;
+        
+        msgBox.textContent = 'Opening messages...';
+        msgBox.style.color = 'var(--muted)';
+    }
+
+    /* -------- UI hooks -------- */
+    document.getElementById('pickBtn').addEventListener('click', () => {
+        if (!state.evaluating.length)
+            return;
+        const selected = [...batchListEl.querySelectorAll('li.selected')].map(li => li.dataset.id);
+        snapshot();
+        processPicked(selected);
+    });
+    document.getElementById('passBtn').addEventListener('click', () => {
+        if (!state.evaluating.length)
+            return;
+        snapshot();
+        processPicked([]);
+    });
+    document.getElementById('undoBtn').addEventListener('click', () => undo());
+    document.getElementById('redoBtn').addEventListener('click', () => redo());
+    document.getElementById('rescueAll').addEventListener('click', () => {
+        snapshot();
+        rescueEligibleEliminated();
+        renderAll();
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        if (!confirm('Reset and start over?'))
+            return;
+        state.current = [];
+        state.evaluating = [];
+        state.survived = [];
+        state.eliminated = {};
+        state.favorites = [];
+        state.history = [];
+        state.redoStack = [];
+        startNewRound();
+    });
+
+    /* -------- bootstrap -------- */
+    startNewRound();
+    </script>
+</body>
+</html>
