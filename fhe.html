@@ -99,6 +99,11 @@
         font-weight: 600
     }
 
+    button.big-btn {
+        padding: 12px 24px;
+        font-size: 16px;
+    }
+
     button.secondary {
         background: #f2f7ff;
         color: var(--accent);
@@ -226,10 +231,8 @@
                 <ul id="batchList" aria-live="polite"></ul>
 
                 <div class="controls">
-                    <button id="pickBtn">Pick</button>
-                    <button id="passBtn" class="secondary">Pass</button>
-                    <button id="undoBtn" class="secondary">Undo</button>
-                    <button id="redoBtn" class="secondary">Redo</button>
+                    <button id="pickBtn" class="big-btn">Pick</button>
+                    <button id="passBtn" class="secondary big-btn">Pass</button>
                 </div>
 
                 <div class="status">
@@ -251,8 +254,8 @@
                 <ol id="favorites" aria-live="polite"></ol>
 
                 <div class="share-buttons" id="shareButtons" style="display:none">
-                    <button onclick="shareEmail()" class="secondary">Email Results</button>
-                    <button onclick="shareSMS()" class="secondary">Text Results</button>
+                    <button onclick="shareEmail()" class="secondary big-btn">Email Results</button>
+                    <button onclick="shareSMS()" class="secondary big-btn">Text Results</button>
                 </div>
 
                 <details style="margin-top:10px">
@@ -277,8 +280,8 @@
                     <textarea id="ideaInput" placeholder="Describe your activity idea..."></textarea>
                 </div>
                 <div style="display:flex;gap:8px;margin-top:10px">
-                    <button onclick="submitViaEmail()" class="secondary">Email Idea</button>
-                    <button onclick="submitViaSMS()" class="secondary">Text Idea</button>
+                    <button onclick="submitViaEmail()" class="secondary big-btn">Email Idea</button>
+                    <button onclick="submitViaSMS()" class="secondary big-btn">Text Idea</button>
                 </div>
                 <div id="messageBox" style="margin-top:8px;color:var(--muted);font-size:13px"></div>
             </div>
@@ -664,8 +667,6 @@
         roundNoteEl.textContent = state.evaluating.length ? `Round in progress — showing ${state.evaluating.length} items (batch)` : (state.current.length ? `Round queued — ${state.current.length} items waiting` : `No active batch`);
         document.getElementById('pickBtn').disabled = !state.evaluating.length;
         document.getElementById('passBtn').disabled = !state.evaluating.length;
-        document.getElementById('undoBtn').disabled = state.history.length === 0;
-        document.getElementById('redoBtn').disabled = state.redoStack.length === 0;
     }
 
     function renderAll() {
@@ -752,8 +753,6 @@
         snapshot();
         processPicked([]);
     });
-    document.getElementById('undoBtn').addEventListener('click', () => undo());
-    document.getElementById('redoBtn').addEventListener('click', () => redo());
     document.getElementById('rescueAll').addEventListener('click', () => {
         snapshot();
         rescueEligibleEliminated();
