@@ -54,6 +54,23 @@ button.type-btn:hover {
 }
 
 
+button.type-btn:hover::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  padding: 4px;
+  background: conic-gradient(from var(--angle),
+    #ff0000, #FFD700, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000
+  );
+  animation: rotateGradient 4s linear infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: -1;
+}
 
 button.type-btn.selected::before {
   content: "";
