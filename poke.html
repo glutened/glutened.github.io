@@ -1833,7 +1833,7 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
 
 
 <!-- Mobile grid -->
-<div class="bg-gray-600 py-2 mb-6 mt-6 sm:hidden">
+<div class="bg-gray-600 py-2 mb-6 -mt-2 sm:hidden">
   <div class="grid grid-cols-3 gap-x-2 gap-y-3 justify-items-center px-2 max-w-sm mx-auto">
     ${types.map(type => `
     <button
@@ -1876,7 +1876,7 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
     <button
       onclick="submitAnswer()"
       ${selectedTypes.length === 0 ? 'disabled' : ''}
-      class="font-bold py-2 sm:py-2 px-32 sm:px-34 rounded-lg text-white text-base sm:text-lg ${
+      class="font-bold py-3 sm:py-3 px-32 sm:px-34 rounded-lg text-white text-base sm:text-lg ${
         selectedTypes.length === 0
           ? 'bg-gray-400 cursor-not-allowed'
           : 'bg-blue-500 hover:bg-blue-600'
@@ -1884,7 +1884,7 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
     >
       ${currentIndex < quizPokemon.length - 1 ? 'Next Pokémon' : 'Submit Quiz'}
     </button>
-  </div><div class="h-2 sm:hidden"></div></div>
+  </div></div>
 
                     </div> 
                     </div>
