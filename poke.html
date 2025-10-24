@@ -29,9 +29,9 @@
 .type-label {
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
-  margin-left: 0.3em;
-  margin-top: 0.5em;
-  font-weight: 600;
+  margin-left: 0.24em;
+  margin-top: 0.45em;
+  font-weight: 700;
   font-size: 0.85rem;
   line-height: 1;
 }
@@ -1815,9 +1815,9 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
                                 }
                                 <div class="relative w-full flex justify-center mb-4">
   <!-- Pokémon name stays centered -->
-  <h2 class="absolute left-1/2 -translate-x-1/2 text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-4">
-    ${currentPokemon.name}
-  </h2>
+  <h2 class="absolute left-1/2 -translate-x-1/2 text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-4 -mb-2 sm:mb-0">
+  ${currentPokemon.name}
+</h2>
 
   <!-- Selected types positioned to the right -->
   ${selectedTypes.length > 0 
@@ -1871,7 +1871,7 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
 
 
 
-<div class="mt-2 sm:mt-0 flex items-center justify-center">
+<div class="-mt-4 sm:mt-0 flex items-center justify-center">
  
     <button
       onclick="submitAnswer()"
