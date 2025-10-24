@@ -10,7 +10,16 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        #copyright {
+  position: absolute;
+  bottom: 0;
+  left: 6px;
+  color: #888;
+  font-size: 7px;
+  margin: 0;
+  padding: 5px 0;
+  line-height: 1;
+}
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
@@ -1058,5 +1067,6 @@ slider.addEventListener('input', function() {
         // Also try to initialize immediately in case the script loads after DOM
         initializeApp();
     </script>
-</body>
+
+<p id="copyright">Pokémon © 1995 Nintendo. Used for commentary and informational purposes only.</p></body>
 </html>
