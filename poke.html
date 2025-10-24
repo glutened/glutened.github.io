@@ -1833,7 +1833,7 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
 
 
 <!-- Mobile grid -->
-<div class="bg-gray-600 py-2 mb-6 -mt-2 sm:hidden">
+<div class="bg-gray-300 py-2 mb-6 -mt-2 sm:hidden rounded-2xl ">
   <div class="grid grid-cols-3 gap-x-2 gap-y-3 justify-items-center px-2 max-w-sm mx-auto">
     ${types.map(type => `
     <button
@@ -1850,7 +1850,7 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
 
 
 <!-- Desktop grid -->
-<div class="hidden sm:block bg-gray-600  sm:p-8 sm:rounded-lg sm:mb-6 sm:mt-6">
+<div class="hidden sm:block bg-gray-300  sm:p-8 sm:rounded-xl sm:mb-6 sm:mt-6">
   <div class="sm:grid sm:grid-cols-3 sm:gap-x-1 sm:gap-y-2 sm:justify-items-center sm:mx-auto sm:max-w-md">
   ${types.map(type => `
     <button 
@@ -1878,7 +1878,7 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
       ${selectedTypes.length === 0 ? 'disabled' : ''}
       class="font-bold py-3 sm:py-3 px-32 sm:px-34 rounded-lg text-white text-base sm:text-lg ${
         selectedTypes.length === 0
-          ? 'bg-gray-400 cursor-not-allowed'
+          ? 'bg-gray-300 cursor-not-allowed'
           : 'bg-blue-500 hover:bg-blue-600'
       }"
     >
