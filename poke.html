@@ -1224,7 +1224,7 @@ button.type-btn.selected::before {
 };
 
 
-        const types = ['bug', 'poison', 'ground', 'flying', 'electric', 'rock', 'normal', 'grass', 'fire', 'dragon', 'psychic', 'ice', 'ghost', 'fighting', 'water', 'dark', 'steel', 'fairy'];
+        const types = ['bug', 'flying', 'ground', 'poison', 'electric', 'rock', 'fighting','steel', 'fire',  'dragon', 'psychic', 'ice',  'fairy','dark', 'water',  'normal','grass','ghost' ];
         
         const GEN_YEARS = {
             1: 1996,
@@ -1833,23 +1833,25 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
 
 
 <!-- Mobile grid -->
-<div class="grid grid-cols-3 gap-x-2 gap-y-3 justify-items-center px-2 sm:hidden max-w-sm mx-auto">
-  ${types.map(type => `
-    <button 
-      onclick="toggleType('${type}')"
-      style="background-color: ${TYPE_COLORS[type]}; height: 46px; width: 110px;"
-      class="type-btn ${selectedTypes.includes(type) ? 'selected' : ''} ${type === 'dark' ? 'text-gray-100' : ''}"
+<div class="bg-gray-600 py-8 mb-6 mt-6 sm:hidden">
+  <div class="grid grid-cols-3 gap-x-2 gap-y-3 justify-items-center px-2 max-w-sm mx-auto">
+    ${types.map(type => `
+    <button
+    onclick="toggleType('${type}')"
+    style="background-color: ${TYPE_COLORS[type]}; height: 46px; width: 110px;"
+    class="type-btn ${selectedTypes.includes(type) ? 'selected' : ''} ${type === 'dark' ? 'text-gray-100' : ''}"
     >
-      <span class="type-icon">${getIconChar(type)}</span>
-      <span class="type-label">${type}</span>
+    <span class="type-icon">${getIconChar(type)}</span>
+    <span class="type-label">${type}</span>
     </button>
-  `).join('')}
+    `).join('')}
+  </div>
 </div>
 
 
 <!-- Desktop grid -->
-<div class="hidden sm:grid sm:grid-cols-3 sm:gap-x-1 sm:gap-y-2 sm:justify-items-center sm:mx-auto sm:mb-6 sm:max-w-md sm:mt-6">
-
+<div class="hidden sm:block bg-gray-600  sm:p-8 sm:rounded-lg sm:mb-6 sm:mt-6">
+  <div class="sm:grid sm:grid-cols-3 sm:gap-x-1 sm:gap-y-2 sm:justify-items-center sm:mx-auto sm:max-w-md">
   ${types.map(type => `
     <button 
       onclick="toggleType('${type}')"
@@ -1860,7 +1862,7 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
       <span class="type-label">${type}</span>
     </button>
   `).join('')}
-</div>
+</div></div>
 
 
 
@@ -1882,7 +1884,7 @@ Select up to 2 categories (elemental types) for each Pokémon. 1 point for each 
     >
       ${currentIndex < quizPokemon.length - 1 ? 'Next Pokémon' : 'Submit Quiz'}
     </button>
-  </div><div class="h-2 sm:hidden"></div></div>
+  </div>
 
                     </div> 
                     </div>
