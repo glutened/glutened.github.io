@@ -1573,14 +1573,38 @@ button.type-btn.selected::before {
                 `;
                 return;
             }
-
+            // About Modal HTML (reused across all views)
+const aboutModalHTML = `
+<div id="aboutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target === this) this.classList.add('hidden')">
+    <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <h2 class="text-xl font-bold mb-3 text-blue-900">About</h2>
+        <p class="text-gray-700 mb-4">
+    Since 1996, over 1000 Pokémon species have been discovered, each assigned up to 2 elemental attributes called <strong>types</strong>. This quiz gathers data to survey which visual designs are most intuitive for identifying these types.
+    <br><br>
+    Custom font by Philippe Van Lieu. Fan sprites by mbcmechachu and National Pokédex Version Delta. Pokémon © 1995 Nintendo. Used for commentary and informational purposes only.
+</p>
+        <button 
+            onclick="document.getElementById('aboutModal').classList.add('hidden')"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+        >
+            Close
+        </button>
+    </div>
+</div>
+`;
  // Check if no generations are selected
  if (selectedGens.length === 0) {
                 app.innerHTML = `
                 <div class="sm:min-h-screen sm:p-8 sm:flex sm:items-center sm:justify-center">
                     <div class="w-full sm:max-w-4xl mx-auto">
                         <div class="bg-white rounded-lg shadow-xl p-2 sm:p-8">
-                            <h1 class="text-3xl font-bold text-center mb-4 text-blue-900">Pokémon Type Quiz</h1>
+                            <h1 class="text-3xl font-bold text-center mb-4 text-blue-900">Pokémon Type Quiz <button 
+                    onclick="document.getElementById('aboutModal').classList.remove('hidden')"
+                    class="inline-flex items-center justify-center w-6 h-6 text-xs bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full ml-1 align-middle -translate-y-1"
+                    aria-label="About"
+                >
+                    ?
+                </button></h1>
                                 
                                 <div class="flex justify-center gap-2 mb-6 flex-wrap hidden"> /* Temporarily hidden */
                                     <button 
@@ -1700,7 +1724,7 @@ button.type-btn.selected::before {
                             </div>
                             <div class="text-center py-12 sm:min-h-[700px]  justify-center">
     <p class="text-xl text-gray-600 mb-4">Please select at least one generation to start the quiz</p>
-</div>
+</div>${aboutModalHTML}
                                    
                             </div>
                         </div>
@@ -1716,7 +1740,13 @@ button.type-btn.selected::before {
                     <div class="w-full sm:max-w-4xl mx-auto">
 
                         <div class="bg-white rounded-lg shadow-xl p-2 sm:p-8">
-                            <h1 class="text-3xl font-bold text-center mb-4 text-blue-900">Pokémon Type Quiz</h1>
+                            <h1 class="text-3xl font-bold text-center mb-4 text-blue-900">Pokémon Type Quiz <button 
+                    onclick="document.getElementById('aboutModal').classList.remove('hidden')"
+                    class="inline-flex items-center justify-center w-6 h-6 text-xs bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full ml-1 align-middle -translate-y-1"
+                    aria-label="About"
+                >
+                    ?
+                </button></h1>
                             
                             <div class="flex justify-center gap-2 mb-6 flex-wrap hidden"> /* Temporarily hidden */
                                 <button 
@@ -1841,7 +1871,7 @@ button.type-btn.selected::before {
 
                                 Select up to 2 categories for each Pokémon. Earn 1 point per correct category, partial matches earn partial points.
 </p>
-
+${aboutModalHTML}
 <div class="sm:min-h-[500px]">
 <div class="text-center mb-3 sm:mb-4 text-xs sm:text-sm text-gray-500">
     Question ${currentIndex + 1} of ${quizPokemon.length}
