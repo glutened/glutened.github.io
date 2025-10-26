@@ -1512,7 +1512,7 @@ button.type-btn.selected::before {
                     <div class="min-h-screen p-8 flex items-center justify-center">
                         <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
                             <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-4"></div>
-                            <p class="text-xl text-gray-700">Analyzing your quiz results—stand by, Trainer!</p>
+                            <p class="text-xl text-gray-700">Loading...</p>
                         </div>
                     </div>
                 `;
@@ -1522,31 +1522,41 @@ button.type-btn.selected::before {
             if (screen === 'complete') {
                 const totalPoints = results.reduce((sum, r) => sum + r.points, 0);
                 const maxPoints = quizPokemon.reduce((sum, p) => sum + (p.types.length === 1 ? 2 : 3), 0);
-                
                 const resultsHTML = results.map((result, idx) => {
-                    const isCorrect = result.correctTypes === result.userTypes;
-                    const maxPossible = result.correctTypes.split(', ').length === 1 ? 2 : 3;
-                    return `
-                        <div class="border rounded-lg p-4 mb-3 ${isCorrect ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="font-bold text-lg">${result.pokemon}</span>
-                                <span class="text-sm font-semibold ${isCorrect ? 'text-green-600' : 'text-red-600'}">
-                                    ${result.points}/${maxPossible} pts
-                                </span>
-                            </div>
-                            <div class="text-sm">
-                                <div class="mb-1">
-                                    <span class="text-gray-600">Correct: </span>
-                                    <span class="font-semibold text-green-700">${result.correctTypes}</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">Your answer: </span>
-                                    <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">${result.userTypes}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+ console.log('Result object:', result); // See what's in the result
+ 
+ const isCorrect = result.correctTypes === result.userTypes;
+ const maxPossible = result.correctTypes.split(', ').length === 1 ? 2 : 3;
+ 
+ // Try different possible ID properties
+ const pokeId = result.id || result.pokemonId || result.number || (idx + 1);
+ const imgPath = `icons/poke/${pokeId}.png`;
+ console.log('Image path:', imgPath);
+ 
+ return `
+ <div class="border rounded-lg p-4 mb-3 ${isCorrect ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}">
+ <div class="flex items-center justify-between mb-2">
+ <div class="flex items-center gap-3">
+ <span class="font-bold text-lg">${result.pokemon}</span>
+ <img src="${imgPath}" alt="${result.pokemon}" style="width: 85px; height: 70px; image-rendering: pixelated;" onerror="console.error('Failed to load:', this.src)" />
+ </div>
+ <span class="text-sm font-semibold ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+ ${result.points}/${maxPossible} pts
+ </span>
+ </div>
+ <div class="text-sm">
+ <div class="mb-1">
+ <span class="text-gray-600">Correct: </span>
+ <span class="font-semibold text-green-700">${result.correctTypes}</span>
+ </div>
+ <div>
+ <span class="text-gray-600">Your answer: </span>
+ <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">${result.userTypes}</span>
+ </div>
+ </div>
+ </div>
+ `;
+}).join('');
                 
                 app.innerHTML = `
                     <div class="min-h-screen p-8 flex items-center justify-center">
@@ -1869,8 +1879,7 @@ const aboutModalHTML = `
 
 
 
-                                Select up to 2 categories for each Pokémon. Earn 1 point per correct category, partial matches earn partial points.
-</p>
+                                Select 1 or 2 categories for each Pokémon. Earn 1 point per correct category; picking twice can raise or lower your score.
 ${aboutModalHTML}
 <div class="sm:min-h-[500px]">
 <div class="text-center mb-3 sm:mb-4 text-xs sm:text-sm text-gray-500">
