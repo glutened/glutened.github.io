@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>David Taylor's Interactive Resume Explorer (Transferable Skills)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5; /* Indigo 600 */
+            --highlight-color: #10b981; /* Emerald 500 */
+            --bg-light: #f9fafb;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container-card {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        /* --- Interactive Sentence Styles --- */
+        .sentence-part {
+            position: relative; 
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+            line-height: 2.5rem;
+            display: inline-block;
+        }
+        
+        /* Fixed text must remain black/default color */
+        .sentence-part.fixed-text {
+            color: #1f2937; 
+            padding: 0;
+            cursor: default;
+        }
+
+        /* Clickable parts: Action and Context */
+        .sentence-part[data-step="action"]:not(.current-step),
+        .sentence-part[data-step="context"]:not(.current-step) {
+            cursor: pointer;
+            border-bottom: 2px dashed #9ca3af; 
+        }
+
+        /* Active/Hoverable state for clickable parts */
+        .sentence-part[data-step="action"]:not(.current-step):hover,
+        .sentence-part[data-step="context"]:not(.current-step):hover {
+            background-color: #eef2ff; 
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Result Keyword styling (always bold) */
+        .sentence-part.outcome {
+            font-weight: 800;
+            color: var(--highlight-color);
+            background-color: #f0fdf4; 
+            border: 2px solid var(--highlight-color);
+        }
+
+        /* When a choice is finalized (Action/Context) */
+        .sentence-part.chosen {
+            font-weight: 700;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            background-color: #f7f7ff;
+        }
+
+        /* Active selection step */
+        .sentence-part.current-step {
+            color: white;
+            background-color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            animation: pulse-bg 1s infinite alternate;
+        }
+        
+        @keyframes pulse-bg {
+            from { opacity: 1; }
+            to { opacity: 0.8; }
+        }
+
+        /* Dropdown specific styles */
+        .dropdown-options {
+            position: absolute;
+            top: 100%; 
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            min-width: 300px;
+            max-width: 90vw;
+            padding: 1rem;
+            background-color: white;
+            border: 1px solid #c7d2fe; 
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            margin-top: 5px;
+            display: none; 
+        }
+
+        /* Result and Options */
+        .result-box {
+            background-color: #f0fdf4; 
+            border: 1px solid #d1fae5;
+            box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .result-header {
+            color: var(--highlight-color);
+        }
+
+        .step-button, .inquiry-button {
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .step-button:hover, .inquiry-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+        .inquiry-button {
+             border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container-card">
+        <h1 class="text-4xl font-extrabold text-center mb-4 text-gray-800">
+            David Taylor's Interactive Resume Explorer
+        </h1>
+        <p class="text-center text-gray-500 mb-8">
+            Select a **Transferable Skill** or **Context** below, or use the **Recruiter Inquiries** for a pre-built answer.
+        </p>
+
+        <!-- Interactive Sentence Display - Fixed Text Structure -->
+        <div id="sentenceDisplay" class="text-2xl font-semibold text-gray-800 text-center mb-8 p-6 bg-gray-50 rounded-lg relative">
+            <span id="partSubject" class="font-bold">David</span>
+            <span class="mx-1">leveraged</span>
+            
+            <span id="partActionContainer" class="sentence-part" data-step="action">
+                <span id="partAction">... [Transferable Skill]</span>
+                <!-- Dropdown will be inserted here -->
+            </span>
+            
+            <span class="mx-1">at</span>
+            
+            <span id="partContextContainer" class="sentence-part" data-step="context">
+                <span id="partContext">... [Context]</span>
+                <!-- Dropdown will be inserted here -->
+            </span>
+            
+            <span class="mx-1">resulting in</span>
+            <span id="partOutcome" class="sentence-part outcome" data-step="outcome">... [Result Summary]</span>
+        </div>
+
+        <!-- Result Box -->
+        <div id="resultBox" class="mt-8 p-6 result-box rounded-lg">
+            <h4 class="text-2xl font-extrabold mb-3 result-header flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Detailed Achievement & Result
+            </h4>
+            <p id="resultText" class="text-lg text-gray-700 leading-relaxed text-center">Click a skill and context, or an inquiry above, to see the detailed achievement.</p>
+        </div>
+        <!-- Recruiter Inquiry Section -->
+        <div class="mt-8">
+            <h2 class="text-xl font-bold text-gray-700 mb-3 border-b border-gray-200 pb-1">Recruiter Inquiries (Key Answers)</h2>
+            <div id="inquiryButtons" class="flex flex-wrap gap-2">
+                <!-- Inquiry buttons will be rendered here -->
+            </div>
+        </div>
+
+        <!-- Takeaway Button -->
+        <button id="takeawayButton" class="w-full mt-4 py-3 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-bold step-button shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.836 2.5a8.995 8.995 0 01-18 0" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17v5h.582m4.004-20.5a8.995 8.995 0 01-18 0" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a9 9 0 019-9 9 9 0 019 9v2.176a3 3 0 01-1.054 2.373L16 19v1a2 2 0 01-2 2h-4a2 2 0 01-2-2v-1l-3.946-3.451A3 3 0 013 14.176V12z" />
+            </svg>
+            Generate Random Fact
+        </button>
+
+
+    </div>
+
+    <script>
+        // Data derived *strictly* from the user's provided resume text, mapped to new, transferable skills.
+        const resumeFacts = [
+            // Deloitte Facts (Data Privacy Advisory Analyst)
+            // 1. GDPR Compliance Fact
+            { id: 1, action: "Compliance & Governance", context: "Deloitte (GDPR Workflows)", outcome: "Reduced Fines by $500K+", result: "**Labeled** personal data deletion workflows across global media websites, ensuring GDPR compliance and **reducing potential fines by $500K–$1M+**." },
+            
+            // 2. Project Management/Collaboration Fact
+            { id: 2, action: "Cross-functional Collaboration", context: "Deloitte (OneTrust Automation)", outcome: "Saved Hundreds of Staff Hours", result: "**Project-managed** engineers and legal teams to implement automated OneTrust workflows, **replacing manual email requests and saving hundreds of staff hours**." },
+            
+            // 3. Communication/Documentation Fact
+            { id: 3, action: "Stakeholder Communication", context: "Deloitte (Regulator Transparency)", outcome: "Enhanced Clarity/Transparency", result: "**Edited** privacy program documentation and client presentations, **enhancing clarity and supporting regulator-facing transparency**." },
+            
+            // The Walt Disney Company Facts (Global Communications Intern)
+            // 4. Global Collaboration Fact
+            { id: 4, action: "Cross-functional Collaboration", context: "Disney (Global Safety Comms)", outcome: "Reached 200,000+ Employees", result: "**Developed** multilingual safety, security, and crisis materials—including posters, blogs, emails, and graphics—for **200,000+ employees globally**." },
+
+            // Projects & Lectures
+            // 5. Pokemon Data Fact
+            { id: 5, action: "Data Structuring & Analysis", context: "Pokemon Semantic Data Tools (AI)", outcome: "Built 1,025 Pokémon Framework", result: "**Built** a semantic ontology and linked data framework for **1,025 Pokémon**, using custom AI programs to query weighted attributes for filtering and analysis." },
+            
+            // 6. UW Ontology Data Fact (Focus on Structure/Analysis)
+            { id: 6, action: "Data Structuring & Analysis", context: "UW iSchool (Ontology Design)", outcome: "Structured Recommendations", result: "**Developed** a café menu ontology in PoolParty using SKOS for structured recommendations and improved discoverability." },
+            
+            // 7. Microsoft Capstone Fact (Focus on Optimization)
+            { id: 7, action: "Process & Efficiency Optimization", context: "Microsoft (Power BI Adoption)", outcome: "Cut Report Creation Time 15–20%", result: "**Conducted** UX research and affinity mapping on Power BI adoption, generating insights that **cut report creation time 15–20%**." },
+            
+            // 8. Lecture Fact (Focus on Communication)
+            { id: 8, action: "Stakeholder Communication", context: "Rutgers & WIAD (Guest Lecture)", outcome: "Empathy-Driven Design Talk", result: "**Presented** “Designing for My Mom,” a talk on empathy-driven human-centered design using personal usability testing with non-technical users." },
+            
+            // Education
+            { id: 9, action: "Education (M.S.)", context: "University of Washington (M.S.)", outcome: "M.S. Degree Completion (2022)", result: "Completed Master of Science in Information Management (2022)."},
+            { id: 10, action: "Education (B.A.)", context: "Brigham Young University (B.A.)", outcome: "B.A. Degree Completion (2016)", result: "Completed Bachelor of Arts in Advertising (2016)."},
+        ];
+
+        // Key questions or high-level facts to highlight, focusing on transferable skills
+        const recruiterInquiries = [
+            { id: 201, label: "How do you apply Data & Structured Analysis?", factId: 5 }, // Pokemon Data
+            { id: 202, label: "Describe your Cross-functional Collaboration (Project Mgmt).", factId: 2 }, // Deloitte Collaboration
+            { id: 203, label: "Tell me about Global Stakeholder Communication.", factId: 4 }, // Disney Collaboration
+            { id: 204, label: "How do you use research to drive Process Efficiency?", factId: 7 }, // Microsoft Optimization
+            { id: 205, label: "Tell me about your Compliance/Risk experience (GDPR).", factId: 1 }, // Deloitte Compliance
+        ];
+
+
+        let state = {
+            step: 'complete', 
+            selectedAction: null,
+            selectedContext: null,
+            activeFact: null, 
+        };
+
+        const display = {
+            actionContainer: document.getElementById('partActionContainer'),
+            actionText: document.getElementById('partAction'),
+            contextContainer: document.getElementById('partContextContainer'),
+            contextText: document.getElementById('partContext'),
+            outcome: document.getElementById('partOutcome'),
+            resultText: document.getElementById('resultText'),
+            takeawayButton: document.getElementById('takeawayButton'),
+            inquiryButtons: document.getElementById('inquiryButtons'),
+        };
+
+        // --- Utility Functions ---
+        function capitalizeWords(str) {
+            if (!str) return str;
+            return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function findActiveFact(action, context) {
+            return resumeFacts.find(f => 
+                f.action === action && f.context === context
+            );
+        }
+
+        function findFactById(id) {
+             return resumeFacts.find(f => f.id === id);
+        }
+
+        function hideAllDropdowns() {
+            const containers = [display.actionContainer, display.contextContainer];
+            containers.forEach(container => {
+                const dropdown = container.querySelector('.dropdown-options');
+                if (dropdown) {
+                    dropdown.style.display = 'none';
+                    container.classList.remove('current-step');
+                }
+            });
+            state.step = 'complete';
+        }
+
+        // --- Rendering Functions ---
+
+        function updateSentenceDisplay() {
+            // 1. Reset Classes for dynamic parts
+            display.actionContainer.className = 'sentence-part';
+            display.contextContainer.className = 'sentence-part';
+            display.outcome.className = 'sentence-part outcome';
+            
+            // 2. Update Text
+            display.actionText.textContent = state.selectedAction || '... [Transferable Skill]';
+            display.contextText.textContent = state.selectedContext || '... [Context]';
+            
+            // Set Outcome based on the active fact, or placeholder
+            if (state.activeFact && state.activeFact.outcome) {
+                display.outcome.textContent = state.activeFact.outcome;
+            } else {
+                display.outcome.textContent = '... [Result Summary]';
+            }
+            
+            // 3. Set State Classes (Chosen)
+            if (state.selectedAction) {
+                display.actionContainer.classList.add('chosen');
+            }
+            if (state.selectedContext) {
+                display.contextContainer.classList.add('chosen');
+            }
+        }
+
+        function renderDropdown(partType) {
+            let container;
+            let options = [];
+            
+            if (partType === 'action') {
+                container = display.actionContainer;
+                // Get all unique actions (Transferable Skills)
+                options = Array.from(new Set(resumeFacts.map(f => f.action))).sort();
+            } else if (partType === 'context') {
+                container = display.contextContainer;
+                // Get all unique contexts for the selected action
+                options = Array.from(new Set(
+                    resumeFacts.filter(f => f.action === state.selectedAction).map(f => f.context)
+                )).sort();
+            } else {
+                return;
+            }
+            
+            let dropdown = container.querySelector('.dropdown-options');
+            if (!dropdown) {
+                dropdown = document.createElement('div');
+                dropdown.className = 'dropdown-options flex flex-col gap-2';
+                container.appendChild(dropdown);
+            }
+            
+            dropdown.innerHTML = `<p class="text-xs font-bold text-indigo-700 mb-2">${partType === 'action' ? 'Choose Transferable Skill:' : 'Choose Specific Context:'}</p>`;
+
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'step-button bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-2 px-3 rounded-md text-sm text-left';
+                btn.textContent = option; // Use as-is since they are already properly labeled
+                btn.onclick = (e) => {
+                    e.stopPropagation(); 
+                    handleOptionClick(partType, option);
+                };
+                dropdown.appendChild(btn);
+            });
+            
+            dropdown.style.display = 'flex';
+            container.classList.add('current-step');
+        }
+        
+        function renderInquiries() {
+            display.inquiryButtons.innerHTML = '';
+            
+            recruiterInquiries.forEach(inquiry => {
+                const btn = document.createElement('button');
+                btn.className = 'inquiry-button bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm font-medium';
+                btn.textContent = inquiry.label;
+                btn.onclick = () => handleInquiryClick(inquiry.factId);
+                display.inquiryButtons.appendChild(btn);
+            });
+        }
+
+
+        // --- Interaction Handlers ---
+
+        function handleOptionClick(partType, value) {
+            hideAllDropdowns(); 
+            
+            if (partType === 'action') {
+                state.selectedAction = value;
+                state.selectedContext = null;
+                state.activeFact = null;
+                // After selecting action, automatically open the context dropdown
+                renderDropdown('context');
+            } else if (partType === 'context') {
+                state.selectedContext = value;
+                
+                // Find the specific fact and display result
+                state.activeFact = findActiveFact(state.selectedAction, state.selectedContext);
+                
+                if (state.activeFact) {
+                    display.resultText.innerHTML = state.activeFact.result;
+                }
+            }
+            renderApp();
+        }
+        
+        function handleInquiryClick(factId) {
+            const fact = findFactById(factId);
+            
+            if (fact) {
+                state.selectedAction = fact.action;
+                state.selectedContext = fact.context;
+                state.activeFact = fact;
+                state.step = 'complete';
+                display.resultText.innerHTML = fact.result;
+
+                // Special handling for Education inquiries to show both degrees
+                if (factId === 9) { 
+                    const baFact = findFactById(10);
+                    if (baFact) {
+                        display.resultText.innerHTML += `<br><br>The second degree is a Bachelor of Arts in **${baFact.action.replace('Education (', '').replace(')','')}** from **${baFact.context}** (2016).`;
+                    }
+                }
+            }
+            hideAllDropdowns();
+            renderApp();
+        }
+
+
+        function handleSentencePartClick(event) {
+            const container = event.currentTarget;
+            const partType = container.getAttribute('data-step');
+
+            if (state.step === partType) {
+                // If the same element is clicked, hide it
+                hideAllDropdowns();
+            } else {
+                // Hide any other open dropdowns
+                hideAllDropdowns();
+                
+                // Set step state and render the new dropdown
+                state.step = partType;
+                
+                if (partType === 'context' && !state.selectedAction) {
+                    // Cannot select context without an action, reset to action selection
+                    state.selectedAction = null;
+                    state.selectedContext = null;
+                    state.step = 'action';
+                    renderDropdown('action');
+                } else {
+                    renderDropdown(partType);
+                }
+            }
+
+            renderApp();
+        }
+
+        function initializeRandomState() {
+            // Find a fact that is NOT an educational entry for a more relevant start
+            const operationalFacts = resumeFacts.filter(f => !f.action.startsWith('Education'));
+            const randomFact = operationalFacts[Math.floor(Math.random() * operationalFacts.length)];
+
+            state.selectedAction = randomFact.action;
+            state.selectedContext = randomFact.context;
+            state.activeFact = randomFact;
+            state.step = 'complete'; 
+        }
+
+        function renderApp() {
+            updateSentenceDisplay();
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Attach click listeners to the sentence parts
+            display.actionContainer.addEventListener('click', handleSentencePartClick);
+            display.contextContainer.addEventListener('click', handleSentencePartClick);
+            
+            // Attach click listener for the Takeaway button
+            display.takeawayButton.addEventListener('click', () => {
+                initializeRandomState();
+                display.resultText.innerHTML = state.activeFact.result;
+                hideAllDropdowns(); 
+                renderApp();
+            });
+
+            // 1. Render the Inquiry buttons first
+            renderInquiries();
+
+            // 2. Start with a random operational fact displayed
+            initializeRandomState();
+            
+            // 3. Display the initial result
+            display.resultText.innerHTML = state.activeFact.result;
+
+            // 4. Initial render of sentence parts
+            renderApp();
+        });
+    </script>
+</body>
+</html>
