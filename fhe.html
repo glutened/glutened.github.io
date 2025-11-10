@@ -2,777 +2,857 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>FHE Ideas</title>
+    <title>FHE FIGHTER II</title>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <style>
-    :root {
-        --bg: #f7fbff;
-        --card: #fff;
-        --accent: #0b6fd6;
-        --muted: #6d7680
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
 
     body {
-        font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial;
-        background: var(--bg);
-        margin: 18px;
-        color: #0b1720
+        font-family: 'Press Start 2P', cursive;
+        background: #000;
+        color: #fff;
+        overflow-x: hidden;
+        image-rendering: pixelated;
+        user-select: none;
     }
 
-    .wrap {
-        max-width: 1100px;
-        margin: 0 auto
+    .crt-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.15),
+            rgba(0, 0, 0, 0.15) 1px,
+            transparent 1px,
+            transparent 2px
+        );
+        z-index: 1000;
     }
 
-    h1 {
-        margin: 0 0 6px;
-        font-size: 20px
+    .game-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
     }
 
-    p.lead {
-        margin: 0 0 14px;
-        color: var(--muted);
-        font-size: 13px
+    .header {
+        background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
+        border: 4px solid #ffd700;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
     }
 
-    .grid {
+    .title {
+        font-size: 24px;
+        text-align: center;
+        color: #ffd700;
+        text-shadow: 3px 3px 0 #ff0000, 6px 6px 0 #000;
+        margin-bottom: 10px;
+        animation: glow 2s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+        0%, 100% { text-shadow: 3px 3px 0 #ff0000, 6px 6px 0 #000, 0 0 10px #ffd700; }
+        50% { text-shadow: 3px 3px 0 #ff0000, 6px 6px 0 #000, 0 0 30px #ffd700; }
+    }
+
+    .stats-bar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        font-size: 10px;
+        margin-top: 10px;
+    }
+
+    .stat-item {
+        background: rgba(0, 0, 0, 0.7);
+        padding: 8px;
+        border: 2px solid #00ff00;
+    }
+
+    .timer-display {
+        font-size: 32px;
+        color: #00ff00;
+        text-align: center;
+        margin: 10px 0;
+        text-shadow: 0 0 10px #00ff00;
+    }
+
+    .timer-display.warning {
+        color: #ffff00;
+        animation: pulse 0.5s infinite;
+    }
+
+    .timer-display.danger {
+        color: #ff0000;
+        animation: pulse 0.3s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .score-display {
+        font-size: 28px;
+        color: #ffd700;
+        text-align: center;
+        text-shadow: 2px 2px 0 #ff0000;
+    }
+
+    .multipliers {
         display: flex;
-        gap: 18px;
-        align-items: flex-start
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        min-height: 40px;
+        margin-top: 10px;
     }
 
-    .panel {
-        background: var(--card);
-        padding: 12px;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(10, 20, 30, 0.05);
-        flex: 1
+    .multiplier {
+        background: #ff00ff;
+        color: #fff;
+        padding: 5px 10px;
+        border: 2px solid #fff;
+        font-size: 8px;
+        animation: bounce 0.5s;
+        box-shadow: 0 0 10px #ff00ff;
     }
 
-    .panel.small {
-        flex: 0 0 360px
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
 
-    #batchList {
-        list-style: none;
-        padding: 10px;
-        margin: 10px 0 0;
+    .arena {
+        background: linear-gradient(180deg, #2a5298 0%, #1e3a5f 50%, #8b4513 100%);
+        border: 6px solid #8b4513;
+        padding: 30px 20px;
+        min-height: 400px;
+        position: relative;
+        margin-bottom: 20px;
+        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .choices {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 10px
+        gap: 15px;
+        margin-top: 20px;
     }
 
-    #batchList li {
-        padding: 12px;
-        border-radius: 8px;
-        border: 1px solid #e6eef8;
-        background: linear-gradient(#fff, #fbfeff);
-        cursor: pointer;
+    .choice-card {
+        background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
+        border: 4px solid #ffd700;
+        padding: 20px 10px;
         text-align: center;
-        min-height: 56px;
+        cursor: pointer;
+        position: relative;
+        transition: transform 0.1s;
+        font-size: 11px;
+        line-height: 1.6;
+        min-height: 120px;
         display: flex;
         align-items: center;
         justify-content: center;
-        user-select: none
+        box-shadow: 0 4px 0 #996600, 0 8px 20px rgba(0, 0, 0, 0.5);
     }
 
-    #batchList li.selected {
-        background: #eaf4ff;
-        outline: 3px solid rgba(11, 111, 214, 0.12);
-        transform: translateY(-2px)
+    .choice-card:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 6px 0 #996600, 0 12px 30px rgba(255, 215, 0, 0.6);
     }
 
-    .controls {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 10px
+    .choice-card:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #996600;
     }
 
-    button {
-        background: var(--accent);
-        color: #fff;
-        border: 0;
-        padding: 8px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600
+    .explosion {
+        position: absolute;
+        font-size: 60px;
+        animation: explode 0.6s forwards;
+        pointer-events: none;
     }
 
-    button.big-btn {
-        padding: 12px 24px;
+    @keyframes explode {
+        0% { transform: scale(0) rotate(0deg); opacity: 1; }
+        50% { transform: scale(1.5) rotate(180deg); opacity: 1; }
+        100% { transform: scale(2) rotate(360deg); opacity: 0; }
+    }
+
+    .instruction {
+        text-align: center;
+        font-size: 14px;
+        color: #ffff00;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 0 #000;
+        animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+        0%, 49% { opacity: 1; }
+        50%, 100% { opacity: 0.3; }
+    }
+
+    .results-screen {
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+        border: 6px solid #ffd700;
+        padding: 30px;
+        text-align: center;
+        display: none;
+    }
+
+    .results-screen.active {
+        display: block;
+    }
+
+    .final-score {
+        font-size: 48px;
+        color: #ffd700;
+        margin: 20px 0;
+        text-shadow: 3px 3px 0 #ff0000;
+    }
+
+    .top-picks {
+        background: rgba(0, 0, 0, 0.5);
+        border: 3px solid #00ff00;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .top-picks h3 {
+        color: #00ff00;
         font-size: 16px;
+        margin-bottom: 15px;
+        text-align: center;
     }
 
-    button.secondary {
-        background: #f2f7ff;
-        color: var(--accent);
-        border: 1px solid rgba(11, 111, 214, 0.08)
+    .top-picks ol {
+        list-style: none;
+        counter-reset: item;
     }
 
-    .status {
-        margin-top: 10px;
-        color: var(--muted);
-        font-size: 13px
-    }
-
-    .progress {
-        height: 10px;
-        background: #eef6ff;
-        border-radius: 999px;
-        overflow: hidden;
-        margin-top: 8px
-    }
-
-    .progress > i {
-        display: block;
-        height: 100%;
-        width: 0;
-        background: linear-gradient(90deg, var(--accent), #3b97f1);
-        transition: width .35s
-    }
-
-    ol#favorites {
-        padding-left: 18px;
-        margin: 10px 0 0 0;
-        max-height: 520px;
-        overflow: auto
-    }
-
-    ol#favorites li {
-        background: #fff;
-        margin: 8px 0;
+    .top-picks li {
+        counter-increment: item;
         padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #e6f0fb;
+        margin: 8px 0;
+        background: rgba(255, 255, 255, 0.1);
+        border-left: 4px solid #ffd700;
+        font-size: 11px;
+    }
+
+    .top-picks li:before {
+        content: counter(item) ". ";
+        color: #ffd700;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    .high-scores {
+        background: rgba(0, 0, 0, 0.7);
+        border: 3px solid #ff00ff;
+        padding: 20px;
+        margin: 20px 0;
+    }
+
+    .high-scores h3 {
+        color: #ff00ff;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    .high-score-entry {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        cursor: grab
-    }
-
-    .small-btn {
-        background: transparent;
-        border: 1px solid #e1e8f6;
-        padding: 6px 8px;
-        border-radius: 6px;
-        color: var(--muted);
-        cursor: pointer;
-        font-size: 13px
-    }
-
-    .eliminated-list {
-        margin-top: 8px;
-        max-height: 220px;
-        overflow: auto;
-        border-top: 1px dashed #eef4fb;
-        padding-top: 8px
-    }
-
-    .elim-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 6px 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.03)
-    }
-
-    input[type="text"], textarea {
-        width: 100%;
         padding: 8px;
-        border: 1px solid #e6eef8;
-        border-radius: 6px;
-        font-family: inherit;
-        font-size: 14px
+        margin: 5px 0;
+        border-bottom: 1px solid #444;
+        font-size: 10px;
     }
 
-    textarea {
-        min-height: 80px;
-        resize: vertical
+    .arcade-button {
+        background: linear-gradient(180deg, #ff0000 0%, #cc0000 100%);
+        color: #fff;
+        border: 4px solid #fff;
+        padding: 15px 30px;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 12px;
+        cursor: pointer;
+        margin: 10px;
+        box-shadow: 0 6px 0 #800000, 0 8px 20px rgba(0, 0, 0, 0.5);
+        transition: transform 0.1s;
     }
 
-    label {
-        display: block;
-        margin-bottom: 4px;
-        color: var(--muted);
-        font-size: 13px;
-        font-weight: 500
+    .arcade-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 0 #800000, 0 10px 25px rgba(255, 0, 0, 0.5);
     }
 
-    .share-buttons {
-        display: flex;
-        gap: 8px;
-        margin-top: 10px
+    .arcade-button:active {
+        transform: translateY(3px);
+        box-shadow: 0 3px 0 #800000;
     }
 
-    @media (max-width: 880px) {
-        .grid {
-            flex-direction:column
-        }
+    .arcade-button.secondary {
+        background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
+        box-shadow: 0 6px 0 #1e40af, 0 8px 20px rgba(0, 0, 0, 0.5);
+    }
 
-        .panel.small {
-            flex:1
-        }
+    .arcade-button.secondary:hover {
+        box-shadow: 0 8px 0 #1e40af, 0 10px 25px rgba(37, 99, 235, 0.5);
+    }
 
-        #batchList {
-            grid-template-columns: repeat(2, 1fr)
-        }
+    .arcade-button.secondary:active {
+        box-shadow: 0 3px 0 #1e40af;
+    }
+
+    .progress-text {
+        text-align: center;
+        font-size: 12px;
+        color: #ffff00;
+        margin-top: 10px;
+    }
+
+    .name-input-screen {
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+        border: 6px solid #ffd700;
+        padding: 40px;
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    .name-input-screen h2 {
+        font-size: 18px;
+        color: #ffd700;
+        margin-bottom: 30px;
+    }
+
+    .name-input-screen input {
+        background: rgba(0, 0, 0, 0.7);
+        border: 3px solid #00ff00;
+        color: #00ff00;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 14px;
+        padding: 15px;
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .screenshot-area {
+        background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
+        border: 6px solid #ffd700;
+        padding: 30px;
+        margin: 20px auto;
+        max-width: 600px;
+    }
+
+    @media (max-width: 600px) {
+        .title { font-size: 16px; }
+        .choices { grid-template-columns: 1fr; }
+        .choice-card { font-size: 10px; min-height: 100px; }
+        .stats-bar { grid-template-columns: 1fr; }
+        .timer-display { font-size: 24px; }
+        .score-display { font-size: 20px; }
     }
     </style>
 </head>
 <body>
-    <div class="wrap">
-        <h1>🧪 This SCIENTIFIC Algorithm Will Find Your Top 5 FHE Activities (Yes It's Real Science, Trust Us)</h1>
-        <p class="lead">It's like if Marie Kondo and a NASA scientist had a baby and that baby ranked FHE ideas for the Saddleback YSA Ward.</p>
+    <div class="crt-overlay"></div>
+    <div class="game-container" id="gameContainer">
+        
+        <!-- Name Input Screen -->
+        <div class="name-input-screen" id="nameInputScreen">
+            <h2>ENTER YOUR NAME</h2>
+            <input type="text" id="playerName" maxlength="10" placeholder="PLAYER1" />
+            <div>
+                <button class="arcade-button" onclick="startGame()">START GAME</button>
+            </div>
+        </div>
 
-        <div class="grid">
-            <div class="panel">
-                <strong>Pick one or more each round</strong>
-                <ul id="batchList" aria-live="polite"></ul>
-
-                <div class="controls">
-                    <button id="pickBtn" class="big-btn">Pick</button>
-                    <button id="passBtn" class="secondary big-btn">Pass</button>
-                </div>
-
-                <div class="status">
-                    <div>
-                        Available: 
-                        <span id="availableCount">0</span>
-                         · Favorites: 
-                        <span id="favCount">0</span>
-                    </div>
-                    <div class="progress" title="Progress">
-                        <i id="progressBar"></i>
-                    </div>
-                    <div id="roundNote" class="status" style="margin-top:6px;color:var(--muted);font-size:13px"></div>
+        <!-- Game Screen -->
+        <div id="gameScreen" style="display: none;">
+            <div class="header">
+                <div class="title">FHE FIGHTER II</div>
+                <div class="timer-display" id="timer">15.00</div>
+                <div class="score-display" id="score">SCORE: 0</div>
+                <div class="multipliers" id="multipliers"></div>
+                <div class="stats-bar">
+                    <div class="stat-item">REMAINING: <span id="remainingCount">30</span></div>
+                    <div class="stat-item">FAVORITES: <span id="favsCount">0</span></div>
                 </div>
             </div>
 
-            <div class="panel small">
-                <strong>Found favorites</strong>
-                <ol id="favorites" aria-live="polite"></ol>
+            <div class="arena">
+                <div class="instruction">TAP TO CHOOSE YOUR FAVORITE!</div>
+                <div class="choices" id="choices"></div>
+                <div class="progress-text" id="progressText"></div>
+            </div>
+        </div>
 
-                <div class="share-buttons" id="shareButtons" style="display:none">
-                    <button onclick="shareEmail()" class="secondary big-btn">Email Favorites</button>
-                    <button onclick="shareSMS()" class="secondary big-btn">Text Favorites</button>
-                </div>
-
-                <details style="margin-top:10px">
-                    <summary style="color:var(--muted)">Eliminated items (rescue eligible)</summary>
-                    <div class="eliminated-list" id="eliminatedList"></div>
-                </details>
-
-                <div style="margin-top:10px;display:flex;gap:8px">
-                    <button id="rescueAll" class="secondary">Rescue eligible</button>
-                    <button id="resetBtn" class="secondary">Reset</button>
+        <!-- Results Screen -->
+        <div class="results-screen" id="resultsScreen">
+            <div class="screenshot-area" id="screenshotArea">
+                <div class="title">GAME OVER</div>
+                <div class="final-score" id="finalScore">0</div>
+                <div style="font-size: 14px; color: #ffd700; margin: 10px 0;" id="playerNameDisplay"></div>
+                
+                <div class="top-picks">
+                    <h3>YOUR TOP 5 ACTIVITIES</h3>
+                    <ol id="topPicksList"></ol>
                 </div>
             </div>
 
-            <div class="panel">
-                <strong>Submit a New Activity Idea</strong>
-                <div style="margin-top:10px">
-                    <label>Your Name</label>
-                    <input type="text" id="nameInput" placeholder="Enter your name">
-                </div>
-                <div style="margin-top:10px">
-                    <label>Activity Idea</label>
-                    <textarea id="ideaInput" placeholder="Describe your activity idea..."></textarea>
-                </div>
-                <div style="display:flex;gap:8px;margin-top:10px">
-                    <button onclick="submitViaEmail()" class="secondary big-btn">Email Idea</button>
-                    <button onclick="submitViaSMS()" class="secondary big-btn">Text Idea</button>
-                </div>
-                <div id="messageBox" style="margin-top:8px;color:var(--muted);font-size:13px"></div>
+            <div class="high-scores">
+                <h3>HIGH SCORES</h3>
+                <div id="highScoresList"></div>
+            </div>
+
+            <div>
+                <button class="arcade-button secondary" onclick="shareScore()">SHARE SCORE</button>
+                <button class="arcade-button" onclick="resetGame()">PLAY AGAIN</button>
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-    /* -------- DATA (activities) -------- */
-    const ITEMS = [
-    "Board Games", "Nature Walk", "Nerf Guns", "Family Feud", "Charades", "Nursing Home", "Small Group Dinners", "Local Band", "Frisbee Golf", "Capture The Flag","Thrift Swap", "Cookie Decorating", 
-    "Four Square", "Volleyball", "Poetry Slam", "Pancakes", "AI Workshop", "Career Panel", "Meal Delivery", "Dodgeball",
-    "Mental Health", "Karaoke Night", "City Council Meeting","Burn Stuff", "Sardines", "PowerPoint Night",
-     "Pickleball", "Arts & Crafts",
-     "Chair Soccer", "Video Games"
+    const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+    
+    const ACTIVITIES = [
+        "Board Games", "Nature Walk", "Nerf Guns", "Family Feud", "Charades", 
+        "Nursing Home", "Small Group Dinners", "Local Band", "Frisbee Golf", 
+        "Capture The Flag", "Thrift Swap", "Cookie Decorating", "Four Square", 
+        "Volleyball", "Poetry Slam", "Pancakes", "AI Workshop", "Career Panel", 
+        "Meal Delivery", "Dodgeball", "Mental Health", "Karaoke Night", 
+        "City Council Meeting", "Burn Stuff", "Sardines", "PowerPoint Night",
+        "Pickleball", "Arts & Crafts", "Chair Soccer", "Video Games"
     ];
 
-    /* -------- STATE --------
-    state.current: items waiting in the current round (to be batched)
-    state.evaluating: current batch displayed
-    state.survived: survivors collected during the round
-    state.eliminated: { id: { eliminatedBy: [ids] } }
-    state.favorites: ordered array
-    history & redoStack store snapshots for undo/redo
-    settings.batchSize: 6
-    ----------------------------------*/
-    let state = {
-        current: [],
-        evaluating: [],
-        survived: [],
-        eliminated: {},
-        favorites: [],
-        history: [],
-        redoStack: [],
-        settings: {
-            batchSize: 6
-        }
+    const FAKE_HIGH_SCORES = [
+        { name: "RYU", score: 8750 },
+        { name: "D&C", score: 8200 },
+        { name: "SAM", score: 7890 },
+        { name: "KEN", score: 7450 },
+        { name: "JST", score: 7100 },
+        { name: "1820", score: 6800 },
+        { name: "YSA", score: 6550 },
+        { name: "AMY", score: 6200 }
+    ];
+
+    let gameState = {
+        playerName: '',
+        score: 0,
+        current: [],           // Items waiting to be shown this round
+        evaluating: [],        // Current batch being evaluated
+        survived: [],          // Items that survived this round so far
+        eliminated: {},        // Items eliminated: {id: {eliminatedBy: [ids]}}
+        favorites: [],         // Final top 5 list
+        timer: 15,
+        timerInterval: null,
+        highScores: [...FAKE_HIGH_SCORES]
     };
 
-    /* -------- utilities -------- */
-    const deep = v => JSON.parse(JSON.stringify(v));
-    const shuffle = arr => arr.slice().sort(() => Math.random() - 0.5);
-    const unique = arr => Array.from(new Set(arr));
-    const idFor = s => s; // id is the name string
+    const BATCH_SIZE = 3;
 
-    function availableItems() {
-        return ITEMS.filter(i => !state.favorites.includes(i) && !state.eliminated[i]);
-    }
-
-    /* -------- history (undo/redo) -------- */
-    function snapshot() {
-        state.history.push(deep({
-            current: state.current,
-            evaluating: state.evaluating,
-            survived: state.survived,
-            eliminated: state.eliminated,
-            favorites: state.favorites
-        }));
-        if (state.history.length > 300)
-            state.history.shift();
-        state.redoStack = [];
-        renderControls();
-    }
-    function undo() {
-        if (!state.history.length)
-            return;
-        state.redoStack.push(deep({
-            current: state.current,
-            evaluating: state.evaluating,
-            survived: state.survived,
-            eliminated: state.eliminated,
-            favorites: state.favorites
-        }));
-        const s = state.history.pop();
-        state.current = s.current;
-        state.evaluating = s.evaluating;
-        state.survived = s.survived;
-        state.eliminated = s.eliminated;
-        state.favorites = s.favorites;
-        renderAll();
-    }
-    function redo() {
-        if (!state.redoStack.length)
-            return;
-        state.history.push(deep({
-            current: state.current,
-            evaluating: state.evaluating,
-            survived: state.survived,
-            eliminated: state.eliminated,
-            favorites: state.favorites
-        }));
-        const s = state.redoStack.pop();
-        state.current = s.current;
-        state.evaluating = s.evaluating;
-        state.survived = s.survived;
-        state.eliminated = s.eliminated;
-        state.favorites = s.favorites;
-        renderAll();
+    function shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
     }
 
-    /* -------- core flow (batch-elimination) -------- */
+    function getAvailableItems() {
+        return ACTIVITIES.filter(id => 
+            !gameState.favorites.includes(id) && 
+            !gameState.eliminated[id]
+        );
+    }
+
+    function startGame() {
+        const nameInput = document.getElementById('playerName').value.trim() || 'PLAYER1';
+        gameState.playerName = nameInput.toUpperCase().slice(0, 10);
+        
+        document.getElementById('nameInputScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'block';
+        
+        startNewRound();
+    }
 
     function startNewRound() {
-        // pool is all available (not favorites, not eliminated)
-        state.current = shuffle(availableItems());
-        state.evaluating = [];
-        state.survived = [];
-        // if only one candidate, it's logically the next favorite
-        if (state.current.length === 1) {
-            // automatically promote to favorite (but snapshot first)
-            snapshot();
-            addFavorite(state.current[0]);
+        const available = getAvailableItems();
+        
+        if (available.length === 0) {
+            // All done!
+            endGame();
             return;
         }
-        if (state.current.length === 0) {
-            // nothing to do
-            renderAll();
+        
+        if (available.length === 1) {
+            // Last item automatically becomes a favorite
+            addFavorite(available[0]);
             return;
         }
+        
+        gameState.current = shuffle(available);
+        gameState.evaluating = [];
+        gameState.survived = [];
+        
         loadNextBatch();
-        renderAll();
     }
 
     function loadNextBatch() {
-        state.evaluating = state.current.splice(0, state.settings.batchSize);
-        renderBatch();
-    }
-
-    function processPicked(pickedIds) {
-        if (!state.evaluating || !state.evaluating.length)
-            return;
-        // survivors are the picked items; if none picked (pass), everyone survives this batch
-        const picked = unique(pickedIds || []);
-        if (picked.length === 0) {
-            state.survived = state.survived.concat(state.evaluating);
-        } else {
-            // add picked to survivors
-            state.survived = state.survived.concat(picked);
-            // losers are those in evaluating not in picked
-            const losers = state.evaluating.filter(i => picked.indexOf(i) === -1);
-            losers.forEach(loser => {
-                if (!state.eliminated[loser])
-                    state.eliminated[loser] = {
-                        eliminatedBy: []
-                    };
-                // union picked with existing eliminatedBy
-                state.eliminated[loser].eliminatedBy = unique(state.eliminated[loser].eliminatedBy.concat(picked));
-            });
-        }
-        // clear evaluating
-        state.evaluating = [];
-        // if no more batches this round, finalize round (survived -> next round's pool)
-        if (state.current.length === 0) {
+        if (gameState.current.length === 0) {
+            // Round complete - prepare next round with survivors
             finalizeRound();
-        } else {
-            loadNextBatch();
+            return;
         }
-        renderAll();
+        
+        const batchSize = Math.min(BATCH_SIZE, gameState.current.length);
+        gameState.evaluating = gameState.current.splice(0, batchSize);
+        gameState.timer = 15;
+        
+        renderBatch();
+        startTimer();
+        updateUI();
     }
 
     function finalizeRound() {
-        // prepare next round's pool from survivors (unique)
-        state.current = unique(state.survived.slice());
-        state.survived = [];
-        // If after this the pool is empty: no candidates remain (done)
-        if (state.current.length === 0) {
-            renderAll();
+        if (gameState.survived.length === 1) {
+            // Single survivor becomes next favorite
+            addFavorite(gameState.survived[0]);
             return;
         }
-        // If pool is a single item, it's the logically next favorite
-        if (state.current.length === 1) {
-            addFavorite(state.current[0]);
+        
+        if (gameState.survived.length === 0) {
+            // Shouldn't happen, but just in case
+            endGame();
             return;
         }
-        // otherwise continue with next batch of the new round
+        
+        // Start new round with survivors
+        gameState.current = shuffle(gameState.survived);
+        gameState.survived = [];
         loadNextBatch();
     }
 
-    /* When a favorite is added, some eliminated items may become eligible to return:
-       An eliminated item returns if every item that eliminated it is now a favorite.
-    */
-    function rescueEligibleEliminated() {
-        const toRescue = [];
-        Object.keys(state.eliminated).forEach(id => {
-            const eliminators = state.eliminated[id].eliminatedBy || [];
-            if (eliminators.length === 0)
-                return;
-            const allElimsAreFavs = eliminators.every(e => state.favorites.includes(e));
-            if (allElimsAreFavs)
-                toRescue.push(id);
-        });
-        toRescue.forEach(id => delete state.eliminated[id]);
-        // If we aren't mid-batch and there are rescued items, ensure a round starts that will include them
-        if (state.evaluating.length === 0 && state.current.length === 0 && toRescue.length) {
-            startNewRound();
-        }
-    }
-
-    /* Add a favorite (only when logically determined) */
     function addFavorite(itemId) {
-        if (!itemId)
-            return;
-        if (state.favorites.includes(itemId))
-            return;
-        // remove from any holder
-        // ensure snapshot handled by caller
-        state.favorites.push(itemId);
-        delete state.eliminated[itemId]; // clear eliminated if somehow present
-        // rescue others that become eligible
-        rescueEligibleEliminated();
-        // begin new round for remaining available items if any
-        if (availableItems().length > 0) {
-            startNewRound();
-        } else {
-            // finished
-            state.current = [];
-            state.evaluating = [];
-            renderAll();
-        }
-    }
-
-    /* Manual rescue via UI */
-    function rescueItem(id) {
-        if (state.eliminated[id])
-            delete state.eliminated[id];
-        if (!state.current.includes(id) && !state.favorites.includes(id)) {
-            state.current.unshift(id);
-        }
-        renderAll();
-    }
-
-    /* Remove a favorite (brings it back into pool) */
-    function removeFavorite(id) {
-        state.favorites = state.favorites.filter(f => f !== id);
-        // put back into pool to be re-evaluated
-        if (!state.current.includes(id))
-            state.current.unshift(id);
-        // start a round if necessary
-        if (state.evaluating.length === 0)
-            startNewRound();
-        else
-            renderAll();
-    }
-
-    /* --------- Rendering --------- */
-    const batchListEl = document.getElementById('batchList');
-    const favoritesEl = document.getElementById('favorites');
-    const eliminatedListEl = document.getElementById('eliminatedList');
-    const availableCountEl = document.getElementById('availableCount');
-    const favCountEl = document.getElementById('favCount');
-    const progressBarEl = document.getElementById('progressBar');
-    const roundNoteEl = document.getElementById('roundNote');
-
-    function renderBatch() {
-        batchListEl.innerHTML = '';
-        state.evaluating.forEach(id => {
-            const li = document.createElement('li');
-            li.textContent = id;
-            li.dataset.id = id;
-            li.tabIndex = 0;
-            li.addEventListener('click', () => li.classList.toggle('selected'));
-            li.addEventListener('keydown', e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    li.classList.toggle('selected');
-                }
-            });
-            batchListEl.appendChild(li);
-        });
-        renderControls();
-    }
-
-    function renderFavorites() {
-        favoritesEl.innerHTML = '';
-        state.favorites.forEach(name => {
-            const li = document.createElement('li');
-            li.dataset.id = name;
-            const label = document.createElement('span');
-            label.textContent = name;
-            const right = document.createElement('div');
-            right.style.display = 'flex';
-            right.style.gap = '8px';
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'small-btn';
-            removeBtn.textContent = 'Remove';
-            removeBtn.onclick = () => {
-                snapshot();
-                removeFavorite(name);
-            };
-            right.appendChild(removeBtn);
-            li.appendChild(label);
-            li.appendChild(right);
-            li.draggable = true;
-            favoritesEl.appendChild(li);
-        });
+        if (gameState.favorites.includes(itemId)) return;
         
-        // Show/hide share buttons
-        const shareButtonsEl = document.getElementById('shareButtons');
-        if (shareButtonsEl) {
-            shareButtonsEl.style.display = state.favorites.length ? 'flex' : 'none';
+        gameState.favorites.push(itemId);
+        delete gameState.eliminated[itemId];
+        
+        // Rescue items that were only eliminated by this favorite
+        rescueEligibleItems();
+        
+        if (gameState.favorites.length >= 5) {
+            endGame();
+            return;
         }
+        
+        // Continue with next round
+        startNewRound();
     }
 
-    /* Favorites drag & drop reordering */
-    let draggingEl = null;
-    favoritesEl.addEventListener('dragstart', e => {
-        draggingEl = e.target.closest('li');
-        if (draggingEl)
-            draggingEl.classList.add('dragging');
-    });
-    favoritesEl.addEventListener('dragend', () => {
-        if (draggingEl)
-            draggingEl.classList.remove('dragging');
-        draggingEl = null;
-        updateFavoritesOrderFromDOM();
-    });
-    favoritesEl.addEventListener('dragover', e => {
-        e.preventDefault();
-        const after = getDragAfterElement(favoritesEl, e.clientY);
-        const dragging = document.querySelector('.dragging');
-        if (!dragging)
-            return;
-        if (after == null)
-            favoritesEl.appendChild(dragging);
-        else
-            favoritesEl.insertBefore(dragging, after);
-    });
-    function getDragAfterElement(container, y) {
-        const els = [...container.querySelectorAll('li:not(.dragging)')];
-        let closest = null,
-            closestOffset = Number.NEGATIVE_INFINITY;
-        els.forEach(child => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closestOffset) {
-                closestOffset = offset;
-                closest = child;
+    function rescueEligibleItems() {
+        const toRescue = [];
+        
+        Object.keys(gameState.eliminated).forEach(id => {
+            const eliminatedBy = gameState.eliminated[id].eliminatedBy || [];
+            if (eliminatedBy.length === 0) return;
+            
+            // If all eliminators are now favorites, rescue this item
+            const allAreFavorites = eliminatedBy.every(e => gameState.favorites.includes(e));
+            if (allAreFavorites) {
+                toRescue.push(id);
             }
         });
-        return closest;
-    }
-    function updateFavoritesOrderFromDOM() {
-        const newOrder = [...favoritesEl.querySelectorAll('li')].map(li => li.dataset.id);
-        if (newOrder.length && JSON.stringify(newOrder) !== JSON.stringify(state.favorites)) {
-            snapshot();
-            state.favorites = newOrder;
-            rescueEligibleEliminated();
-            renderAll();
-        }
+        
+        toRescue.forEach(id => delete gameState.eliminated[id]);
     }
 
-    function renderEliminated() {
-        eliminatedListEl.innerHTML = '';
-        const keys = Object.keys(state.eliminated);
-        if (!keys.length) {
-            eliminatedListEl.innerHTML = '<div style="color:var(--muted)">None</div>';
-            return;
-        }
-        keys.forEach(id => {
-            const row = document.createElement('div');
-            row.className = 'elim-item';
-            const left = document.createElement('div');
-            left.innerHTML = `<strong>${id}</strong><div style="color:var(--muted);font-size:13px">eliminated by: ${state.eliminated[id].eliminatedBy.join(', ')}</div>`;
-            const right = document.createElement('div');
-            const rescueBtn = document.createElement('button');
-            rescueBtn.className = 'small-btn';
-            rescueBtn.textContent = 'Rescue';
-            rescueBtn.onclick = () => {
-                snapshot();
-                rescueItem(id);
-            };
-            right.appendChild(rescueBtn);
-            row.appendChild(left);
-            row.appendChild(right);
-            eliminatedListEl.appendChild(row);
+    function renderBatch() {
+        const choicesEl = document.getElementById('choices');
+        choicesEl.innerHTML = '';
+        
+        gameState.evaluating.forEach(activity => {
+            const card = document.createElement('div');
+            card.className = 'choice-card';
+            card.textContent = activity;
+            card.onclick = () => selectActivity(activity, card);
+            choicesEl.appendChild(card);
         });
     }
 
-    function renderControls() {
-        availableCountEl.textContent = availableItems().length;
-        favCountEl.textContent = state.favorites.length;
-        const progressPercent = Math.round((state.favorites.length / ITEMS.length) * 100);
-        progressBarEl.style.width = Math.min(100, Math.max(0, progressPercent)) + '%';
-        roundNoteEl.textContent = state.evaluating.length ? `Round in progress — showing ${state.evaluating.length} items (batch)` : (state.current.length ? `Round queued — ${state.current.length} items waiting` : `No active batch`);
-        document.getElementById('pickBtn').disabled = !state.evaluating.length;
-        document.getElementById('passBtn').disabled = !state.evaluating.length;
-    }
+    function selectActivity(activity, element) {
+        stopTimer();
+        
+        // Calculate score
+        const timeBonus = Math.floor(gameState.timer * 10);
+        let points = 100 + timeBonus;
+        const multipliers = [];
 
-    function renderAll() {
-        // if there's no evaluating but current has candidates, load next batch
-        if (!state.evaluating.length && state.current.length)
+        // Combo (time > 10)
+        if (gameState.timer > 10) {
+            points += 250;
+            multipliers.push('COMBO!');
+        }
+
+        // Critical hit (ends in 0 or 5)
+        const timeStr = gameState.timer.toFixed(2);
+        const lastDigit = timeStr[timeStr.length - 1];
+        if (lastDigit === '0' || lastDigit === '5') {
+            points += 500;
+            multipliers.push('CRITICAL!');
+        }
+
+        // 6-7 bonus
+        if (timeStr.includes('6') && timeStr.includes('7')) {
+            points += 777;
+            multipliers.push('6-7 BONUS!');
+        }
+
+        // Random bonuses
+        if (Math.random() > 0.7) {
+            points += Math.floor(Math.random() * 300);
+            multipliers.push('LUCKY!');
+        }
+
+        gameState.score += points;
+        
+        // Winner survives
+        gameState.survived.push(activity);
+        
+        // Losers are eliminated
+        const losers = gameState.evaluating.filter(a => a !== activity);
+        losers.forEach(loser => {
+            if (!gameState.eliminated[loser]) {
+                gameState.eliminated[loser] = { eliminatedBy: [] };
+            }
+            if (!gameState.eliminated[loser].eliminatedBy.includes(activity)) {
+                gameState.eliminated[loser].eliminatedBy.push(activity);
+            }
+        });
+
+        // Clear evaluating
+        gameState.evaluating = [];
+
+        // Show effects
+        showMultipliers(multipliers);
+        createExplosion(element);
+        
+        setTimeout(() => {
             loadNextBatch();
-        renderBatch();
-        renderFavorites();
-        renderEliminated();
-        renderControls();
+        }, 1500);
     }
 
-    /* -------- Sharing & Submission -------- */
-    const RECIPIENT_EMAIL = 'email@daviddot.com';
-    const RECIPIENT_PHONE = '+13106124412';
-
-    function shareEmail() {
-        if (!state.favorites.length) {
-            alert('No favorites to share yet!');
-            return;
-        }
-        const subject = encodeURIComponent('My Top Activity Picks');
-        const body = encodeURIComponent(`Here are my favorite activities:\n\n${state.favorites.map((item, i) => `${i + 1}. ${item}`).join('\n')}`);
-        window.location.href = `mailto:${RECIPIENT_EMAIL}?subject=${subject}&body=${body}`;
-    }
-
-    function shareSMS() {
-        if (!state.favorites.length) {
-            alert('No favorites to share yet!');
-            return;
-        }
-        const message = encodeURIComponent(`My top activities: ${state.favorites.slice(0, 5).join(', ')}`);
-        window.location.href = `sms:${RECIPIENT_PHONE}?body=${message}`;
-    }
-
-    function submitViaEmail() {
-        const name = document.getElementById('nameInput').value.trim();
-        const idea = document.getElementById('ideaInput').value.trim();
-        const msgBox = document.getElementById('messageBox');
+    function createExplosion(element) {
+        const explosions = ['💥', '⚡', '🌟', '💫', '✨'];
+        const rect = element.getBoundingClientRect();
         
-        if (!name || !idea) {
-            msgBox.textContent = 'Please fill in both fields';
-            msgBox.style.color = '#d32f2f';
-            return;
+        for (let i = 0; i < 5; i++) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.textContent = explosions[Math.floor(Math.random() * explosions.length)];
+            explosion.style.left = (rect.left + Math.random() * rect.width) + 'px';
+            explosion.style.top = (rect.top + Math.random() * rect.height) + 'px';
+            document.body.appendChild(explosion);
+            
+            setTimeout(() => explosion.remove(), 600);
         }
         
-        const subject = encodeURIComponent('New Activity Idea from ' + name);
-        const body = encodeURIComponent(`Name: ${name}\n\nActivity Idea:\n${idea}`);
-        window.location.href = `mailto:${RECIPIENT_EMAIL}?subject=${subject}&body=${body}`;
-        
-        msgBox.textContent = 'Opening email...';
-        msgBox.style.color = 'var(--muted)';
+        element.style.opacity = '0';
     }
 
-    function submitViaSMS() {
-        const name = document.getElementById('nameInput').value.trim();
-        const idea = document.getElementById('ideaInput').value.trim();
-        const msgBox = document.getElementById('messageBox');
+    function showMultipliers(multipliers) {
+        const multipliersEl = document.getElementById('multipliers');
+        multipliersEl.innerHTML = '';
         
-        if (!name || !idea) {
-            msgBox.textContent = 'Please fill in both fields';
-            msgBox.style.color = '#d32f2f';
-            return;
+        multipliers.forEach((text, i) => {
+            setTimeout(() => {
+                const mult = document.createElement('div');
+                mult.className = 'multiplier';
+                mult.textContent = text;
+                multipliersEl.appendChild(mult);
+                
+                setTimeout(() => mult.remove(), 2000);
+            }, i * 200);
+        });
+    }
+
+    function startTimer() {
+        const timerEl = document.getElementById('timer');
+        gameState.timerInterval = setInterval(() => {
+            gameState.timer -= 0.01;
+            
+            if (gameState.timer <= 0) {
+                gameState.timer = 0;
+                stopTimer();
+                // Auto-select random choice
+                const randomActivity = gameState.evaluating[Math.floor(Math.random() * gameState.evaluating.length)];
+                const cards = document.querySelectorAll('.choice-card');
+                const randomCard = cards[Math.floor(Math.random() * cards.length)];
+                selectActivity(randomActivity, randomCard);
+            }
+            
+            timerEl.textContent = gameState.timer.toFixed(2);
+            timerEl.className = 'timer-display';
+            if (gameState.timer < 5) timerEl.className += ' danger';
+            else if (gameState.timer < 10) timerEl.className += ' warning';
+        }, 10);
+    }
+
+    function stopTimer() {
+        if (gameState.timerInterval) {
+            clearInterval(gameState.timerInterval);
+            gameState.timerInterval = null;
         }
-        
-        const message = encodeURIComponent(`${name}: ${idea}`);
-        window.location.href = `sms:${RECIPIENT_PHONE}?body=${message}`;
-        
-        msgBox.textContent = 'Opening messages...';
-        msgBox.style.color = 'var(--muted)';
     }
 
-    /* -------- UI hooks -------- */
-    document.getElementById('pickBtn').addEventListener('click', () => {
-        if (!state.evaluating.length)
-            return;
-        const selected = [...batchListEl.querySelectorAll('li.selected')].map(li => li.dataset.id);
-        snapshot();
-        processPicked(selected);
-    });
-    document.getElementById('passBtn').addEventListener('click', () => {
-        if (!state.evaluating.length)
-            return;
-        snapshot();
-        processPicked([]);
-    });
-    document.getElementById('rescueAll').addEventListener('click', () => {
-        snapshot();
-        rescueEligibleEliminated();
-        renderAll();
-    });
-    document.getElementById('resetBtn').addEventListener('click', () => {
-        if (!confirm('Reset and start over?'))
-            return;
-        state.current = [];
-        state.evaluating = [];
-        state.survived = [];
-        state.eliminated = {};
-        state.favorites = [];
-        state.history = [];
-        state.redoStack = [];
-        startNewRound();
-    });
+    function updateUI() {
+        const available = getAvailableItems();
+        const remaining = available.length;
+        
+        document.getElementById('score').textContent = `SCORE: ${gameState.score}`;
+        document.getElementById('remainingCount').textContent = remaining;
+        document.getElementById('favsCount').textContent = gameState.favorites.length;
+        
+        if (remaining > 10) {
+            document.getElementById('progressText').textContent = 
+                `${remaining} ACTIVITIES REMAINING!`;
+        } else if (remaining > 5) {
+            document.getElementById('progressText').textContent = 
+                `FINAL ${remaining}! GETTING CLOSE!`;
+        } else {
+            document.getElementById('progressText').textContent = 
+                `ALMOST THERE! ${5 - gameState.favorites.length} MORE PICKS!`;
+        }
+    }
 
-    /* -------- bootstrap -------- */
-    startNewRound();
+    function endGame() {
+        stopTimer();
+        document.getElementById('gameScreen').style.display = 'none';
+        document.getElementById('resultsScreen').classList.add('active');
+        
+        document.getElementById('finalScore').textContent = gameState.score;
+        document.getElementById('playerNameDisplay').textContent = gameState.playerName;
+        
+        // Show top picks
+        const topPicksList = document.getElementById('topPicksList');
+        topPicksList.innerHTML = '';
+        gameState.favorites.forEach(pick => {
+            const li = document.createElement('li');
+            li.textContent = pick;
+            topPicksList.appendChild(li);
+        });
+        
+        // Update high scores
+        gameState.highScores.push({ 
+            name: gameState.playerName, 
+            score: gameState.score 
+        });
+        gameState.highScores.sort((a, b) => b.score - a.score);
+        gameState.highScores = gameState.highScores.slice(0, 8);
+        
+        // Display high scores
+        const highScoresList = document.getElementById('highScoresList');
+        highScoresList.innerHTML = '';
+        gameState.highScores.forEach((entry, i) => {
+            const div = document.createElement('div');
+            div.className = 'high-score-entry';
+            div.innerHTML = `<span>${i + 1}. ${entry.name}</span><span>${entry.score}</span>`;
+            highScoresList.appendChild(div);
+        });
+        
+        // Submit to Google Form
+        submitToGoogleForm();
+    }
+
+    function submitToGoogleForm() {
+        const formData = new FormData();
+        formData.append('entry.name', gameState.playerName);
+        formData.append('entry.score', gameState.score);
+        formData.append('entry.picks', gameState.favorites.join(', '));
+        
+        fetch(GOOGLE_SHEET_URL, {
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors'
+        }).catch(err => console.log('Form submission:', err));
+    }
+
+    async function shareScore() {
+        const screenshotArea = document.getElementById('screenshotArea');
+        
+        try {
+            const canvas = await html2canvas(screenshotArea, {
+                backgroundColor: '#0d2847',
+                scale: 2
+            });
+            
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], 'fhe-score.png', { type: 'image/png' });
+                
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'My FHE Fighter Score!',
+                        text: `I scored ${gameState.score} points in FHE Fighter II!`
+                    });
+                } else {
+                    // Fallback: download the image
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'fhe-fighter-score.png';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    alert('Screenshot saved! Share it with your friends!');
+                }
+            });
+        } catch (err) {
+            console.error('Screenshot failed:', err);
+            alert('Could not create screenshot. Try taking a screenshot manually!');
+        }
+    }
+
+    function resetGame() {
+        gameState = {
+            playerName: '',
+            score: 0,
+            current: [],
+            evaluating: [],
+            survived: [],
+            eliminated: {},
+            favorites: [],
+            timer: 15,
+            timerInterval: null,
+            highScores: gameState.highScores
+        };
+        
+        document.getElementById('resultsScreen').classList.remove('active');
+        document.getElementById('nameInputScreen').style.display = 'block';
+        document.getElementById('playerName').value = '';
+        document.getElementById('multipliers').innerHTML = '';
+    }
     </script>
 </body>
 </html>
