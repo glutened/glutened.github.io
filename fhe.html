@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <title>FHE FIGHTER II</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     
@@ -18,6 +18,8 @@
         background: #000;
         color: #fff;
         overflow-x: hidden;
+        /* Allow vertical scrolling only if absolutely necessary, but try to prevent it */
+        overflow-y: auto; 
         image-rendering: pixelated;
         user-select: none;
     }
@@ -41,54 +43,54 @@
 
     .game-container {
         width: 100%;
-        max-width: 800px;
+        /* max-width: 800px; REMOVED FOR BETTER MOBILE FIT */
         margin: 0 auto;
-        padding: 20px;
+        padding: 5px; /* Reduced padding */
         position: relative;
     }
 
     .header {
         background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
         border: 4px solid #ffd700;
-        padding: 15px;
-        margin-bottom: 20px;
+        padding: 10px; /* Reduced padding */
+        margin-bottom: 10px;
         box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
     }
 
     .title {
-        font-size: 24px;
+        font-size: 20px; /* Reduced font size */
         text-align: center;
         color: #ffd700;
-        text-shadow: 3px 3px 0 #ff0000, 6px 6px 0 #000;
-        margin-bottom: 10px;
+        text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000; /* Reduced shadow */
+        margin-bottom: 5px;
         animation: glow 2s ease-in-out infinite;
     }
 
     @keyframes glow {
-        0%, 100% { text-shadow: 3px 3px 0 #ff0000, 6px 6px 0 #000, 0 0 10px #ffd700; }
-        50% { text-shadow: 3px 3px 0 #ff0000, 6px 6px 0 #000, 0 0 30px #ffd700; }
+        0%, 100% { text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000, 0 0 8px #ffd700; }
+        50% { text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000, 0 0 20px #ffd700; }
     }
 
     .stats-bar {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        font-size: 10px;
-        margin-top: 10px;
+        gap: 5px; /* Reduced gap */
+        font-size: 8px; /* Reduced font size */
+        margin-top: 5px;
     }
 
     .stat-item {
         background: rgba(0, 0, 0, 0.7);
-        padding: 8px;
+        padding: 5px; /* Reduced padding */
         border: 2px solid #00ff00;
     }
 
     .timer-display {
-        font-size: 32px;
+        font-size: 24px; /* Reduced font size */
         color: #00ff00;
         text-align: center;
-        margin: 10px 0;
-        text-shadow: 0 0 10px #00ff00;
+        margin: 5px 0; /* Reduced margin */
+        text-shadow: 0 0 8px #00ff00;
     }
 
     .timer-display.warning {
@@ -107,7 +109,7 @@
     }
 
     .score-display {
-        font-size: 28px;
+        font-size: 20px; /* Reduced font size */
         color: #ffd700;
         text-align: center;
         text-shadow: 2px 2px 0 #ff0000;
@@ -116,90 +118,107 @@
     .multipliers {
         display: flex;
         justify-content: center;
-        gap: 10px;
+        gap: 5px; /* Reduced gap */
         flex-wrap: wrap;
-        min-height: 40px;
-        margin-top: 10px;
+        min-height: 20px; /* Reduced min-height */
+        margin-top: 5px;
     }
 
     .multiplier {
         background: #ff00ff;
         color: #fff;
-        padding: 5px 10px;
+        padding: 3px 6px; /* Reduced padding */
         border: 2px solid #fff;
-        font-size: 8px;
+        font-size: 6px; /* Reduced font size */
         animation: bounce 0.5s;
-        box-shadow: 0 0 10px #ff00ff;
+        box-shadow: 0 0 8px #ff00ff;
     }
 
     @keyframes bounce {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+        50% { transform: translateY(-5px); }
     }
 
     .arena {
         background: linear-gradient(180deg, #2a5298 0%, #1e3a5f 50%, #8b4513 100%);
-        border: 6px solid #8b4513;
-        padding: 30px 20px;
-        min-height: 400px;
+        border: 4px solid #8b4513; /* Reduced border */
+        padding: 10px; /* Reduced padding */
+        min-height: 250px; /* Reduced min-height for mobile */
         position: relative;
-        margin-bottom: 20px;
-        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
+        margin-bottom: 10px;
+        box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
     }
 
     .choices {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        margin-top: 20px;
+        gap: 8px; /* Reduced gap */
+        margin-top: 10px;
     }
 
     .choice-card {
         background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
-        border: 4px solid #ffd700;
-        padding: 20px 10px;
+        border: 3px solid #ffd700; /* Reduced border */
+        padding: 10px 5px; /* Reduced padding */
         text-align: center;
         cursor: pointer;
         position: relative;
-        transition: transform 0.1s;
-        font-size: 11px;
-        line-height: 1.6;
-        min-height: 120px;
+        transition: transform 0.1s, opacity 0.3s ease-in-out; /* Added opacity transition */
+        font-size: 8px; /* Reduced font size */
+        line-height: 1.4;
+        min-height: 80px; /* Reduced min-height */
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 0 #996600, 0 8px 20px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 3px 0 #996600, 0 6px 10px rgba(0, 0, 0, 0.5);
     }
 
     .choice-card:hover {
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 6px 0 #996600, 0 12px 30px rgba(255, 215, 0, 0.6);
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 4px 0 #996600, 0 8px 15px rgba(255, 215, 0, 0.6);
     }
 
     .choice-card:active {
-        transform: translateY(2px);
-        box-shadow: 0 2px 0 #996600;
+        transform: translateY(1px);
+        box-shadow: 0 1px 0 #996600;
+    }
+
+    /* New CSS for floating score */
+    .floating-score {
+        position: fixed; /* Fixed position relative to viewport */
+        color: #fff;
+        text-shadow: 2px 2px 0 #ff00ff;
+        font-size: 16px;
+        font-weight: bold;
+        pointer-events: none;
+        animation: float-up-fade 1s forwards;
+        z-index: 1001;
+    }
+
+    @keyframes float-up-fade {
+        0% { transform: translateY(0); opacity: 1; }
+        100% { transform: translateY(-50px); opacity: 0; }
     }
 
     .explosion {
         position: absolute;
-        font-size: 60px;
+        font-size: 40px; /* Reduced font size */
         animation: explode 0.6s forwards;
         pointer-events: none;
     }
 
     @keyframes explode {
         0% { transform: scale(0) rotate(0deg); opacity: 1; }
-        50% { transform: scale(1.5) rotate(180deg); opacity: 1; }
-        100% { transform: scale(2) rotate(360deg); opacity: 0; }
+        50% { transform: scale(1) rotate(180deg); opacity: 1; }
+        100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
     }
 
     .instruction {
         text-align: center;
-        font-size: 14px;
+        font-size: 10px; /* Reduced font size */
         color: #ffff00;
-        margin-bottom: 20px;
-        text-shadow: 2px 2px 0 #000;
+        margin-bottom: 10px;
+        text-shadow: 1px 1px 0 #000;
         animation: blink 1.5s infinite;
     }
 
@@ -210,8 +229,8 @@
 
     .results-screen {
         background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-        border: 6px solid #ffd700;
-        padding: 30px;
+        border: 4px solid #ffd700; /* Reduced border */
+        padding: 20px; /* Reduced padding */
         text-align: center;
         display: none;
     }
@@ -221,24 +240,24 @@
     }
 
     .final-score {
-        font-size: 48px;
+        font-size: 32px; /* Reduced font size */
         color: #ffd700;
-        margin: 20px 0;
-        text-shadow: 3px 3px 0 #ff0000;
+        margin: 10px 0;
+        text-shadow: 2px 2px 0 #ff0000;
     }
 
     .top-picks {
         background: rgba(0, 0, 0, 0.5);
-        border: 3px solid #00ff00;
-        padding: 20px;
-        margin: 20px 0;
+        border: 2px solid #00ff00;
+        padding: 10px;
+        margin: 10px 0;
         text-align: left;
     }
 
     .top-picks h3 {
         color: #00ff00;
-        font-size: 16px;
-        margin-bottom: 15px;
+        font-size: 12px;
+        margin-bottom: 10px;
         text-align: center;
     }
 
@@ -249,135 +268,139 @@
 
     .top-picks li {
         counter-increment: item;
-        padding: 10px;
-        margin: 8px 0;
+        padding: 5px;
+        margin: 5px 0;
         background: rgba(255, 255, 255, 0.1);
-        border-left: 4px solid #ffd700;
-        font-size: 11px;
+        border-left: 3px solid #ffd700;
+        font-size: 9px;
     }
 
     .top-picks li:before {
         content: counter(item) ". ";
         color: #ffd700;
         font-weight: bold;
-        margin-right: 10px;
+        margin-right: 5px;
     }
 
     .high-scores {
         background: rgba(0, 0, 0, 0.7);
-        border: 3px solid #ff00ff;
-        padding: 20px;
-        margin: 20px 0;
+        border: 2px solid #ff00ff;
+        padding: 10px;
+        margin: 10px 0;
     }
 
     .high-scores h3 {
         color: #ff00ff;
-        font-size: 14px;
-        margin-bottom: 15px;
+        font-size: 12px;
+        margin-bottom: 10px;
     }
 
     .high-score-entry {
         display: flex;
         justify-content: space-between;
-        padding: 8px;
-        margin: 5px 0;
+        padding: 5px;
+        margin: 3px 0;
         border-bottom: 1px solid #444;
-        font-size: 10px;
+        font-size: 8px;
     }
 
     .arcade-button {
         background: linear-gradient(180deg, #ff0000 0%, #cc0000 100%);
         color: #fff;
-        border: 4px solid #fff;
-        padding: 15px 30px;
+        border: 3px solid #fff;
+        padding: 10px 20px;
         font-family: 'Press Start 2P', cursive;
-        font-size: 12px;
+        font-size: 10px;
         cursor: pointer;
-        margin: 10px;
-        box-shadow: 0 6px 0 #800000, 0 8px 20px rgba(0, 0, 0, 0.5);
+        margin: 5px;
+        box-shadow: 0 4px 0 #800000, 0 6px 15px rgba(0, 0, 0, 0.5);
         transition: transform 0.1s;
     }
 
     .arcade-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 0 #800000, 0 10px 25px rgba(255, 0, 0, 0.5);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 0 #800000, 0 8px 20px rgba(255, 0, 0, 0.5);
     }
 
     .arcade-button:active {
-        transform: translateY(3px);
-        box-shadow: 0 3px 0 #800000;
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #800000;
     }
 
     .arcade-button.secondary {
         background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
-        box-shadow: 0 6px 0 #1e40af, 0 8px 20px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 4px 0 #1e40af, 0 6px 15px rgba(0, 0, 0, 0.5);
     }
 
     .arcade-button.secondary:hover {
-        box-shadow: 0 8px 0 #1e40af, 0 10px 25px rgba(37, 99, 235, 0.5);
+        box-shadow: 0 5px 0 #1e40af, 0 8px 20px rgba(37, 99, 235, 0.5);
     }
 
     .arcade-button.secondary:active {
-        box-shadow: 0 3px 0 #1e40af;
+        box-shadow: 0 2px 0 #1e40af;
     }
 
     .progress-text {
         text-align: center;
-        font-size: 12px;
+        font-size: 10px;
         color: #ffff00;
-        margin-top: 10px;
+        margin-top: 5px;
     }
 
     .name-input-screen {
         background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-        border: 6px solid #ffd700;
-        padding: 40px;
+        border: 4px solid #ffd700;
+        padding: 20px;
         text-align: center;
-        margin-top: 50px;
+        margin-top: 20px;
     }
 
     .name-input-screen h2 {
-        font-size: 18px;
+        font-size: 14px;
         color: #ffd700;
-        margin-bottom: 30px;
+        margin-bottom: 15px;
     }
 
     .name-input-screen input {
         background: rgba(0, 0, 0, 0.7);
-        border: 3px solid #00ff00;
+        border: 2px solid #00ff00;
         color: #00ff00;
         font-family: 'Press Start 2P', cursive;
-        font-size: 14px;
-        padding: 15px;
+        font-size: 12px;
+        padding: 10px;
         width: 100%;
-        max-width: 300px;
+        max-width: 250px;
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
 
     .screenshot-area {
         background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
-        border: 6px solid #ffd700;
-        padding: 30px;
-        margin: 20px auto;
-        max-width: 600px;
+        border: 4px solid #ffd700;
+        padding: 20px;
+        margin: 10px auto;
+        max-width: 400px;
     }
 
+    /* Small screen adjustments - applied broadly to help with fit */
     @media (max-width: 600px) {
+        .game-container { padding: 5px; }
+        .header { padding: 8px; }
         .title { font-size: 16px; }
-        .choices { grid-template-columns: 1fr; }
-        .choice-card { font-size: 10px; min-height: 100px; }
-        .stats-bar { grid-template-columns: 1fr; }
-        .timer-display { font-size: 24px; }
-        .score-display { font-size: 20px; }
+        .timer-display { font-size: 20px; }
+        .score-display { font-size: 16px; }
+        .arena { padding: 8px; min-height: 200px; }
+        .choices { gap: 5px; }
+        .choice-card { font-size: 7px; min-height: 70px; padding: 5px; }
+        .stats-bar { grid-template-columns: 1fr; } /* Single column on mobile */
     }
+
     </style>
 </head>
 <body>
     <div class="crt-overlay"></div>
     <div class="game-container" id="gameContainer">
         
-        <!-- Name Input Screen -->
         <div class="name-input-screen" id="nameInputScreen">
             <h2>ENTER YOUR NAME</h2>
             <input type="text" id="playerName" maxlength="10" placeholder="PLAYER1" />
@@ -386,7 +409,6 @@
             </div>
         </div>
 
-        <!-- Game Screen -->
         <div id="gameScreen" style="display: none;">
             <div class="header">
                 <div class="title">FHE FIGHTER II</div>
@@ -406,7 +428,6 @@
             </div>
         </div>
 
-        <!-- Results Screen -->
         <div class="results-screen" id="resultsScreen">
             <div class="screenshot-area" id="screenshotArea">
                 <div class="title">GAME OVER</div>
@@ -433,7 +454,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-    const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbznwymnJyFV9caCz2dK2HxJ4T-XtAaeCFnht0d3cvdbX6PB4o8aSuzT7Peb26x3Uhlf/exec';
+    const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjPdmkcpuRZJeQjdF53ZvPsILjnnecRAIfdbV1qqJ3knO-Kgx5IJNz557hrxIs80G3/exec';
     
     const ACTIVITIES = [
         "Board Games", "Nature Walk", "Nerf Guns", "Family Feud", "Charades", 
@@ -448,12 +469,12 @@
     const FAKE_HIGH_SCORES = [
         { name: "RYU", score: 8750 },
         { name: "D&C", score: 8200 },
-        { name: "SAM", score: 7890 },
-        { name: "KEN", score: 7450 },
-        { name: "JST", score: 7100 },
-        { name: "1820", score: 6800 },
-        { name: "YSA", score: 6550 },
-        { name: "AMY", score: 6200 }
+        { name: "JST", score: 7890 },
+        { name: "ROUGE", score: 7450 },
+        { name: "YSA", score: 7100 },
+        { name: "DALLIN", score: 6800 },
+        { name: "AMY", score: 6550 },
+        { name: "1820", score: 6200 }
     ];
 
     let gameState = {
@@ -597,6 +618,8 @@
             const card = document.createElement('div');
             card.className = 'choice-card';
             card.textContent = activity;
+            // Store the ID for easy lookup
+            card.dataset.activityId = activity; 
             card.onclick = () => selectActivity(activity, card);
             choicesEl.appendChild(card);
         });
@@ -605,7 +628,7 @@
     function selectActivity(activity, element) {
         stopTimer();
         
-        // Calculate score
+        // --- 1. Calculate Score ---
         const timeBonus = Math.floor(gameState.timer * 10);
         let points = 100 + timeBonus;
         const multipliers = [];
@@ -638,7 +661,7 @@
 
         gameState.score += points;
         
-        // Winner survives
+        // --- 2. Update Game State ---
         gameState.survived.push(activity);
         
         // Losers are eliminated
@@ -655,13 +678,37 @@
         // Clear evaluating
         gameState.evaluating = [];
 
-        // Show effects
+        // --- 3. Show Effects ---
         showMultipliers(multipliers);
         createExplosion(element);
+        showFloatingScore(element, points); // NEW: Show floating score
         
+        // NEW: Make ALL cards disappear simultaneously
+        document.querySelectorAll('.choice-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.pointerEvents = 'none'; // Prevent further clicks
+        });
+
         setTimeout(() => {
             loadNextBatch();
-        }, 1500);
+        }, 1500); // Wait for the animation to finish
+    }
+
+    // NEW FUNCTION
+    function showFloatingScore(element, points) {
+        const rect = element.getBoundingClientRect();
+        const scoreEl = document.createElement('div');
+        scoreEl.className = 'floating-score';
+        scoreEl.textContent = `+${points}`;
+        
+        // Position it relative to the viewport (fixed)
+        scoreEl.style.left = (rect.right - 10) + 'px'; 
+        scoreEl.style.top = (rect.top + 10) + 'px';
+        
+        document.body.appendChild(scoreEl);
+        
+        // Remove after animation completes
+        setTimeout(() => scoreEl.remove(), 1000);
     }
 
     function createExplosion(element) {
@@ -672,6 +719,8 @@
             const explosion = document.createElement('div');
             explosion.className = 'explosion';
             explosion.textContent = explosions[Math.floor(Math.random() * explosions.length)];
+            // Position relative to the whole body
+            explosion.style.position = 'fixed'; 
             explosion.style.left = (rect.left + Math.random() * rect.width) + 'px';
             explosion.style.top = (rect.top + Math.random() * rect.height) + 'px';
             document.body.appendChild(explosion);
@@ -679,7 +728,8 @@
             setTimeout(() => explosion.remove(), 600);
         }
         
-        element.style.opacity = '0';
+        // The disappearance is now handled by the .choice-card opacity transition
+        // element.style.opacity = '0'; // Removed for simultaneous effect
     }
 
     function showMultipliers(multipliers) {
@@ -708,9 +758,18 @@
                 stopTimer();
                 // Auto-select random choice
                 const randomActivity = gameState.evaluating[Math.floor(Math.random() * gameState.evaluating.length)];
-                const cards = document.querySelectorAll('.choice-card');
-                const randomCard = cards[Math.floor(Math.random() * cards.length)];
-                selectActivity(randomActivity, randomCard);
+                
+                // Find the corresponding card element
+                const choices = document.getElementById('choices');
+                const randomCard = Array.from(choices.children).find(card => card.dataset.activityId === randomActivity);
+                
+                if (randomCard) {
+                    selectActivity(randomActivity, randomCard);
+                } else {
+                     // Fallback in case of error
+                    console.error("Could not find card for random selection.");
+                    loadNextBatch();
+                }
             }
             
             timerEl.textContent = gameState.timer.toFixed(2);
@@ -787,14 +846,14 @@
     }
 
     function submitToGoogleForm() {
-        const formData = new FormData();
-        formData.append('entry.name', gameState.playerName);
-        formData.append('entry.score', gameState.score);
-        formData.append('entry.picks', gameState.favorites.join(', '));
+        // Create URL-encoded form data
+        const params = new URLSearchParams();
+        params.append('name', gameState.playerName);
+        params.append('score', gameState.score);
+        params.append('picks', gameState.favorites.join(', '));
         
-        fetch(GOOGLE_SHEET_URL, {
-            method: 'POST',
-            body: formData,
+        fetch(GOOGLE_SHEET_URL + '?' + params.toString(), {
+            method: 'GET',
             mode: 'no-cors'
         }).catch(err => console.log('Form submission:', err));
     }
@@ -852,6 +911,7 @@
         document.getElementById('nameInputScreen').style.display = 'block';
         document.getElementById('playerName').value = '';
         document.getElementById('multipliers').innerHTML = '';
+        document.getElementById('gameScreen').style.display = 'none'; // Ensure game screen is hidden
     }
     </script>
 </body>
