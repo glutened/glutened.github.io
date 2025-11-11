@@ -18,7 +18,6 @@
         background: #000;
         color: #fff;
         overflow-x: hidden;
-        /* Allow vertical scrolling only if absolutely necessary, but try to prevent it */
         overflow-y: auto; 
         image-rendering: pixelated;
         user-select: none;
@@ -43,25 +42,24 @@
 
     .game-container {
         width: 100%;
-        /* max-width: 800px; REMOVED FOR BETTER MOBILE FIT */
         margin: 0 auto;
-        padding: 5px; /* Reduced padding */
+        padding: 5px;
         position: relative;
     }
 
     .header {
         background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
         border: 4px solid #ffd700;
-        padding: 10px; /* Reduced padding */
+        padding: 10px;
         margin-bottom: 10px;
         box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
     }
 
     .title {
-        font-size: 20px; /* Reduced font size */
+        font-size: 20px;
         text-align: center;
         color: #ffd700;
-        text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000; /* Reduced shadow */
+        text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000;
         margin-bottom: 5px;
         animation: glow 2s ease-in-out infinite;
     }
@@ -74,22 +72,22 @@
     .stats-bar {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 5px; /* Reduced gap */
-        font-size: 8px; /* Reduced font size */
+        gap: 5px;
+        font-size: 8px;
         margin-top: 5px;
     }
 
     .stat-item {
         background: rgba(0, 0, 0, 0.7);
-        padding: 5px; /* Reduced padding */
+        padding: 5px;
         border: 2px solid #00ff00;
     }
 
     .timer-display {
-        font-size: 24px; /* Reduced font size */
+        font-size: 24px;
         color: #00ff00;
         text-align: center;
-        margin: 5px 0; /* Reduced margin */
+        margin: 5px 0;
         text-shadow: 0 0 8px #00ff00;
     }
 
@@ -109,7 +107,7 @@
     }
 
     .score-display {
-        font-size: 20px; /* Reduced font size */
+        font-size: 20px;
         color: #ffd700;
         text-align: center;
         text-shadow: 2px 2px 0 #ff0000;
@@ -118,18 +116,18 @@
     .multipliers {
         display: flex;
         justify-content: center;
-        gap: 5px; /* Reduced gap */
+        gap: 5px;
         flex-wrap: wrap;
-        min-height: 20px; /* Reduced min-height */
+        min-height: 20px;
         margin-top: 5px;
     }
 
     .multiplier {
         background: #ff00ff;
         color: #fff;
-        padding: 3px 6px; /* Reduced padding */
+        padding: 5px 10px;
         border: 2px solid #fff;
-        font-size: 6px; /* Reduced font size */
+        font-size: 10px;
         animation: bounce 0.5s;
         box-shadow: 0 0 8px #ff00ff;
     }
@@ -141,9 +139,9 @@
 
     .arena {
         background: linear-gradient(180deg, #2a5298 0%, #1e3a5f 50%, #8b4513 100%);
-        border: 4px solid #8b4513; /* Reduced border */
-        padding: 10px; /* Reduced padding */
-        min-height: 250px; /* Reduced min-height for mobile */
+        border: 4px solid #8b4513;
+        padding: 10px;
+        min-height: 250px;
         position: relative;
         margin-bottom: 10px;
         box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
@@ -152,21 +150,21 @@
     .choices {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px; /* Reduced gap */
+        gap: 8px;
         margin-top: 10px;
     }
 
     .choice-card {
         background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
-        border: 3px solid #ffd700; /* Reduced border */
-        padding: 10px 5px; /* Reduced padding */
+        border: 3px solid #ffd700;
+        padding: 10px 5px;
         text-align: center;
         cursor: pointer;
         position: relative;
-        transition: transform 0.1s, opacity 0.3s ease-in-out; /* Added opacity transition */
-        font-size: 8px; /* Reduced font size */
+        transition: transform 0.1s, opacity 0.3s ease-in-out;
+        font-size: 12px;
         line-height: 1.4;
-        min-height: 80px; /* Reduced min-height */
+        min-height: 80px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -183,9 +181,8 @@
         box-shadow: 0 1px 0 #996600;
     }
 
-    /* New CSS for floating score */
     .floating-score {
-        position: fixed; /* Fixed position relative to viewport */
+        position: fixed;
         color: #fff;
         text-shadow: 2px 2px 0 #ff00ff;
         font-size: 16px;
@@ -202,7 +199,7 @@
 
     .explosion {
         position: absolute;
-        font-size: 40px; /* Reduced font size */
+        font-size: 40px;
         animation: explode 0.6s forwards;
         pointer-events: none;
     }
@@ -215,7 +212,7 @@
 
     .instruction {
         text-align: center;
-        font-size: 10px; /* Reduced font size */
+        font-size: 10px;
         color: #ffff00;
         margin-bottom: 10px;
         text-shadow: 1px 1px 0 #000;
@@ -229,8 +226,8 @@
 
     .results-screen {
         background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-        border: 4px solid #ffd700; /* Reduced border */
-        padding: 20px; /* Reduced padding */
+        border: 4px solid #ffd700;
+        padding: 20px;
         text-align: center;
         display: none;
     }
@@ -240,7 +237,7 @@
     }
 
     .final-score {
-        font-size: 32px; /* Reduced font size */
+        font-size: 32px;
         color: #ffd700;
         margin: 10px 0;
         text-shadow: 2px 2px 0 #ff0000;
@@ -382,7 +379,142 @@
         max-width: 400px;
     }
 
-    /* Small screen adjustments - applied broadly to help with fit */
+    .audio-toggle {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 2px solid #ffd700;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 1001;
+        font-size: 24px;
+        transition: transform 0.2s;
+    }
+
+    .audio-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    }
+
+    .audio-toggle:active {
+        transform: scale(0.95);
+    }
+
+    @keyframes screen-shake {
+        0%, 100% { transform: translate(0, 0); }
+        10% { transform: translate(-5px, 2px); }
+        20% { transform: translate(5px, -2px); }
+        30% { transform: translate(-5px, -2px); }
+        40% { transform: translate(5px, 2px); }
+        50% { transform: translate(-5px, 2px); }
+        60% { transform: translate(5px, -2px); }
+        70% { transform: translate(-5px, -2px); }
+        80% { transform: translate(5px, 2px); }
+        90% { transform: translate(-5px, -2px); }
+    }
+
+    .shake {
+        animation: screen-shake 0.5s;
+    }
+
+    @keyframes invert-flash {
+        0%, 100% { filter: invert(0); }
+        50% { filter: invert(1); }
+    }
+
+    .invert {
+        animation: invert-flash 0.4s;
+    }
+
+    @keyframes wave-distort {
+        0% { transform: skewX(0deg); }
+        25% { transform: skewX(5deg); }
+        50% { transform: skewX(-5deg); }
+        75% { transform: skewX(5deg); }
+        100% { transform: skewX(0deg); }
+    }
+
+    .wave {
+        animation: wave-distort 0.6s;
+    }
+
+    .anime-cutscene {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2000;
+        pointer-events: none;
+        display: none;
+    }
+
+    .anime-cutscene.active {
+        display: block;
+    }
+
+    .anime-iris {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 0;
+        height: 80px;
+        background: linear-gradient(90deg, #ff0000, #ff00ff, #00ffff, #ffff00);
+        animation: iris-expand 1s forwards;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: #fff;
+        text-shadow: 2px 2px 0 #000;
+    }
+
+    @keyframes iris-expand {
+        0% { width: 0; }
+        50% { width: 100%; }
+        100% { width: 100%; opacity: 0; }
+    }
+
+    .anime-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.9) 80%);
+        animation: dark-fade 1s;
+    }
+
+    @keyframes dark-fade {
+        0% { opacity: 0; }
+        20% { opacity: 1; }
+        80% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+
+    .sprite-effect {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        pointer-events: none;
+        z-index: 1500;
+        animation: sprite-float 1s forwards;
+    }
+
+    @keyframes sprite-float {
+        0% { transform: scale(0) rotate(0deg); opacity: 1; }
+        50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+        100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
+    }
+
     @media (max-width: 600px) {
         .game-container { padding: 5px; }
         .header { padding: 8px; }
@@ -391,14 +523,28 @@
         .score-display { font-size: 16px; }
         .arena { padding: 8px; min-height: 200px; }
         .choices { gap: 5px; }
-        .choice-card { font-size: 7px; min-height: 70px; padding: 5px; }
-        .stats-bar { grid-template-columns: 1fr; } /* Single column on mobile */
+        .choice-card { font-size: 11px; min-height: 70px; padding: 5px; }
+        .stats-bar { grid-template-columns: 1fr; }
+        .multiplier { font-size: 9px; padding: 4px 8px; }
     }
 
     </style>
 </head>
 <body>
     <div class="crt-overlay"></div>
+    
+    <!-- Background music audio element -->
+    <audio id="bgMusic" loop>
+        <source src="abg.wav" type="audio/wav">
+    </audio>
+    
+    <div class="audio-toggle" id="audioToggle" onclick="toggleAudio()">🎧</div>
+    
+    <div class="anime-cutscene" id="animeCutscene">
+        <div class="anime-background"></div>
+        <div class="anime-iris" id="animeIris">💥 CRITICAL! 💥</div>
+    </div>
+    
     <div class="game-container" id="gameContainer">
         
         <div class="name-input-screen" id="nameInputScreen">
@@ -456,6 +602,98 @@
     <script>
     const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjPdmkcpuRZJeQjdF53ZvPsILjnnecRAIfdbV1qqJ3knO-Kgx5IJNz557hrxIs80G3/exec';
     
+    let audioEnabled = false;
+    let bgMusic = null;
+    
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new AudioContext();
+        }
+        if (!bgMusic) {
+            bgMusic = document.getElementById('bgMusic');
+        }
+    }
+    
+    function toggleAudio() {
+        audioEnabled = !audioEnabled;
+        const toggle = document.getElementById('audioToggle');
+        toggle.textContent = audioEnabled ? '🎵' : '🎧';
+        
+        if (audioEnabled) {
+            initAudio();
+            if (bgMusic) {
+                bgMusic.volume = 0.3; // Set volume to 30%
+                bgMusic.play().catch(err => console.log('Audio play failed:', err));
+            }
+        } else {
+            if (bgMusic) {
+                bgMusic.pause();
+            }
+        }
+    }
+    
+    function playSound(type) {
+        if (!audioEnabled || !audioCtx) return;
+        
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        switch(type) {
+            case 'select':
+                oscillator.frequency.value = 800;
+                oscillator.type = 'square';
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.1);
+                break;
+            case 'combo':
+                oscillator.frequency.value = 1200;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+                break;
+            case 'critical':
+                for (let i = 0; i < 3; i++) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = 1500 + (i * 200);
+                    osc.type = 'sawtooth';
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4 + i * 0.1);
+                    osc.start(audioCtx.currentTime + i * 0.1);
+                    osc.stop(audioCtx.currentTime + 0.4 + i * 0.1);
+                }
+                break;
+            case 'bonus':
+                oscillator.frequency.value = 600;
+                oscillator.type = 'triangle';
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.2);
+                break;
+            case 'name':
+                oscillator.frequency.value = 400;
+                oscillator.type = 'square';
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.15);
+                break;
+        }
+    }
+    
     const ACTIVITIES = [
         "Board Games", "Nature Walk", "Nerf Guns", "Family Feud", "Charades", 
         "Nursing Home", "Small Group Dinners", "Local Band", "Frisbee Golf", 
@@ -480,11 +718,11 @@
     let gameState = {
         playerName: '',
         score: 0,
-        current: [],           // Items waiting to be shown this round
-        evaluating: [],        // Current batch being evaluated
-        survived: [],          // Items that survived this round so far
-        eliminated: {},        // Items eliminated: {id: {eliminatedBy: [ids]}}
-        favorites: [],         // Final top 5 list
+        current: [],
+        evaluating: [],
+        survived: [],
+        eliminated: {},
+        favorites: [],
         timer: 15,
         timerInterval: null,
         highScores: [...FAKE_HIGH_SCORES]
@@ -512,6 +750,8 @@
         const nameInput = document.getElementById('playerName').value.trim() || 'PLAYER1';
         gameState.playerName = nameInput.toUpperCase().slice(0, 10);
         
+        playSound('name');
+        
         document.getElementById('nameInputScreen').style.display = 'none';
         document.getElementById('gameScreen').style.display = 'block';
         
@@ -522,13 +762,11 @@
         const available = getAvailableItems();
         
         if (available.length === 0) {
-            // All done!
             endGame();
             return;
         }
         
         if (available.length === 1) {
-            // Last item automatically becomes a favorite
             addFavorite(available[0]);
             return;
         }
@@ -542,7 +780,6 @@
 
     function loadNextBatch() {
         if (gameState.current.length === 0) {
-            // Round complete - prepare next round with survivors
             finalizeRound();
             return;
         }
@@ -558,18 +795,15 @@
 
     function finalizeRound() {
         if (gameState.survived.length === 1) {
-            // Single survivor becomes next favorite
             addFavorite(gameState.survived[0]);
             return;
         }
         
         if (gameState.survived.length === 0) {
-            // Shouldn't happen, but just in case
             endGame();
             return;
         }
         
-        // Start new round with survivors
         gameState.current = shuffle(gameState.survived);
         gameState.survived = [];
         loadNextBatch();
@@ -581,7 +815,6 @@
         gameState.favorites.push(itemId);
         delete gameState.eliminated[itemId];
         
-        // Rescue items that were only eliminated by this favorite
         rescueEligibleItems();
         
         if (gameState.favorites.length >= 5) {
@@ -589,7 +822,6 @@
             return;
         }
         
-        // Continue with next round
         startNewRound();
     }
 
@@ -600,7 +832,6 @@
             const eliminatedBy = gameState.eliminated[id].eliminatedBy || [];
             if (eliminatedBy.length === 0) return;
             
-            // If all eliminators are now favorites, rescue this item
             const allAreFavorites = eliminatedBy.every(e => gameState.favorites.includes(e));
             if (allAreFavorites) {
                 toRescue.push(id);
@@ -618,8 +849,7 @@
             const card = document.createElement('div');
             card.className = 'choice-card';
             card.textContent = activity;
-            // Store the ID for easy lookup
-            card.dataset.activityId = activity; 
+            card.dataset.activityId = activity;
             card.onclick = () => selectActivity(activity, card);
             choicesEl.appendChild(card);
         });
@@ -628,43 +858,49 @@
     function selectActivity(activity, element) {
         stopTimer();
         
-        // --- 1. Calculate Score ---
+        playSound('select');
+        
         const timeBonus = Math.floor(gameState.timer * 10);
-        let points = 100 + timeBonus;
+        let points = 200 + timeBonus;
         const multipliers = [];
+        let effectType = 'normal';
 
-        // Combo (time > 10)
-        if (gameState.timer > 10) {
-            points += 250;
+        if (gameState.timer < 9) {
+            points += 100;
             multipliers.push('COMBO!');
+            playSound('combo');
+            effectType = 'shake';
         }
 
-        // Critical hit (ends in 0 or 5)
         const timeStr = gameState.timer.toFixed(2);
         const lastDigit = timeStr[timeStr.length - 1];
         if (lastDigit === '0' || lastDigit === '5') {
             points += 500;
             multipliers.push('CRITICAL!');
+            playSound('critical');
+            effectType = 'anime';
         }
 
-        // 6-7 bonus
         if (timeStr.includes('6') && timeStr.includes('7')) {
             points += 777;
             multipliers.push('6-7 BONUS!');
+            playSound('bonus');
+            effectType = 'wave';
         }
 
-        // Random bonuses
         if (Math.random() > 0.7) {
             points += Math.floor(Math.random() * 300);
             multipliers.push('LUCKY!');
+            playSound('bonus');
+            if (effectType === 'normal') effectType = 'invert';
         }
 
         gameState.score += points;
         
-        // --- 2. Update Game State ---
+        applyScreenEffect(effectType);
+        
         gameState.survived.push(activity);
         
-        // Losers are eliminated
         const losers = gameState.evaluating.filter(a => a !== activity);
         losers.forEach(loser => {
             if (!gameState.eliminated[loser]) {
@@ -675,40 +911,86 @@
             }
         });
 
-        // Clear evaluating
         gameState.evaluating = [];
 
-        // --- 3. Show Effects ---
         showMultipliers(multipliers);
         createExplosion(element);
-        showFloatingScore(element, points); // NEW: Show floating score
+        showFloatingScore(element, points);
+        createSpriteEffect(element);
         
-        // NEW: Make ALL cards disappear simultaneously
         document.querySelectorAll('.choice-card').forEach(card => {
             card.style.opacity = '0';
-            card.style.pointerEvents = 'none'; // Prevent further clicks
+            card.style.pointerEvents = 'none';
         });
 
         setTimeout(() => {
             loadNextBatch();
-        }, 1500); // Wait for the animation to finish
+        }, 1500);
     }
 
-    // NEW FUNCTION
     function showFloatingScore(element, points) {
         const rect = element.getBoundingClientRect();
         const scoreEl = document.createElement('div');
         scoreEl.className = 'floating-score';
         scoreEl.textContent = `+${points}`;
         
-        // Position it relative to the viewport (fixed)
         scoreEl.style.left = (rect.right - 10) + 'px'; 
         scoreEl.style.top = (rect.top + 10) + 'px';
         
         document.body.appendChild(scoreEl);
         
-        // Remove after animation completes
         setTimeout(() => scoreEl.remove(), 1000);
+    }
+
+    function applyScreenEffect(type) {
+        const container = document.getElementById('gameContainer');
+        
+        switch(type) {
+            case 'shake':
+                container.classList.add('shake');
+                setTimeout(() => container.classList.remove('shake'), 500);
+                break;
+            case 'invert':
+                container.classList.add('invert');
+                setTimeout(() => container.classList.remove('invert'), 400);
+                break;
+            case 'wave':
+                container.classList.add('wave');
+                setTimeout(() => container.classList.remove('wave'), 600);
+                break;
+            case 'anime':
+                showAnimeCutscene();
+                break;
+        }
+    }
+
+    function showAnimeCutscene() {
+        const cutscene = document.getElementById('animeCutscene');
+        const iris = document.getElementById('animeIris');
+        
+        const messages = ['💥 CRITICAL! 💥', '⚡ ULTRA COMBO! ⚡', '🌟 LEGENDARY! 🌟'];
+        iris.textContent = messages[Math.floor(Math.random() * messages.length)];
+        
+        cutscene.classList.add('active');
+        setTimeout(() => cutscene.classList.remove('active'), 1000);
+    }
+
+    function createSpriteEffect(element) {
+        const sprites = ['⭐', '💫', '✨', '🌟', '💥', '⚡', '🔥'];
+        const rect = element.getBoundingClientRect();
+        
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const sprite = document.createElement('div');
+                sprite.className = 'sprite-effect';
+                sprite.textContent = sprites[Math.floor(Math.random() * sprites.length)];
+                sprite.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                sprite.style.top = (rect.top + Math.random() * rect.height) + 'px';
+                document.body.appendChild(sprite);
+                
+                setTimeout(() => sprite.remove(), 1000);
+            }, i * 150);
+        }
     }
 
     function createExplosion(element) {
@@ -719,7 +1001,6 @@
             const explosion = document.createElement('div');
             explosion.className = 'explosion';
             explosion.textContent = explosions[Math.floor(Math.random() * explosions.length)];
-            // Position relative to the whole body
             explosion.style.position = 'fixed'; 
             explosion.style.left = (rect.left + Math.random() * rect.width) + 'px';
             explosion.style.top = (rect.top + Math.random() * rect.height) + 'px';
@@ -727,9 +1008,6 @@
             
             setTimeout(() => explosion.remove(), 600);
         }
-        
-        // The disappearance is now handled by the .choice-card opacity transition
-        // element.style.opacity = '0'; // Removed for simultaneous effect
     }
 
     function showMultipliers(multipliers) {
@@ -756,17 +1034,14 @@
             if (gameState.timer <= 0) {
                 gameState.timer = 0;
                 stopTimer();
-                // Auto-select random choice
                 const randomActivity = gameState.evaluating[Math.floor(Math.random() * gameState.evaluating.length)];
                 
-                // Find the corresponding card element
                 const choices = document.getElementById('choices');
                 const randomCard = Array.from(choices.children).find(card => card.dataset.activityId === randomActivity);
                 
                 if (randomCard) {
                     selectActivity(randomActivity, randomCard);
                 } else {
-                     // Fallback in case of error
                     console.error("Could not find card for random selection.");
                     loadNextBatch();
                 }
@@ -814,7 +1089,6 @@
         document.getElementById('finalScore').textContent = gameState.score;
         document.getElementById('playerNameDisplay').textContent = gameState.playerName;
         
-        // Show top picks
         const topPicksList = document.getElementById('topPicksList');
         topPicksList.innerHTML = '';
         gameState.favorites.forEach(pick => {
@@ -823,7 +1097,6 @@
             topPicksList.appendChild(li);
         });
         
-        // Update high scores
         gameState.highScores.push({ 
             name: gameState.playerName, 
             score: gameState.score 
@@ -831,7 +1104,6 @@
         gameState.highScores.sort((a, b) => b.score - a.score);
         gameState.highScores = gameState.highScores.slice(0, 8);
         
-        // Display high scores
         const highScoresList = document.getElementById('highScoresList');
         highScoresList.innerHTML = '';
         gameState.highScores.forEach((entry, i) => {
@@ -841,12 +1113,10 @@
             highScoresList.appendChild(div);
         });
         
-        // Submit to Google Form
         submitToGoogleForm();
     }
 
     function submitToGoogleForm() {
-        // Create URL-encoded form data
         const params = new URLSearchParams();
         params.append('name', gameState.playerName);
         params.append('score', gameState.score);
@@ -877,7 +1147,6 @@
                         text: `I scored ${gameState.score} points in FHE Fighter II!`
                     });
                 } else {
-                    // Fallback: download the image
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -911,7 +1180,7 @@
         document.getElementById('nameInputScreen').style.display = 'block';
         document.getElementById('playerName').value = '';
         document.getElementById('multipliers').innerHTML = '';
-        document.getElementById('gameScreen').style.display = 'none'; // Ensure game screen is hidden
+        document.getElementById('gameScreen').style.display = 'none';
     }
     </script>
 </body>
