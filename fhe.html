@@ -5,530 +5,666 @@
     <title>FHE FIGHTER II</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
     
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: 'Press Start 2P', cursive;
-        background: #000;
-        color: #fff;
-        overflow-x: hidden;
-        overflow-y: auto; 
-        image-rendering: pixelated;
-        user-select: none;
-    }
-
-    .crt-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        background: repeating-linear-gradient(
-            0deg,
-            rgba(0, 0, 0, 0.15),
-            rgba(0, 0, 0, 0.15) 1px,
-            transparent 1px,
-            transparent 2px
-        );
-        z-index: 1000;
-    }
-
-    .game-container {
-        width: 100%;
-        margin: 0 auto;
-        padding: 5px;
-        position: relative;
-    }
-
-    .header {
-        background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
-        border: 4px solid #ffd700;
-        padding: 10px;
-        margin-bottom: 10px;
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-    }
-
-    .title {
-        font-size: 20px;
-        text-align: center;
-        color: #ffd700;
-        text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000;
-        margin-bottom: 5px;
-        animation: glow 2s ease-in-out infinite;
-    }
-
-    @keyframes glow {
-        0%, 100% { text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000, 0 0 8px #ffd700; }
-        50% { text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000, 0 0 20px #ffd700; }
-    }
-
-    .stats-bar {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 5px;
-        font-size: 8px;
-        margin-top: 5px;
-    }
-
-    .stat-item {
-        background: rgba(0, 0, 0, 0.7);
-        padding: 5px;
-        border: 2px solid #00ff00;
-    }
-
-    .timer-display {
-        font-size: 24px;
-        color: #00ff00;
-        text-align: center;
-        margin: 5px 0;
-        text-shadow: 0 0 8px #00ff00;
-    }
-
-    .timer-display.warning {
-        color: #ffff00;
-        animation: pulse 0.5s infinite;
-    }
-
-    .timer-display.danger {
-        color: #ff0000;
-        animation: pulse 0.3s infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-    }
-
-    .score-display {
-        font-size: 20px;
-        color: #ffd700;
-        text-align: center;
-        text-shadow: 2px 2px 0 #ff0000;
-    }
-
-    .multipliers {
-        display: flex;
-        justify-content: center;
-        gap: 5px;
-        flex-wrap: wrap;
-        min-height: 20px;
-        margin-top: 5px;
-    }
-
-    .multiplier {
-        background: #ff00ff;
-        color: #fff;
-        padding: 5px 10px;
-        border: 2px solid #fff;
-        font-size: 10px;
-        animation: bounce 0.5s;
-        box-shadow: 0 0 8px #ff00ff;
-    }
-
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-5px); }
-    }
-
-    .arena {
-        background: linear-gradient(180deg, #2a5298 0%, #1e3a5f 50%, #8b4513 100%);
-        border: 4px solid #8b4513;
-        padding: 10px;
-        min-height: 250px;
-        position: relative;
-        margin-bottom: 10px;
-        box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
-    }
-
-    .choices {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin-top: 10px;
-    }
-
-    .choice-card {
-        background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
-        border: 3px solid #ffd700;
-        padding: 10px 5px;
-        text-align: center;
-        cursor: pointer;
-        position: relative;
-        transition: transform 0.1s, opacity 0.3s ease-in-out;
-        font-size: 12px;
-        line-height: 1.4;
-        min-height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 3px 0 #996600, 0 6px 10px rgba(0, 0, 0, 0.5);
-    }
-
-    .choice-card:hover {
-        transform: translateY(-3px) scale(1.03);
-        box-shadow: 0 4px 0 #996600, 0 8px 15px rgba(255, 215, 0, 0.6);
-    }
-
-    .choice-card:active {
-        transform: translateY(1px);
-        box-shadow: 0 1px 0 #996600;
-    }
-
-    .floating-score {
-        position: fixed;
-        color: #fff;
-        text-shadow: 2px 2px 0 #ff00ff;
-        font-size: 16px;
-        font-weight: bold;
-        pointer-events: none;
-        animation: float-up-fade 1s forwards;
-        z-index: 1001;
-    }
-
-    @keyframes float-up-fade {
-        0% { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(-50px); opacity: 0; }
-    }
-
-    .explosion {
-        position: absolute;
-        font-size: 40px;
-        animation: explode 0.6s forwards;
-        pointer-events: none;
-    }
-
-    @keyframes explode {
-        0% { transform: scale(0) rotate(0deg); opacity: 1; }
-        50% { transform: scale(1) rotate(180deg); opacity: 1; }
-        100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
-    }
-
-    .instruction {
-        text-align: center;
-        font-size: 10px;
-        color: #ffff00;
-        margin-bottom: 10px;
-        text-shadow: 1px 1px 0 #000;
-        animation: blink 1.5s infinite;
-    }
-
-    @keyframes blink {
-        0%, 49% { opacity: 1; }
-        50%, 100% { opacity: 0.3; }
-    }
-
-    .results-screen {
-        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-        border: 4px solid #ffd700;
-        padding: 20px;
-        text-align: center;
-        display: none;
-    }
-
-    .results-screen.active {
-        display: block;
-    }
-
-    .final-score {
-        font-size: 32px;
-        color: #ffd700;
-        margin: 10px 0;
-        text-shadow: 2px 2px 0 #ff0000;
-    }
-
-    .top-picks {
-        background: rgba(0, 0, 0, 0.5);
-        border: 2px solid #00ff00;
-        padding: 10px;
-        margin: 10px 0;
-        text-align: left;
-    }
-
-    .top-picks h3 {
-        color: #00ff00;
-        font-size: 12px;
-        margin-bottom: 10px;
-        text-align: center;
-    }
-
-    .top-picks ol {
-        list-style: none;
-        counter-reset: item;
-    }
-
-    .top-picks li {
-        counter-increment: item;
-        padding: 5px;
-        margin: 5px 0;
-        background: rgba(255, 255, 255, 0.1);
-        border-left: 3px solid #ffd700;
-        font-size: 9px;
-    }
-
-    .top-picks li:before {
-        content: counter(item) ". ";
-        color: #ffd700;
-        font-weight: bold;
-        margin-right: 5px;
-    }
-
-    .high-scores {
-        background: rgba(0, 0, 0, 0.7);
-        border: 2px solid #ff00ff;
-        padding: 10px;
-        margin: 10px 0;
-    }
-
-    .high-scores h3 {
-        color: #ff00ff;
-        font-size: 12px;
-        margin-bottom: 10px;
-    }
-
-    .high-score-entry {
-        display: flex;
-        justify-content: space-between;
-        padding: 5px;
-        margin: 3px 0;
-        border-bottom: 1px solid #444;
-        font-size: 8px;
-    }
-
-    .arcade-button {
-        background: linear-gradient(180deg, #ff0000 0%, #cc0000 100%);
-        color: #fff;
-        border: 3px solid #fff;
-        padding: 10px 20px;
-        font-family: 'Press Start 2P', cursive;
-        font-size: 10px;
-        cursor: pointer;
-        margin: 5px;
-        box-shadow: 0 4px 0 #800000, 0 6px 15px rgba(0, 0, 0, 0.5);
-        transition: transform 0.1s;
-    }
-
-    .arcade-button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 5px 0 #800000, 0 8px 20px rgba(255, 0, 0, 0.5);
-    }
-
-    .arcade-button:active {
-        transform: translateY(2px);
-        box-shadow: 0 2px 0 #800000;
-    }
-
-    .arcade-button.secondary {
-        background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
-        box-shadow: 0 4px 0 #1e40af, 0 6px 15px rgba(0, 0, 0, 0.5);
-    }
-
-    .arcade-button.secondary:hover {
-        box-shadow: 0 5px 0 #1e40af, 0 8px 20px rgba(37, 99, 235, 0.5);
-    }
-
-    .arcade-button.secondary:active {
-        box-shadow: 0 2px 0 #1e40af;
-    }
-
-    .progress-text {
-        text-align: center;
-        font-size: 10px;
-        color: #ffff00;
-        margin-top: 5px;
-    }
-
-    .name-input-screen {
-        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-        border: 4px solid #ffd700;
-        padding: 20px;
-        text-align: center;
-        margin-top: 20px;
-    }
-
-    .name-input-screen h2 {
-        font-size: 14px;
-        color: #ffd700;
-        margin-bottom: 15px;
-    }
-
-    .name-input-screen input {
-        background: rgba(0, 0, 0, 0.7);
-        border: 2px solid #00ff00;
-        color: #00ff00;
-        font-family: 'Press Start 2P', cursive;
-        font-size: 12px;
-        padding: 10px;
-        width: 100%;
-        max-width: 250px;
-        text-align: center;
-        margin-bottom: 15px;
-    }
-
-    .screenshot-area {
-        background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
-        border: 4px solid #ffd700;
-        padding: 20px;
-        margin: 10px auto;
-        max-width: 400px;
-    }
-
-    .audio-toggle {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.8);
-        border: 2px solid #ffd700;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 1001;
-        font-size: 24px;
-        transition: transform 0.2s;
-    }
-
-    .audio-toggle:hover {
-        transform: scale(1.1);
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-    }
-
-    .audio-toggle:active {
-        transform: scale(0.95);
-    }
-
-    @keyframes screen-shake {
-        0%, 100% { transform: translate(0, 0); }
-        10% { transform: translate(-5px, 2px); }
-        20% { transform: translate(5px, -2px); }
-        30% { transform: translate(-5px, -2px); }
-        40% { transform: translate(5px, 2px); }
-        50% { transform: translate(-5px, 2px); }
-        60% { transform: translate(5px, -2px); }
-        70% { transform: translate(-5px, -2px); }
-        80% { transform: translate(5px, 2px); }
-        90% { transform: translate(-5px, -2px); }
-    }
-
-    .shake {
-        animation: screen-shake 0.5s;
-    }
-
-    @keyframes invert-flash {
-        0%, 100% { filter: invert(0); }
-        50% { filter: invert(1); }
-    }
-
-    .invert {
-        animation: invert-flash 0.4s;
-    }
-
-    @keyframes wave-distort {
-        0% { transform: skewX(0deg); }
-        25% { transform: skewX(5deg); }
-        50% { transform: skewX(-5deg); }
-        75% { transform: skewX(5deg); }
-        100% { transform: skewX(0deg); }
-    }
-
-    .wave {
-        animation: wave-distort 0.6s;
-    }
-
-    .anime-cutscene {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 2000;
-        pointer-events: none;
-        display: none;
-    }
-
-    .anime-cutscene.active {
-        display: block;
-    }
-
-    .anime-iris {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 0;
-        height: 80px;
-        background: linear-gradient(90deg, #ff0000, #ff00ff, #00ffff, #ffff00);
-        animation: iris-expand 1s forwards;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        color: #fff;
-        text-shadow: 2px 2px 0 #000;
-    }
-
-    @keyframes iris-expand {
-        0% { width: 0; }
-        50% { width: 100%; }
-        100% { width: 100%; opacity: 0; }
-    }
-
-    .anime-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.9) 80%);
-        animation: dark-fade 1s;
-    }
-
-    @keyframes dark-fade {
-        0% { opacity: 0; }
-        20% { opacity: 1; }
-        80% { opacity: 1; }
-        100% { opacity: 0; }
-    }
-
-    .sprite-effect {
-        position: fixed;
-        width: 60px;
-        height: 60px;
-        pointer-events: none;
-        z-index: 1500;
-        animation: sprite-float 1s forwards;
-    }
-
-    @keyframes sprite-float {
-        0% { transform: scale(0) rotate(0deg); opacity: 1; }
-        50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
-        100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
-    }
-
-    @media (max-width: 600px) {
-        .game-container { padding: 5px; }
-        .header { padding: 8px; }
-        .title { font-size: 16px; }
-        .timer-display { font-size: 20px; }
-        .score-display { font-size: 16px; }
-        .arena { padding: 8px; min-height: 200px; }
-        .choices { gap: 5px; }
-        .choice-card { font-size: 11px; min-height: 70px; padding: 5px; }
-        .stats-bar { grid-template-columns: 1fr; }
-        .multiplier { font-size: 9px; padding: 4px 8px; }
-    }
-
-    </style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            overflow-y: auto; 
+            image-rendering: pixelated;
+            user-select: none;
+        }
+    
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            z-index: 1000;
+        }
+    
+        .game-container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 5px;
+            position: relative;
+        }
+    
+        .header {
+            background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
+            border: 4px solid #ffd700;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+    
+        .title {
+            font-size: 20px;
+            text-align: center;
+            color: #ffd700;
+            text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000;
+            margin-bottom: 5px;
+            animation: glow 2s ease-in-out infinite;
+        }
+    
+        @keyframes glow {
+            0%, 100% { text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000, 0 0 8px #ffd700; }
+            50% { text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000, 0 0 20px #ffd700; }
+        }
+    
+        .health-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+    
+        .health-bar-container {
+            position: relative;
+        }
+    
+        .health-label {
+            font-size: 10px;
+            color: #ffd700;
+            margin-bottom: 3px;
+            text-shadow: 1px 1px 0 #000;
+        }
+    
+        .health-bar-outer {
+            background: #000;
+            border: 3px solid #fff;
+            height: 25px;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+    
+        .health-bar-inner {
+            background: linear-gradient(180deg, #00ff00 0%, #00cc00 50%, #009900 100%);
+            height: 100%;
+            transition: width 0.3s ease-out;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+    
+        .health-bar-inner.low {
+            background: linear-gradient(180deg, #ffff00 0%, #ffcc00 50%, #ff9900 100%);
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+        }
+    
+        .health-bar-inner.critical {
+            background: linear-gradient(180deg, #ff0000 0%, #cc0000 50%, #990000 100%);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            animation: health-pulse 0.5s infinite;
+        }
+    
+        @keyframes health-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    
+        .health-bar-segments {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+    
+        .health-segment {
+            flex: 1;
+            border-right: 2px solid rgba(0, 0, 0, 0.3);
+        }
+    
+        .health-segment:last-child {
+            border-right: none;
+        }
+    
+        .health-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+            font-weight: bold;
+            pointer-events: none;
+        }
+    
+        .timer-display {
+            font-size: 24px;
+            color: #00ff00;
+            text-align: center;
+            margin: 5px 0;
+            text-shadow: 0 0 8px #00ff00;
+        }
+    
+        .timer-display.warning {
+            color: #ffff00;
+            animation: pulse 0.5s infinite;
+        }
+    
+        .timer-display.danger {
+            color: #ff0000;
+            animation: pulse 0.3s infinite;
+        }
+    
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    
+        .score-display {
+            font-size: 20px;
+            color: #ffd700;
+            text-align: center;
+            text-shadow: 2px 2px 0 #ff0000;
+        }
+    
+        .multipliers {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            min-height: 20px;
+            margin-top: 5px;
+        }
+    
+        .multiplier {
+            background: #ff00ff;
+            color: #fff;
+            padding: 5px 10px;
+            border: 2px solid #fff;
+            font-size: 10px;
+            animation: bounce 0.5s;
+            box-shadow: 0 0 8px #ff00ff;
+        }
+    
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    
+        .arena {
+            background: linear-gradient(180deg, #2a5298 0%, #1e3a5f 50%, #8b4513 100%);
+            border: 4px solid #8b4513;
+            padding: 10px;
+            min-height: 250px;
+            position: relative;
+            margin-bottom: 10px;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+    
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+    
+        .choice-card {
+            background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
+            border: 3px solid #ffd700;
+            padding: 10px 5px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s, opacity 0.3s ease-in-out;
+            font-size: 12px;
+            line-height: 1.4;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 0 #996600, 0 6px 10px rgba(0, 0, 0, 0.5);
+        }
+    
+        .choice-card:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 4px 0 #996600, 0 8px 15px rgba(255, 215, 0, 0.6);
+        }
+    
+        .choice-card:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #996600;
+        }
+    
+        .floating-score {
+            position: fixed;
+            color: #fff;
+            text-shadow: 2px 2px 0 #ff00ff;
+            font-size: 16px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: float-up-fade 1s forwards;
+            z-index: 1001;
+        }
+    
+        @keyframes float-up-fade {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+    
+        .explosion {
+            position: absolute;
+            font-size: 40px;
+            animation: explode 0.6s forwards;
+            pointer-events: none;
+        }
+    
+        @keyframes explode {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1) rotate(180deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
+        }
+    
+        .instruction {
+            text-align: center;
+            font-size: 10px;
+            color: #ffff00;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 0 #000;
+            animation: blink 1.5s infinite;
+        }
+    
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.3; }
+        }
+    
+        .results-screen {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border: 4px solid #ffd700;
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+    
+        .results-screen.active {
+            display: block;
+        }
+    
+        .final-score {
+            font-size: 32px;
+            color: #ffd700;
+            margin: 10px 0;
+            text-shadow: 2px 2px 0 #ff0000;
+        }
+    
+        .top-picks {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: left;
+        }
+    
+        .top-picks h3 {
+            color: #00ff00;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    
+        .top-picks ol {
+            list-style: none;
+            counter-reset: item;
+        }
+    
+        .top-picks li {
+            counter-increment: item;
+            padding: 5px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid #ffd700;
+            font-size: 9px;
+        }
+    
+        .top-picks li:before {
+            content: counter(item) ". ";
+            color: #ffd700;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+    
+        .high-scores {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ff00ff;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    
+        .high-scores h3 {
+            color: #ff00ff;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+    
+        .high-score-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+            margin: 3px 0;
+            border-bottom: 1px solid #444;
+            font-size: 8px;
+        }
+    
+        .arcade-button {
+            background: linear-gradient(180deg, #ff0000 0%, #cc0000 100%);
+            color: #fff;
+            border: 3px solid #fff;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            cursor: pointer;
+            margin: 5px;
+            box-shadow: 0 4px 0 #800000, 0 6px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s;
+        }
+    
+        .arcade-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 0 #800000, 0 8px 20px rgba(255, 0, 0, 0.5);
+        }
+    
+        .arcade-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #800000;
+        }
+    
+        .arcade-button.secondary {
+            background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
+            box-shadow: 0 4px 0 #1e40af, 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+    
+        .arcade-button.secondary:hover {
+            box-shadow: 0 5px 0 #1e40af, 0 8px 20px rgba(37, 99, 235, 0.5);
+        }
+    
+        .arcade-button.secondary:active {
+            box-shadow: 0 2px 0 #1e40af;
+        }
+    
+        .progress-text {
+            text-align: center;
+            font-size: 10px;
+            color: #ffff00;
+            margin-top: 5px;
+        }
+    
+        .name-input-screen {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border: 4px solid #ffd700;
+            padding: 20px;
+            text-align: center;
+            min-height: 400px;
+            margin-top: 20px;
+        }
+    
+        .name-input-screen h2 {
+            font-size: 14px;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+    
+        .name-input-screen input {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            padding: 10px;
+            width: 100%;
+           
+            max-width: 250px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+    
+        .screenshot-area {
+            background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
+            border: 4px solid #ffd700;
+            padding: 20px;
+            margin: 10px auto;
+            max-width: 400px;
+        }
+    
+        .audio-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+            font-size: 24px;
+            transition: transform 0.2s;
+        }
+    
+        .audio-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+    
+        .audio-toggle:active {
+            transform: scale(0.95);
+        }
+    
+        @keyframes screen-shake {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-5px, 2px); }
+            20% { transform: translate(5px, -2px); }
+            30% { transform: translate(-5px, -2px); }
+            40% { transform: translate(5px, 2px); }
+            50% { transform: translate(-5px, 2px); }
+            60% { transform: translate(5px, -2px); }
+            70% { transform: translate(-5px, -2px); }
+            80% { transform: translate(5px, 2px); }
+            90% { transform: translate(-5px, -2px); }
+        }
+    
+        .shake {
+            animation: screen-shake 0.5s;
+        }
+    
+        @keyframes invert-flash {
+            0%, 100% { filter: invert(0); }
+            50% { filter: invert(1); }
+        }
+    
+        .invert {
+            animation: invert-flash 0.4s;
+        }
+    
+        @keyframes wave-distort {
+            0% { transform: skewX(0deg); }
+            25% { transform: skewX(5deg); }
+            50% { transform: skewX(-5deg); }
+            75% { transform: skewX(5deg); }
+            100% { transform: skewX(0deg); }
+        }
+    
+        .wave {
+            animation: wave-distort 0.6s;
+        }
+    
+        .anime-cutscene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2000;
+            pointer-events: none;
+            display: none;
+        }
+    
+        .anime-cutscene.active {
+            display: block;
+        }
+    
+        .anime-iris {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 80px;
+            background: linear-gradient(90deg, #ff0000, #ff00ff, #00ffff, #ffff00);
+            animation: iris-expand 1s forwards;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+        }
+    
+        @keyframes iris-expand {
+            0% { width: 0; }
+            50% { width: 100%; }
+            100% { width: 100%; opacity: 0; }
+        }
+    
+        .anime-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.9) 80%);
+            animation: dark-fade 1s;
+        }
+    
+        @keyframes dark-fade {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    
+        .sprite-effect {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            pointer-events: none;
+            z-index: 1500;
+            animation: sprite-float 1s forwards;
+        }
+    
+        @keyframes sprite-float {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
+        }
+    
+        .background-image {
+            position: fixed;
+            bottom: 20;
+            left: 20;
+            width: 100%;
+            height: 40vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+    
+        .background-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center bottom;
+            display: block;
+        }
+
+        .ko-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+    
+        .ko-overlay.active {
+            display: flex;
+            animation: ko-fade-in 0.5s;
+        }
+    
+        @keyframes ko-fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    
+        .ko-text {
+            font-size: 72px;
+            color: #ff0000;
+            text-shadow: 
+                3px 3px 0 #fff,
+                6px 6px 0 #000,
+                0 0 30px #ff0000;
+            animation: ko-zoom 1s ease-out;
+            margin-bottom: 20px;
+        }
+    
+        @keyframes ko-zoom {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+    
+        .ko-subtext {
+            font-size: 20px;
+            color: #ffd700;
+            text-shadow: 2px 2px 0 #000;
+            animation: ko-fade-in 1s 0.5s both;
+        }
+    
+        @media (max-width: 600px) {
+            .game-container { padding: 5px; }
+            .header { padding: 8px; }
+            .title { font-size: 16px; }
+            .timer-display { font-size: 20px; }
+            .score-display { font-size: 16px; }
+            .arena { padding: 8px; min-height: 200px; }
+            .choices { gap: 5px; }
+            .choice-card { font-size: 11px; min-height: 70px; padding: 5px; }
+            .multiplier { font-size: 9px; padding: 4px 8px; }
+            .ko-text { font-size: 48px; }
+            .ko-subtext { font-size: 16px; }
+        }
+    
+        </style>
 </head>
 <body>
     <div class="crt-overlay"></div>
@@ -539,6 +675,11 @@
     </audio>
     
     <div class="audio-toggle" id="audioToggle" onclick="toggleAudio()">🎧</div>
+    
+    <div class="ko-overlay" id="koOverlay">
+        <div class="ko-text">K.O.!</div>
+        <div class="ko-subtext">YOU WIN.</div>
+    </div>
     
     <div class="anime-cutscene" id="animeCutscene">
         <div class="anime-background"></div>
@@ -561,16 +702,34 @@
                 <div class="timer-display" id="timer">15.00</div>
                 <div class="score-display" id="score">SCORE: 0</div>
                 <div class="multipliers" id="multipliers"></div>
-                <div class="stats-bar">
-                    <div class="stat-item">REMAINING: <span id="remainingCount">30</span></div>
-                    <div class="stat-item">FAVORITES: <span id="favsCount">0</span></div>
+                <div class="health-bars">
+                    <div class="health-bar-container">
+                        <div class="health-label">ENEMY HP</div>
+                        <div class="health-bar-outer">
+                            <div class="health-bar-inner" id="progressBar" style="width: 100%;">
+                                <div class="health-bar-segments">
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="arena">
                 <div class="instruction">TAP TO CHOOSE YOUR FAVORITE!</div>
                 <div class="choices" id="choices"></div>
-                <div class="progress-text" id="progressText"></div>
+                <div class="progress-text" id="progressMessage"></div>
             </div>
         </div>
 
@@ -597,7 +756,10 @@
             </div>
         </div>
     </div>
-
+ <!-- Background Image at Bottom -->
+ <div class="background-image">
+    <img src="bg2.png" alt="Background">
+</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
     const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjPdmkcpuRZJeQjdF53ZvPsILjnnecRAIfdbV1qqJ3knO-Kgx5IJNz557hrxIs80G3/exec';
@@ -1096,56 +1258,96 @@
     function updateUI() {
         const available = getAvailableItems();
         const remaining = available.length;
+        const totalActivities = ACTIVITIES.length;
+        const favoritesCollected = gameState.favorites.length;
+        const maxFavorites = 5;
         
         document.getElementById('score').textContent = `SCORE: ${gameState.score}`;
-        document.getElementById('remainingCount').textContent = remaining;
-        document.getElementById('favsCount').textContent = gameState.favorites.length;
         
-        if (remaining > 10) {
-            document.getElementById('progressText').textContent = 
-                `${remaining} ACTIVITIES REMAINING!`;
-        } else if (remaining > 5) {
-            document.getElementById('progressText').textContent = 
-                `FINAL ${remaining}! GETTING CLOSE!`;
-        } else {
-            document.getElementById('progressText').textContent = 
-                `ALMOST THERE! ${5 - gameState.favorites.length} MORE PICKS!`;
+        // Calculate progress: starts at 100% (30 remaining, 0 favorites)
+        // Decreases as we eliminate activities and collect favorites
+        // Goal: get to 0 HP (5 favorites collected, all others eliminated)
+        const totalProgress = maxFavorites + (totalActivities - maxFavorites);
+        const currentProgress = remaining + (maxFavorites - favoritesCollected);
+        const progressPercent = (currentProgress / totalProgress) * 100;
+        
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        
+        progressBar.style.width = progressPercent + '%';
+       
+        
+        // Change color based on progress (enemy losing HP)
+        progressBar.className = 'health-bar-inner';
+        if (progressPercent < 20) {
+            progressBar.classList.add('critical');
+        } else if (progressPercent < 40) {
+            progressBar.classList.add('low');
+        }
+        
+        // Update progress message to clarify elimination vs favorites
+        const progressMsg = document.getElementById('progressMessage');
+        const picksLeft = maxFavorites - favoritesCollected;
+        
+        if (favoritesCollected === 0) {
+            progressMsg.textContent = `${remaining} ACTIVITIES IN THE FIGHT!`;
+        } else if (picksLeft > 3) {
+            progressMsg.textContent = `${favoritesCollected} FAVORITE${favoritesCollected > 1 ? 'S' : ''} LOCKED! ${picksLeft} SPOTS LEFT!`;
+        } else if (picksLeft > 1) {
+            progressMsg.textContent = `${favoritesCollected} DOWN, ${picksLeft} TO GO! ALMOST DONE!`;
+        } else if (picksLeft === 1) {
+            progressMsg.textContent = `BOSS FIGHT! ONE MORE FAVORITE TO COMPLETE YOUR TOP 5!`;
         }
     }
 
     function endGame() {
         stopTimer();
-        document.getElementById('gameScreen').style.display = 'none';
-        document.getElementById('resultsScreen').classList.add('active');
         
-        document.getElementById('finalScore').textContent = gameState.score;
-        document.getElementById('playerNameDisplay').textContent = gameState.playerName;
+        // Show K.O. overlay
+        const koOverlay = document.getElementById('koOverlay');
+        koOverlay.classList.add('active');
         
-        const topPicksList = document.getElementById('topPicksList');
-        topPicksList.innerHTML = '';
-        gameState.favorites.forEach(pick => {
-            const li = document.createElement('li');
-            li.textContent = pick;
-            topPicksList.appendChild(li);
-        });
+        // Play final sound effect
+        if (audioEnabled) {
+            playSound('critical');
+            setTimeout(() => playSound('combo'), 300);
+        }
         
-        gameState.highScores.push({ 
-            name: gameState.playerName, 
-            score: gameState.score 
-        });
-        gameState.highScores.sort((a, b) => b.score - a.score);
-        gameState.highScores = gameState.highScores.slice(0, 8);
-        
-        const highScoresList = document.getElementById('highScoresList');
-        highScoresList.innerHTML = '';
-        gameState.highScores.forEach((entry, i) => {
-            const div = document.createElement('div');
-            div.className = 'high-score-entry';
-            div.innerHTML = `<span>${i + 1}. ${entry.name}</span><span>${entry.score}</span>`;
-            highScoresList.appendChild(div);
-        });
-        
-        submitToGoogleForm();
+        // After K.O. animation, show results
+        setTimeout(() => {
+            koOverlay.classList.remove('active');
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('resultsScreen').classList.add('active');
+            
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('playerNameDisplay').textContent = gameState.playerName;
+            
+            const topPicksList = document.getElementById('topPicksList');
+            topPicksList.innerHTML = '';
+            gameState.favorites.forEach(pick => {
+                const li = document.createElement('li');
+                li.textContent = pick;
+                topPicksList.appendChild(li);
+            });
+            
+            gameState.highScores.push({ 
+                name: gameState.playerName, 
+                score: gameState.score 
+            });
+            gameState.highScores.sort((a, b) => b.score - a.score);
+            gameState.highScores = gameState.highScores.slice(0, 8);
+            
+            const highScoresList = document.getElementById('highScoresList');
+            highScoresList.innerHTML = '';
+            gameState.highScores.forEach((entry, i) => {
+                const div = document.createElement('div');
+                div.className = 'high-score-entry';
+                div.innerHTML = `<span>${i + 1}. ${entry.name}</span><span>${entry.score}</span>`;
+                highScoresList.appendChild(div);
+            });
+            
+            submitToGoogleForm();
+        }, 2500);
     }
 
     function submitToGoogleForm() {
