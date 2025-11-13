@@ -669,7 +669,7 @@
             background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
             border: 4px solid #ffd700;
             padding: 30px 20px;
-            margin-top: 190px;
+            margin-top: 220px;
             max-width: 500px;
             width: 100%;
             min-height: 330px;
@@ -783,7 +783,7 @@
                 <div class="tutorial-title">PICK YOUR FAVORITE</div>
                 <div class="tutorial-text">
                     TAP THE ACTIVITY YOU LIKE MOST<br><br>
-                    BE CONFIDENT. THERE ARE NO WRONG PICKS - FIGHT INDECISION! 
+                    THERE ARE NO WRONG PICKS - FIGHT INDECISION! 
                 </div>
                 <button class="arcade-button" onclick="nextTutorial()">NEXT</button>
                
@@ -791,7 +791,7 @@
             <div id="tutorialScreen3" class="tutorial-screen" style="display: none;">
                 <div class="tutorial-title">WATCH THE ENEMY HP</div>
                 <div class="tutorial-text">
-                    DECIDE QUICK, STRIKE HARD TO DROP ENEMY HP<br><br>
+                    DECISIONS WEAKEN ENEMY’S HP!<br><br>
                     WIN BY REDUCING ENEMY TO ZERO!
                 </div>
                 <button class="arcade-button" onclick="startGameAfterTutorial()">READY TO FIGHT!</button>
@@ -1468,7 +1468,7 @@ if (favoritesCollected === 0) {
         { text: "THIS TEXT IS DISTRACTING YOU", weight: 2 },
         { text: "YOUR THUMBS ARE UNSTOPPABLE!", weight: 2 },
         { text: "YOU PICK LIKE A LEGEND!", weight: 2 },
-        { text: "THIS IS JUST A SURVEY", weight: 2 },
+        { text: "ZAP THE SURVEY INTO SUBMISSION!", weight: 2 },
         { text: "KEEP SLAMMING THOSE PICKS", weight: 2 },
         { text: "WOWZA, PICK-SLAMMING GENIUS!", weight: 2 },
         { text: "CRITICAL CHOICE CRUSH!", weight: 1 },
@@ -1616,7 +1616,7 @@ if (favoritesCollected === 0) {
 
     function submitActivityIdea() {
         playSound('name');
-        window.location.href = 'mailto:email@daviddot.com?subject=FHE Activity Idea&body=My activity idea:%0D%0A%0D%0A';
+       window.location.href = 'mailto:email@daviddot.com?subject=FHE Activity Idea';
     }
 
     let tutorialStep = 1;
