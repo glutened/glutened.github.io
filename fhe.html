@@ -1424,10 +1424,18 @@
       window.location.href = 'mailto:email@daviddot.com?subject=FHE Activity Idea';
     }
     </script>
-</body><footer style="text-align:center; font-size:0.3em; padding:1em 0; color:#888;">
-    <span title='Remix “the aerodynamics of a Jeep Wrangler”, toho-moko. CC BY-NC-SA 3.0.' 
-          style="cursor:help;">
-      Credits
-    </span>
+</body><footer style="text-align:center; font-size:0.4em; padding:1em 0; color:#888;">
+    <span id="credits" style="cursor:pointer;">Credits</span>
+    <span id="creditText" style="display:none;">Music remix “the aerodynamics of a Jeep Wrangler”, toho-moko. CC BY-NC-SA 3.0</span>
   </footer>
+  
+  <script>
+    const credits = document.getElementById('credits');
+    const text = document.getElementById('creditText');
+    credits.addEventListener('click', () => {
+      text.style.display = text.style.display === 'none' ? 'inline' : 'none';
+    });
+  </script>
+  
+  
 </html>
