@@ -408,7 +408,7 @@
             text-align: center;
             font-size: 10px;
             color: #ffff00;
-            margin-top: 5px;
+            margin-top: 50px;
         }
     
         .name-input-screen {
@@ -585,19 +585,20 @@
         }
     
         .background-image {
-  position: relative;
-  width: 100%;
-  height: 30vh;
-  overflow: hidden;
-}
+            position: relative;
+            width: 100%;
+            height: 30vh;
+            overflow: hidden;
+        }
 
-.background-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
-  display: block;
-}
+        .background-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center bottom;
+            display: block;
+        }
+
         .ko-overlay {
             position: fixed;
             top: 0;
@@ -652,7 +653,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.45);
             z-index: 3000;
             display: none;
             align-items: center;
@@ -672,6 +673,8 @@
             width: 100%;
             text-align: center;
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            position: relative;
+            z-index: 3001;
         }
 
         .tutorial-title {
@@ -689,33 +692,38 @@
             text-shadow: 1px 1px 0 #000;
         }
 
-        .tutorial-visual {
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #00ff00;
+        .tutorial-highlight {
+            position: fixed;
+            border: 4px solid #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.9), inset 0 0 30px rgba(255, 215, 0, 0.3);
+            pointer-events: none;
+            z-index: 2999;
+            animation: pulse-glow 1.5s infinite;
+            background: rgba(255, 215, 0, 0.1);
         }
 
-        .tutorial-hp-demo {
-            background: #000;
-            border: 3px solid #fff;
-            height: 25px;
-            position: relative;
-            margin: 10px auto;
-            max-width: 300px;
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.9), inset 0 0 20px rgba(255, 215, 0, 0.3);
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(255, 215, 0, 1), inset 0 0 40px rgba(255, 215, 0, 0.5);
+            }
         }
 
-        .tutorial-hp-bar {
-            background: linear-gradient(180deg, #00ff00 0%, #00cc00 50%, #009900 100%);
-            height: 100%;
-            width: 60%;
-            transition: width 0.5s;
-        }
-
-        .tutorial-dots {
+        .tutorial-arrow {
+            position: fixed;
             color: #ffd700;
-            font-size: 14px;
-            margin: 10px 0;
+            font-size: 48px;
+            z-index: 3000;
+            animation: bounce-arrow 1s infinite;
+            text-shadow: 2px 2px 0 #000;
+            pointer-events: none;
+        }
+
+        @keyframes bounce-arrow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
     
         @media (max-width: 600px) {
@@ -735,7 +743,7 @@
             .tutorial-text { font-size: 10px; }
         }
     
-        </style>
+    </style>
 </head>
 <body>
     <div class="crt-overlay"></div>
@@ -764,33 +772,27 @@
                 <div class="tutorial-text">
                     PICK YOUR FAVORITE ACTIVITY FROM EACH GROUP<br><br>
                     WHAT YOU DON'T PICK GETS KNOCKED OUT!<br><br>
-                    FASTER PICKS = MORE POINTS!
+                    FASTER PICKS = MORE POINTS! EXTRA STYLE POINTS FOR PERFECT TIMING
                 </div>
                 <button class="arcade-button" onclick="nextTutorial()">NEXT</button>
+                <button class="arcade-button secondary" onclick="skipTutorial()">SKIP</button>
             </div>
             <div id="tutorialScreen2" class="tutorial-screen" style="display: none;">
-                <div class="tutorial-title">ENEMY HP EXPLAINED</div>
+                <div class="tutorial-title">PICK YOUR FAVORITE</div>
                 <div class="tutorial-text">
-                    HP DROPS AS YOU ELIMINATE ACTIVITIES
-                </div>
-                <div class="tutorial-visual">
-                    <div style="font-size: 10px; color: #ffd700; margin-bottom: 5px;">ENEMY HP</div>
-                    <div class="tutorial-hp-demo">
-                        <div class="tutorial-hp-bar"></div>
-                    </div>
-                  
-                    <div style="font-size: 9px; color: #00ff00;">DAMAGE OPPONENT BY PICKING ACTIVITIES</div>
+                    TAP THE ACTIVITY YOU LIKE MOST<br><br>
+                    BE CONFIDENT. THERE ARE NO WRONG PICKS - FIGHT INDECISION! 
                 </div>
                 <button class="arcade-button" onclick="nextTutorial()">NEXT</button>
+               
             </div>
             <div id="tutorialScreen3" class="tutorial-screen" style="display: none;">
-                <div class="tutorial-title">READY TO FIGHT?</div>
+                <div class="tutorial-title">WATCH THE ENEMY HP</div>
                 <div class="tutorial-text">
-                   WIN BY REDUCING ENEMY HP TO ZERO<br><br>
-                   
-                    NO WRONG ANSWERS - JUST YOUR PREFERENCES!
+                    DECIDE QUICK, STRIKE HARD TO DROP ENEMY HP<br><br>
+                    WIN BY REDUCING IT TO ZERO!
                 </div>
-                <button class="arcade-button" onclick="closeTutorial()">CLOSE</button>
+                <button class="arcade-button" onclick="startGameAfterTutorial()">READY TO FIGHT!</button>
             </div>
         </div>
     </div>
@@ -801,8 +803,8 @@
             <h2>ENTER YOUR NAME</h2>
             <input type="text" id="playerName" maxlength="10" placeholder="PLAYER1" />
             <div>
-                <button class="arcade-button" onclick="startGame()">START GAME</button>
-            </div><button class="arcade-button secondary" onclick="showTutorial()">TUTORIAL</button>
+                <button class="arcade-button" onclick="showTutorialAndStart()">START GAME</button>
+            </div>
             <div style="margin-top: 130px;">
                 <button class="arcade-button secondary" onclick="submitActivityIdea()" >SUGGEST FHE IDEA</button>
             </div>
@@ -823,9 +825,6 @@
                         <div class="health-bar-outer">
                             <div class="health-bar-inner" id="progressBar" style="width: 100%;">
                                 <div class="health-bar-segments">
-                                    <div class="health-segment"></div>
-                                    <div class="health-segment"></div>
-                                    <div class="health-segment"></div>
                                     <div class="health-segment"></div>
                                     <div class="health-segment"></div>
                                     <div class="health-segment"></div>
@@ -871,10 +870,10 @@
             </div>
         </div>
     </div>
- <!-- Background Image at Bottom -->
- <div class="background-image">
-    <img src="bg2.png" alt="Background">
-</div>
+    <!-- Background Image at Bottom -->
+    <div class="background-image">
+        <img src="bg2.png" alt="Background">
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
     const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjPdmkcpuRZJeQjdF53ZvPsILjnnecRAIfdbV1qqJ3knO-Kgx5IJNz557hrxIs80G3/exec';
@@ -902,7 +901,7 @@
         if (audioEnabled) {
             initAudio();
             if (bgMusic) {
-                bgMusic.volume = 0.3; // Set volume to 30%
+                bgMusic.volume = 0.3;
                 bgMusic.play().catch(err => console.log('Audio play failed:', err));
             }
         } else {
@@ -912,7 +911,6 @@
         }
     }
      
-    // Stop audio when page is hidden (tab switched or browser closed)
     document.addEventListener('visibilitychange', function() {
         if (document.hidden && bgMusic && !bgMusic.paused) {
             bgMusic.pause();
@@ -921,7 +919,6 @@
         }
     });
     
-    // Stop audio when page is about to unload
     window.addEventListener('beforeunload', function() {
         if (bgMusic) {
             bgMusic.pause();
@@ -929,7 +926,6 @@
         }
     });
     
-    // Stop audio when page loses focus (iOS Safari specific)
     window.addEventListener('pagehide', function() {
         if (bgMusic) {
             bgMusic.pause();
@@ -937,7 +933,6 @@
         }
     });
     
-    // Stop audio when browser goes to background (iOS specific)
     window.addEventListener('blur', function() {
         if (bgMusic && !bgMusic.paused) {
             bgMusic.pause();
@@ -1055,7 +1050,7 @@
         );
     }
 
-    function startGame() {
+    function showTutorialAndStart() {
         const nameInput = document.getElementById('playerName').value.trim() || 'PLAYER1';
         gameState.playerName = nameInput.toUpperCase().slice(0, 10);
         
@@ -1064,7 +1059,72 @@
         document.getElementById('nameInputScreen').style.display = 'none';
         document.getElementById('gameScreen').style.display = 'block';
         
-        startNewRound();
+        const available = getAvailableItems();
+        gameState.current = shuffle(available);
+        gameState.evaluating = [];
+        gameState.survived = [];
+        
+        const batchSize = Math.min(BATCH_SIZE, gameState.current.length);
+        gameState.evaluating = gameState.current.splice(0, batchSize);
+        gameState.timer = 15;
+        
+        renderBatch();
+        updateUI();
+        
+        showTutorial();
+    }
+
+    function skipTutorial() {
+        playSound('name');
+        document.getElementById('tutorialOverlay').classList.remove('active');
+        removeHighlights();
+        tutorialStep = 1;
+        startTimer();
+    }
+
+    function startGameAfterTutorial() {
+        playSound('name');
+        document.getElementById('tutorialOverlay').classList.remove('active');
+        removeHighlights();
+        tutorialStep = 1;
+        startTimer();
+    }
+
+    function removeHighlights() {
+        document.querySelectorAll('.tutorial-highlight').forEach(el => el.remove());
+        document.querySelectorAll('.tutorial-arrow').forEach(el => el.remove());
+    }
+
+    function highlightElement(selector, arrowPosition = 'top') {
+        removeHighlights();
+        
+        const element = document.querySelector(selector);
+        if (!element) return;
+        
+        const rect = element.getBoundingClientRect();
+        
+        const highlight = document.createElement('div');
+        highlight.className = 'tutorial-highlight';
+        highlight.style.left = (rect.left - 8) + 'px';
+        highlight.style.top = (rect.top - 8) + 'px';
+        highlight.style.width = (rect.width + 16) + 'px';
+        highlight.style.height = (rect.height + 16) + 'px';
+        document.body.appendChild(highlight);
+        
+        const arrow = document.createElement('div');
+        arrow.className = 'tutorial-arrow';
+        
+        if (arrowPosition === 'top') {
+            arrow.textContent = '↓';
+            arrow.style.left = (rect.left + rect.width / 2 - 24) + 'px';
+            arrow.style.top = (rect.top - 60) + 'px';
+        } else if (arrowPosition === 'bottom') {
+            arrow.textContent = '↑';
+            arrow.style.left = (rect.left + rect.width / 2 - 24) + 'px';
+            arrow.style.top = (rect.bottom + 10) + 'px';
+        }
+        
+        document.body.appendChild(arrow);
     }
 
     function startNewRound() {
@@ -1379,9 +1439,6 @@
         
         document.getElementById('score').textContent = `SCORE: ${gameState.score}`;
         
-        // Calculate progress: starts at 100% (30 remaining, 0 favorites)
-        // Decreases as we eliminate activities and collect favorites
-        // Goal: get to 0 HP (5 favorites collected, all others eliminated)
         const totalProgress = maxFavorites + (totalActivities - maxFavorites);
         const currentProgress = remaining + (maxFavorites - favoritesCollected);
         const progressPercent = (currentProgress / totalProgress) * 100;
@@ -1391,8 +1448,6 @@
         
         progressBar.style.width = progressPercent + '%';
        
-        
-        // Change color based on progress (enemy losing HP)
         progressBar.className = 'health-bar-inner';
         if (progressPercent < 20) {
             progressBar.classList.add('critical');
@@ -1400,35 +1455,60 @@
             progressBar.classList.add('low');
         }
         
-        // Update progress message to clarify elimination vs favorites
         const progressMsg = document.getElementById('progressMessage');
-        const picksLeft = maxFavorites - favoritesCollected;
-        
-        if (favoritesCollected === 0) {
-            progressMsg.textContent = `${remaining} ACTIVITIES IN THE FIGHT!`;
-        } else if (picksLeft > 3) {
-            progressMsg.textContent = `${favoritesCollected} FAVORITE${favoritesCollected > 1 ? 'S' : ''} LOCKED! ${picksLeft} SPOTS LEFT!`;
-        } else if (picksLeft > 1) {
-            progressMsg.textContent = `${favoritesCollected} DOWN, ${picksLeft} TO GO! ALMOST DONE!`;
-        } else if (picksLeft === 1) {
-            progressMsg.textContent = `BOSS FIGHT! ONE MORE FAVORITE TO COMPLETE YOUR TOP 5!`;
+const picksLeft = maxFavorites - favoritesCollected;
+
+if (favoritesCollected === 0) {
+    const startMessages = [
+        { text: "", weight: 76 }, // no message most of the time
+        { text: "TRUST YOUR GUT, DON’T HESITATE!", weight: 2 },
+        { text: "WOW!!! WHAT A PICK!", weight: 1 },
+        { text: "THIS TEXT IS DISTRACTING YOU", weight: 2 },
+        { text: "YOUR THUMBS ARE UNSTOPPABLE!", weight: 2 },
+        { text: "YOU PICK LIKE A LEGEND!", weight: 2 },
+        { text: "THIS IS JUST A SURVEY", weight: 2 },
+        { text: "KEEP SLAMMING THOSE PICKS", weight: 2 },
+        { text: "WOWZA, PICK-SLAMMING GENIUS!", weight: 2 },
+        { text: "CRITICAL CHOICE CRUSH!", weight: 1 },
+        { text: "CHOICE CHAMPION STRIKES AGAIN!", weight: 2 },
+        { text: "FIST OF FAVORITES UNLEASHED!", weight: 2 },
+        { text: "YOUR CONFIDENCE IS CONTAGIOUS", weight: 2 },
+        { text: "DECISION-DRIVEN DESTRUCTION!", weight: 1 },
+        { text: "YOU LOVE PLANNING ACTIVITIES", weight: 1 }
+    ];
+
+    const totalWeight = startMessages.reduce((sum, msg) => sum + msg.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const msg of startMessages) {
+        if (random < msg.weight) {
+            progressMsg.textContent = msg.text;
+            break;
         }
+        random -= msg.weight;
+    }
+} else if (picksLeft > 3) {
+    progressMsg.textContent = `${favoritesCollected} FAVORITE${favoritesCollected > 1 ? 'S' : ''} LOCKED! ${picksLeft} SPOTS LEFT!`;
+} else if (picksLeft > 1) {
+    progressMsg.textContent = `${favoritesCollected} DOWN, ${picksLeft} TO GO! ALMOST DONE!`;
+} else if (picksLeft === 1) {
+    progressMsg.textContent = `BOSS FIGHT! VICTORY IS NEAR!`;
+}
+
+
     }
 
     function endGame() {
         stopTimer();
         
-        // Show K.O. overlay
         const koOverlay = document.getElementById('koOverlay');
         koOverlay.classList.add('active');
         
-        // Play final sound effect
         if (audioEnabled) {
             playSound('critical');
             setTimeout(() => playSound('combo'), 300);
         }
         
-        // After K.O. animation, show results
         setTimeout(() => {
             koOverlay.classList.remove('active');
             document.getElementById('gameScreen').style.display = 'none';
@@ -1531,10 +1611,12 @@
         document.getElementById('multipliers').innerHTML = '';
         document.getElementById('gameScreen').style.display = 'none';
     }
+
     function submitActivityIdea() {
         playSound('name');
         window.location.href = 'mailto:email@daviddot.com?subject=FHE Activity Idea&body=My activity idea:%0D%0A%0D%0A';
     }
+
     let tutorialStep = 1;
 
     function showTutorial() {
@@ -1544,6 +1626,7 @@
         document.getElementById('tutorialScreen1').style.display = 'block';
         document.getElementById('tutorialScreen2').style.display = 'none';
         document.getElementById('tutorialScreen3').style.display = 'none';
+        removeHighlights();
     }
 
     function nextTutorial() {
@@ -1554,24 +1637,20 @@
             document.getElementById('tutorialScreen1').style.display = 'none';
             document.getElementById('tutorialScreen2').style.display = 'block';
             document.getElementById('tutorialScreen3').style.display = 'none';
+            setTimeout(() => highlightElement('.choices', 'top'), 100);
         } else if (tutorialStep === 3) {
             document.getElementById('tutorialScreen1').style.display = 'none';
             document.getElementById('tutorialScreen2').style.display = 'none';
             document.getElementById('tutorialScreen3').style.display = 'block';
+            setTimeout(() => highlightElement('.health-bar-container', 'bottom'), 100);
         }
     }
-
-    function closeTutorial() {
-        playSound('name');
-        document.getElementById('tutorialOverlay').classList.remove('active');
-        tutorialStep = 1;
-    }
     </script>
-</body><footer style="text-align:center; font-size:0.4em; padding:1em 0; color:#888;">
+</body>
+<footer style="text-align:center; font-size:0.4em; padding:1em 0; color:#888;">
     <span id="credits" style="cursor:pointer;">Credits</span>
-    <span id="creditText" style="display:none;">Music remix “the aerodynamics of a Jeep Wrangler”, toho-moko. CC BY-NC-SA 3.0</span>
-  </footer>
-  
+    <span id="creditText" style="display:none;">Music remix "the aerodynamics of a Jeep Wrangler", toho-moko. CC BY-NC-SA 3.0</span>
+</footer>
   <script>
     const credits = document.getElementById('credits');
     const text = document.getElementById('creditText');
