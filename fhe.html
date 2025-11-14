@@ -39,7 +39,53 @@
             );
             z-index: 1000;
         }
-    
+        .intro-video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.intro-video-container.hidden {
+    display: none;
+}
+
+.intro-video {
+    width: 90vmin;
+    height: 90vmin;
+    max-width: 500px;
+    max-height: 500px;
+    object-fit: cover;
+    border: 4px solid #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.skip-button {
+    margin-top: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    transition: transform 0.2s;
+}
+
+.skip-button:hover {
+    transform: scale(1.1);
+}
+
+.skip-button svg {
+    width: 60px;
+    height: 60px;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+}
         .game-container {
             width: 100%;
             margin: 0 auto;
@@ -747,7 +793,17 @@
     
     </style>
 </head>
-<body>
+<body><div class="intro-video-container" id="introVideoContainer">
+    <video class="intro-video" id="introVideo" autoplay muted playsinline>
+        <source src="intro.webm" type="video/webm">
+        Your browser does not support the video tag.
+    </video>
+    <button class="skip-button" id="skipButton" aria-label="Skip video">
+        <svg viewBox="0 0 24 24" fill="#ffd700" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
+        </svg>
+    </button>
+</div>
     <div class="crt-overlay"></div>
     
     <!-- Background music audio element -->
@@ -878,7 +934,21 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-    const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjPdmkcpuRZJeQjdF53ZvPsILjnnecRAIfdbV1qqJ3knO-Kgx5IJNz557hrxIs80G3/exec';
+    // Intro video handling
+const introVideoContainer = document.getElementById('introVideoContainer');
+const introVideo = document.getElementById('introVideo');
+const skipButton = document.getElementById('skipButton');
+
+function skipIntro() {
+    introVideoContainer.classList.add('hidden');
+}
+
+skipButton.addEventListener('click', skipIntro);
+introVideo.addEventListener('ended', skipIntro);
+
+// Fallback: skip after 30 seconds if video doesn't play
+setTimeout(skipIntro, 34400);
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjPdmkcpuRZJeQjdF53ZvPsILjnnecRAIfdbV1qqJ3knO-Kgx5IJNz557hrxIs80G3/exec';
     
     let audioEnabled = false;
     let bgMusic = null;
