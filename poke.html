@@ -2257,7 +2257,7 @@ button.type-btn.selected::before {
                     takeQuizAgain: 'Take Quiz Again', about: 'About'
                 }
             },
-            ja: {
+            ja: {GEN_REGIONS: {1: 'カントー地方'},
                 types: {
                     bug: 'むし', flying: 'ひこう', ground: 'じめん', poison: 'どく',
                     electric: 'でんき', rock: 'いわ', fighting: 'かくとう', steel: 'はがね',
@@ -2288,7 +2288,7 @@ button.type-btn.selected::before {
                 text: {
                     selectLanguage: '🌍 Idioma', quizTitle: 'Cuestionario de Tipos Pokémon',
                     quizInstructions: 'Selecciona 1 o 2 categorías para cada Pokémon. Gana 1 punto por cada categoría correcta; elegir dos puede aumentar o disminuir tu puntuación.',
-      
+                    selectAtLeastOneGen: 'Selecciona al menos una generación para comenzar el cuestionario',
                     filterByGen: 'Filtrar por Generación', all: 'TODAS', selectYourTypes: 'Selecciona el(los) Tipo(s) del Pokémon:',
                     submit: 'Enviar', next: 'Siguiente', loading: 'Cargando...', errorLoading: 'Error al cargar el cuestionario',
                     submitting: 'Enviando...', evaluationComplete: 'Evaluación Completa', trainerRankRecorded: 'Tu Rango de Entrenador ha sido registrado.',
@@ -2308,7 +2308,7 @@ button.type-btn.selected::before {
                     selectLanguage: '🌍 语言', quizTitle: '宝可梦属性测验',
                     quizInstructions: '为每只宝可梦选择1或2个类别。每个正确类别可获得1分；选择两个类别可能会提高或降低您的得分。',
     
-        
+                    selectAtLeastOneGen: '请至少选择一个世代以开始测验',
                     filterByGen: '按世代筛选', all: '全部', selectYourTypes: '选择宝可梦的属性:',
                     submit: '提交', next: '下一题', loading: '加载中...', errorLoading: '加载测验失败',
                     submitting: '提交中...', evaluationComplete: '评估完成', trainerRankRecorded: '您的训练家等级已记录。',
@@ -2326,6 +2326,7 @@ button.type-btn.selected::before {
                 },
                 text: {
                     selectLanguage: '🌍 語言 (傳統)', quizTitle: '寶可夢屬性測驗',
+                    selectAtLeastOneGen: '請至少選擇一個世代以開始測驗',
                     quizInstructions: '為每隻寶可夢選擇1或2個類別。每個正確類別可獲得1分；選擇兩個類別可能會提高或降低您的分數。',
                     filterByGen: '按世代篩選', all: '全部', selectYourTypes: '選擇寶可夢的屬性:',
                     submit: '提交', next: '下一題', loading: '加載中...', errorLoading: '加載測驗失敗',
@@ -2345,7 +2346,7 @@ button.type-btn.selected::before {
                 text: {
                     selectLanguage: '🌍 Langue', quizTitle: 'Quiz Type Pokémon',
                     quizInstructions: 'Sélectionnez 1 ou 2 catégories pour chaque Pokémon. Gagnez 1 point par catégorie correcte ; en choisir deux peut augmenter ou diminuer votre score.',
-      
+                    selectAtLeastOneGen: 'Veuillez sélectionner au moins une génération pour commencer le quiz',
                     filterByGen: 'Filtrer par Génération ', all: 'TOUTES', selectYourTypes: 'Sélectionnez le(s) Type(s) du Pokémon:',
                     submit: 'Soumettre', next: 'Suivant', loading: 'Chargement...', errorLoading: 'Erreur de chargement du quiz',
                     submitting: 'Soumission...', evaluationComplete: 'Évaluation Terminée', trainerRankRecorded: 'Votre rang de Dresseur a été enregistré.',
@@ -2364,7 +2365,7 @@ button.type-btn.selected::before {
                 text: {
                     selectLanguage: '🌍 Sprache', quizTitle: 'Pokémon-Typ-Quiz',
                     quizInstructions: 'Wähle 1 oder 2 Kategorien für jedes Pokémon. Verdiene 1 Punkt pro korrekter Kategorie; zwei auswählen kann deine Punktzahl erhöhen oder verringern.',
-       
+                    selectAtLeastOneGen: 'Bitte wähle mindestens eine Generation aus, um das Quiz zu starten',
                     filterByGen: 'Nach Generation filtern', all: 'ALLE', selectYourTypes: 'Wählen Sie den/die Typ(en) des Pokémon:',
                     submit: 'Senden', next: 'Weiter', loading: 'Lädt...', errorLoading: 'Fehler beim Laden des Quiz',
                     submitting: 'Sendet...', evaluationComplete: 'Bewertung abgeschlossen', trainerRankRecorded: 'Ihr Trainer-Rang wurde aufgezeichnet.',
@@ -2383,7 +2384,7 @@ button.type-btn.selected::before {
                 text: {
                     selectLanguage: '🌍 언어', quizTitle: '포켓몬 타입 퀴즈',
                     quizInstructions: '각 포켓몬에 대해 1~2개의 카테고리를 선택하세요. 올바른 카테고리마다 1점을 획득합니다. 두 개를 선택하면 점수가 올라가거나 내려갈 수 있습니다.',
-       
+                    selectAtLeastOneGen: '퀴즈를始めるには、少なくとも1つの世代を選択してください',
                     filterByGen: '세대로 필터링', all: '전체', selectYourTypes: '포켓몬의 타입을 선택하세요:',
                     submit: '제출', next: '다음', loading: '로딩 중...', errorLoading: '퀴즈 로딩 오류',
                     submitting: '제출 중...', evaluationComplete: '평가 완료', trainerRankRecorded: '트레이너 순위가 기록되었습니다.',
@@ -2398,8 +2399,8 @@ button.type-btn.selected::before {
             dark: 'Sombrio', water: 'Água', normal: 'Normal', grass: 'Planta', ghost: 'Fantasma'
         },
         text: {
-        quizInstructions: "Selecione 1 ou 2 categorias para cada Pokémon. Ganhe 1 ponto por categoria correta; escolher duas pode aumentar ou diminuir sua pontuação."
-        }
+        quizInstructions: "Selecione 1 ou 2 categorias para cada Pokémon. Ganhe 1 ponto por categoria correta; escolher duas pode aumentar ou diminuir sua pontuação.",
+        selectAtLeastOneGen: 'Selecione pelo menos uma geração para iniciar o quiz'}
     },
     id: {
         types: {
@@ -2487,7 +2488,7 @@ button.type-btn.selected::before {
                 text: {
                     selectLanguage: '🌍 Lingua', quizTitle: 'Quiz Tipo Pokémon',
                     quizInstructions: 'Seleziona 1 o 2 categorie per ogni Pokémon. Guadagna 1 punto per ogni categoria corretta; scegliere due può aumentare o diminuire il tuo punteggio.',
-       
+                    selectAtLeastOneGen: 'Seleziona almeno una generazione per iniziare il quiz',
                     filterByGen: 'Filtra per Generazione', all: 'TUTTE', selectYourTypes: 'Seleziona il/i Tipo/i del Pokémon:',
                     submit: 'Invia', next: 'Avanti', loading: 'Caricamento...', errorLoading: 'Errore nel caricamento del quiz',
                     submitting: 'Invio...', evaluationComplete: 'Valutazione Completata', trainerRankRecorded: 'Il tuo Rango Allenatore è stato registrato.',
@@ -2630,11 +2631,25 @@ let currentLang = localStorage.getItem('currentLang') || getBrowserLanguage();
   steel: '#60A1B8',
   water: '#2980EF',
 
+}; const GEN_COLORS = {
+    1: ['#F15C01', '#71C671'],
+    2: ['#DAA520', '#AAB9CF'],
+    3: ['#CD2236', '#818FC6'],
+    4: ['#90BEED', '#DD7CB1'],
+    5: ['#78828E', '#EBC5C3'],
+    6: ['#5A96C5', '#F16A81'],
+    7: ['#F1912B', '#5599CA'],
+    8: ['#59C2F1', '#D5598C'],
+    9: ['#F34134', '#AE7BD0']
 };
 
 
         const types = ['bug', 'flying', 'ground', 'poison', 'electric', 'rock', 'fighting','steel', 'fire',  'dragon', 'psychic', 'ice',  'fairy','dark', 'water',  'normal','grass','ghost' ];
-        
+        const GEN_REGIONS = {
+    1: 'Kanto', 2: 'Johto', 3: 'Hoenn', 4: 'Sinnoh', 
+    5: 'Unova', 6: 'Kalos', 7: 'Alola', 8: 'Galar & Hisui', 
+    9: 'Paldea'
+};
         const GEN_YEARS = {
             1: 1996,
             2: 1999,
@@ -3023,7 +3038,8 @@ const aboutModalHTML = `
                 <div class="sm:min-h-screen sm:p-8 sm:flex sm:items-center sm:justify-center">
                     <div class="w-full sm:max-w-4xl mx-auto">
                         <div class="bg-white rounded-lg shadow-xl p-2 sm:p-8">
-                            <h1 class="text-3xl font-bold text-center mb-4 text-blue-900">Pokémon Type Quiz <button 
+                            <h1 class="text-3xl font-bold text-center mb-4 text-blue-900">
+                                ${translateText('quizTitle', 'Pokémon Type Quiz')}  <button 
                     onclick="document.getElementById('aboutModal').classList.remove('hidden')"
                     class="inline-flex items-center justify-center w-6 h-6 text-xs bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full ml-1 align-middle -translate-y-1"
                     aria-label="About"
@@ -3130,28 +3146,28 @@ const aboutModalHTML = `
                 ${translateText('all', 'ALL')}
             </span>
         </div>
-  
-                                    <!-- Generation Timeline - Desktop (single row) -->
-                                    <div class="hidden sm:block">
-                                        <div class="relative pb-8">
-                                            <!-- Timeline line -->
-                                            <div class="absolute top-6 left-12 right-12 h-1 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300"></div>
-                                            
-                                            <div class="relative flex justify-center items-start gap-3">
-                                                ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(gen => `
-                                                    <div class="flex flex-col items-center flex-shrink-0">
-                                                        <button 
-                                                            onclick="toggleGen(${gen})"
-                                                            class="${selectedGens.includes(gen) ? 'bg-blue-600 text-white ring-4 ring-blue-300' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-110 font-bold rounded-full w-12 h-12 transition-all shadow-lg z-10 flex items-center justify-center text-base"
-                                                        >
-                                                            ${gen}
-                                                        </button>
-                                                        <span class="text-xs ${selectedGens.includes(gen) ? 'text-blue-600 font-bold' : 'text-gray-400'} mt-2 whitespace-nowrap">${GEN_YEARS[gen]}</span>
-                                                    </div>
-                                                `).join('')}
-                                            </div>
-                                        </div>
-                                    </div>
+        <!-- Generation Timeline - Desktop (single row) -->
+        <div class="hidden sm:block">
+    <div class="relative pb-8">
+        <div class="absolute top-6 left-12 right-12 h-1 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300"></div>
+        
+        <div class="relative flex justify-center items-start gap-6">
+            ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(gen => `
+                <div class="flex flex-col items-center flex-shrink-0">
+                    <button 
+                        onclick="toggleGen(${gen})"
+                        class="${selectedGens.includes(gen) ? 'text-white ring-4 shadow-lg' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-110 font-bold rounded-full w-12 h-12 transition-all shadow-lg z-10 flex items-center justify-center text-base"
+                        style="${selectedGens.includes(gen) ? `background: linear-gradient(135deg, ${GEN_COLORS[gen][0]}, ${GEN_COLORS[gen][1]}); ring-color: ${GEN_COLORS[gen][0]}40;` : ''}"
+                        title="${GEN_REGIONS[gen]}"
+                    >
+                        ${gen}
+                    </button>
+                    <span class="text-xs ${selectedGens.includes(gen) ? 'font-bold' : 'text-gray-400'} mt-2 whitespace-nowrap" style="${selectedGens.includes(gen) ? `color: ${GEN_COLORS[gen][0]}` : ''}">${GEN_YEARS[gen]}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+</div>
                                     
                                     <!-- Generation Timeline - Mobile (two rows) -->
                                     <div class="sm:hidden space-y-6">
@@ -3327,28 +3343,36 @@ const aboutModalHTML = `
         </div>
   
 
-                                    
-                                    <!-- Generation Timeline - Desktop (single row) -->
-                                    <div class="hidden sm:block">
-                                        <div class="relative pb-8">
-                                            <!-- Timeline line -->
-                                            <div class="absolute top-6 left-12 right-12 h-1 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300"></div>
-                                            
-                                            <div class="relative flex justify-center items-start gap-3">
-                                                ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(gen => `
-                                                    <div class="flex flex-col items-center flex-shrink-0">
-                                                        <button 
-                                                            onclick="toggleGen(${gen})"
-                                                            class="${selectedGens.includes(gen) ? 'bg-blue-600 text-white ring-4 ring-blue-300' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-110 font-bold rounded-full w-12 h-12 transition-all shadow-lg z-10 flex items-center justify-center text-base"
-                                                        >
-                                                            ${gen}
-                                                        </button>
-                                                        <span class="text-xs ${selectedGens.includes(gen) ? 'text-blue-600 font-bold' : 'text-gray-400'} mt-2 whitespace-nowrap">${GEN_YEARS[gen]}</span>
-                                                    </div>
-                                                `).join('')}
-                                            </div>
-                                        </div>
-                                    </div>
+        <div class="hidden sm:block">
+    <div class="relative pb-8">
+        <div class="absolute top-6 left-12 right-12 h-1 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300"></div>
+        
+        <div class="relative flex justify-center items-start gap-6">
+            ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(gen => `
+                <div class="flex flex-col items-center flex-shrink-0 relative">
+                    <button 
+                        onclick="toggleGen(${gen})"
+                        class="${selectedGens.includes(gen) ? 'text-black shadow-xl' : 'bg-white text-gray-400 border-2 border-gray-300 shadow-lg'} hover:scale-110 font-bold rounded-full w-12 h-12 transition-all z-10 flex items-center justify-center text-base overflow-hidden relative"
+                        title="${GEN_REGIONS[gen]}"
+                    >
+                        ${selectedGens.includes(gen) ? `
+                            <div class="absolute inset-0 flex flex-col">
+                                <div class="flex-1" style="background-color: ${GEN_COLORS[gen][0]};"></div>
+                                <div class="flex-1" style="background-color: ${GEN_COLORS[gen][1]};"></div>
+                            </div>
+                            <div class="absolute top-1/2 left-0 right-0 h-1.5 bg-white -translate-y-1/2 z-10"></div>
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full z-20"></div>
+                        ` : ''}
+                        <span class="relative z-30">${gen}</span>
+                    </button>
+                    ${selectedGens.includes(gen) ? `
+                        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full bg-green-500"></div> ` : ''}
+                    <span class="text-xs ${selectedGens.includes(gen) ? 'text-black font-bold' : 'text-gray-400'} mt-2 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+</div>
                                     
                                     <!-- Generation Timeline - Mobile (two rows) -->
                                     <div class="sm:hidden space-y-6">
