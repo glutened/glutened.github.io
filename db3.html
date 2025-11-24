@@ -109,6 +109,7 @@
         vertical-align: middle;
         margin-right: 5px;
     }
+<<<<<<< HEAD
     @font-face {
   font-family: 'NotoEmoji';
   src: url('fonts/NotoEmoji-Subset.woff2') format('woff2');
@@ -135,6 +136,9 @@
   color: red; /* Red when selected */
   filter: grayscale(100%) brightness(0) saturate(100%) invert(18%) sepia(98%) saturate(7495%) hue-rotate(360deg) brightness(95%) contrast(118%);
 }
+=======
+    
+>>>>>>> d301363ee62d1656438ec0322a64257d0f6c55b2
     /* Grid View Styles */
     .grid-view .pokemon-container {
         display: grid;
@@ -472,12 +476,20 @@
                     </select>
                 </label>
                 <label>Display: 
+<<<<<<< HEAD
                   <select id="regionDisplay">
                     <option value="default" selected>Text</option>
                     <option value="hide">Hide</option>
                     <option value="color">Color</option>
                     <option value="emoji">Emoji</option>
                   </select>
+=======
+                    <select id="regionDisplay">
+                        <option value="default" selected>Text</option>
+                        <option value="hide">Hide</option>
+                        <option value="color">Color</option>
+                    </select>
+>>>>>>> d301363ee62d1656438ec0322a64257d0f6c55b2
                 </label>
             </div>
             
@@ -491,12 +503,20 @@
                     </select>
                 </label>
                 <label>Display: 
+<<<<<<< HEAD
                   <select id="colorDisplay">
                     <option value="default" selected>Text</option>
                     <option value="hide">Hide</option>
                     <option value="color">Color</option>
                     <option value="emoji">Emoji</option>
                   </select>
+=======
+                    <select id="colorDisplay">
+                        <option value="default" selected>Text</option>
+                        <option value="hide">Hide</option>
+                        <option value="color">Color</option>
+                    </select>
+>>>>>>> d301363ee62d1656438ec0322a64257d0f6c55b2
                 </label>
             </div>
             
@@ -528,12 +548,20 @@
                     </select>
                 </label>
                 <label>Display: 
+<<<<<<< HEAD
                   <select id="eggDisplay">
                     <option value="default" selected>Text</option>
                     <option value="hide">Hide</option>
                     <option value="color">Color</option>
                     <option value="emoji">Emoji</option>
                   </select>
+=======
+                    <select id="eggDisplay">
+                        <option value="default" selected>Text</option>
+                        <option value="hide">Hide</option>
+                        <option value="color">Color</option>
+                    </select>
+>>>>>>> d301363ee62d1656438ec0322a64257d0f6c55b2
                 </label>
             </div>
             
@@ -679,6 +707,7 @@ const specialForms = {
   "Alola": "Alola", "Galar": "Galar", "Hisuian": "Hisui", "Hisui": "Hisui",
   "Paldean": "Paldea", "Kitakami": "Kitakami", "Bloodmoon": "Kitakami", "Mask": "Kitakami","Origin": "Hisui", "White-Striped": "Hisui"
 };
+<<<<<<< HEAD
 // ADD THIS NEW CONSTANT HERE:
 const emojiMap = {
   // Regions
@@ -723,6 +752,8 @@ const emojiMap = {
   'grass': '🌿',
   'flying': '🐦'
 };
+=======
+>>>>>>> d301363ee62d1656438ec0322a64257d0f6c55b2
 
 let nameToKeyMap = {};
 
@@ -1137,6 +1168,7 @@ function getGroupingKey(name) {
     updateSortButtons();
   }
   
+<<<<<<< HEAD
  
 // ADD THIS NEW FUNCTION HERE:
 function getEmojiIcon(filterType, value, isSelected) {
@@ -1153,6 +1185,9 @@ function getEmojiIcon(filterType, value, isSelected) {
 }
 
 function getTypesHTML(types) {
+=======
+  function getTypesHTML(types) {
+>>>>>>> d301363ee62d1656438ec0322a64257d0f6c55b2
     if (!types || types.length === 0) return 'Types: N/A';
     
     const settings = displaySettings.types;
@@ -1211,6 +1246,7 @@ function getTypesHTML(types) {
   }
   
   function getEggGroupsHTML(eggGroups) {
+<<<<<<< HEAD
   if (!eggGroups || eggGroups.length === 0) return 'Egg: N/A';
   
   const settings = displaySettings.egg;
@@ -1236,6 +1272,30 @@ function getTypesHTML(types) {
   
   return prefix + groupsList;
 }
+=======
+    if (!eggGroups || eggGroups.length === 0) return 'Egg: N/A';
+    
+    const settings = displaySettings.egg;
+    if (settings.display === 'hide') return '';
+    
+    let prefix = '';
+    if (settings.desc === 'full') prefix = 'Egg: ';
+    else if (settings.desc === 'short') prefix = 'E: ';
+    
+    const groupsList = eggGroups.map(group => {
+      const isSelected = activeFilters.eggGroups.includes(group);
+      const className = isSelected ? 'clickable selected-result' : 'clickable';
+      
+      if (settings.display === 'color') {
+        return `<span class="${className}" data-filter-type="eggGroups" data-filter-value="${group}" style="background-color: #FFA07A; color: white; padding: 2px 4px;">${group.replace(' ', '')}</span>`;
+      }
+      
+      return `<span class="${className}" data-filter-type="eggGroups" data-filter-value="${group}">${group.replace(' ', '')}</span>`;
+    }).join(' / ');
+    
+    return prefix + groupsList;
+  }
+>>>>>>> d301363ee62d1656438ec0322a64257d0f6c55b2
   
   // Dictionary of special cases for multi-word moves
   const moveDisplayNames = {
@@ -1736,6 +1796,7 @@ function toggleGridView() {
       // Build card details based on settings
       let cardDetailsHTML = '<div class="card-details">' + getTypesHTML(pokemon.types);
       
+<<<<<<< HEAD
         if (displaySettings.region.display !== 'hide') {
   const regionPrefix = displaySettings.region.desc === 'full' ? 'Region: ' : 
                       displaySettings.region.desc === 'short' ? '⛴ ' : '';
@@ -1768,6 +1829,30 @@ if (displaySettings.color.display !== 'hide') {
     cardDetailsHTML += `${colorPrefix}<span class="${colorClass}" data-filter-type="colors" data-filter-value="${pokemon.color || ''}" ${colorStyle}>${pokemon.color || 'N/A'}</span>`;
   }
 }
+=======
+      if (displaySettings.region.display !== 'hide') {
+        const regionPrefix = displaySettings.region.desc === 'full' ? 'Region: ' : 
+                            displaySettings.region.desc === 'short' ? '⛴ ' : '';
+        const regionStyle = displaySettings.region.display === 'color' ? 
+          'style="background-color: #87CEEB; color: white; padding: 2px 4px;"' : '';
+        
+        if (cardDetailsHTML.trim().endsWith('</div>')) {
+          cardDetailsHTML = cardDetailsHTML.replace('</div>', '');
+        }
+        if (getTypesHTML(pokemon.types)) cardDetailsHTML += ' | ';
+        cardDetailsHTML += `${regionPrefix}<span class="${regionClass}" data-filter-type="regions" data-filter-value="${pokemon.region || ''}" ${regionStyle}>${pokemon.region || 'N/A'}</span>`;
+      }
+      
+      if (displaySettings.color.display !== 'hide') {
+        const colorPrefix = displaySettings.color.desc === 'full' ? 'Color: ' : 
+                           displaySettings.color.desc === 'short' ? '⬔ ' : '';
+        const colorStyle = displaySettings.color.display === 'color' ? 
+          `style="background-color: ${pokemon.color || '#ccc'}; color: white; padding: 2px 4px;"` : '';
+        
+        if (displaySettings.region.display !== 'hide' || getTypesHTML(pokemon.types)) cardDetailsHTML += ' | ';
+        cardDetailsHTML += `${colorPrefix}<span class="${colorClass}" data-filter-type="colors" data-filter-value="${pokemon.color || ''}" ${colorStyle}>${pokemon.color || 'N/A'}</span>`;
+      }
+>>>>>>> d301363ee62d1656438ec0322a64257d0f6c55b2
       
       if (displaySettings.shape.display !== 'hide') {
         const shapePrefix = displaySettings.shape.desc === 'full' ? 'Shape: ' : 

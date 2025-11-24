@@ -2,777 +2,1734 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>FHE Ideas</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>FHE FIGHTER II</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
     <style>
-    :root {
-        --bg: #f7fbff;
-        --card: #fff;
-        --accent: #0b6fd6;
-        --muted: #6d7680
-    }
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            overflow-y: auto; 
+            image-rendering: pixelated;
+            user-select: none;
+        }
+    
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            z-index: 1000;
+        }
+        .intro-video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 20px;
+}
 
-    body {
-        font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial;
-        background: var(--bg);
-        margin: 18px;
-        color: #0b1720
-    }
+.intro-video-container.hidden {
+    display: none;
+}
 
-    .wrap {
-        max-width: 1100px;
-        margin: 0 auto
-    }
+.intro-video {
+    width: 90vmin;
+    height: 90vmin;
+    max-width: 500px;
+    max-height: 500px;
+    object-fit: cover;
+    border: 4px solid #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
 
-    h1 {
-        margin: 0 0 6px;
-        font-size: 20px
-    }
+.skip-button {
+    margin-top: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    transition: transform 0.2s;
+}
 
-    p.lead {
-        margin: 0 0 14px;
-        color: var(--muted);
-        font-size: 13px
-    }
+.skip-button:hover {
+    transform: scale(1.1);
+}
 
-    .grid {
-        display: flex;
-        gap: 18px;
-        align-items: flex-start
-    }
-
-    .panel {
-        background: var(--card);
-        padding: 12px;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(10, 20, 30, 0.05);
-        flex: 1
-    }
-
-    .panel.small {
-        flex: 0 0 360px
-    }
-
-    #batchList {
-        list-style: none;
-        padding: 10px;
-        margin: 10px 0 0;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px
-    }
-
-    #batchList li {
-        padding: 12px;
-        border-radius: 8px;
-        border: 1px solid #e6eef8;
-        background: linear-gradient(#fff, #fbfeff);
-        cursor: pointer;
-        text-align: center;
-        min-height: 56px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        user-select: none
-    }
-
-    #batchList li.selected {
-        background: #eaf4ff;
-        outline: 3px solid rgba(11, 111, 214, 0.12);
-        transform: translateY(-2px)
-    }
-
-    .controls {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 10px
-    }
-
-    button {
-        background: var(--accent);
-        color: #fff;
-        border: 0;
-        padding: 8px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600
-    }
-
-    button.big-btn {
-        padding: 12px 24px;
-        font-size: 16px;
-    }
-
-    button.secondary {
-        background: #f2f7ff;
-        color: var(--accent);
-        border: 1px solid rgba(11, 111, 214, 0.08)
-    }
-
-    .status {
-        margin-top: 10px;
-        color: var(--muted);
-        font-size: 13px
-    }
-
-    .progress {
-        height: 10px;
-        background: #eef6ff;
-        border-radius: 999px;
-        overflow: hidden;
-        margin-top: 8px
-    }
-
-    .progress > i {
-        display: block;
-        height: 100%;
-        width: 0;
-        background: linear-gradient(90deg, var(--accent), #3b97f1);
-        transition: width .35s
-    }
-
-    ol#favorites {
-        padding-left: 18px;
-        margin: 10px 0 0 0;
-        max-height: 520px;
-        overflow: auto
-    }
-
-    ol#favorites li {
-        background: #fff;
-        margin: 8px 0;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #e6f0fb;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        cursor: grab
-    }
-
-    .small-btn {
-        background: transparent;
-        border: 1px solid #e1e8f6;
-        padding: 6px 8px;
-        border-radius: 6px;
-        color: var(--muted);
-        cursor: pointer;
-        font-size: 13px
-    }
-
-    .eliminated-list {
-        margin-top: 8px;
-        max-height: 220px;
-        overflow: auto;
-        border-top: 1px dashed #eef4fb;
-        padding-top: 8px
-    }
-
-    .elim-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 6px 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.03)
-    }
-
-    input[type="text"], textarea {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #e6eef8;
-        border-radius: 6px;
-        font-family: inherit;
-        font-size: 14px
-    }
-
-    textarea {
-        min-height: 80px;
-        resize: vertical
-    }
-
-    label {
-        display: block;
-        margin-bottom: 4px;
-        color: var(--muted);
-        font-size: 13px;
-        font-weight: 500
-    }
-
-    .share-buttons {
-        display: flex;
-        gap: 8px;
-        margin-top: 10px
-    }
-
-    @media (max-width: 880px) {
-        .grid {
-            flex-direction:column
+.skip-button svg {
+    width: 60px;
+    height: 60px;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+}
+        .game-container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 5px;
+            position: relative;
+        }
+    
+        .header {
+            background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
+            border: 4px solid #ffd700;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+    
+        .title {
+            font-size: 20px;
+            text-align: center;
+            color: #ffd700;
+            text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000;
+            margin-bottom: 5px;
+            animation: glow 2s ease-in-out infinite;
+        }
+    
+        @keyframes glow {
+            0%, 100% { text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000, 0 0 8px #ffd700; }
+            50% { text-shadow: 2px 2px 0 #ff0000, 4px 4px 0 #000, 0 0 20px #ffd700; }
+        }
+    
+        .health-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+    
+        .health-bar-container {
+            position: relative;
+        }
+    
+        .health-label {
+            font-size: 10px;
+            color: #ffd700;
+            margin-bottom: 3px;
+            text-shadow: 1px 1px 0 #000;
+        }
+    
+        .health-bar-outer {
+            background: #000;
+            border: 3px solid #fff;
+            height: 25px;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+    
+        .health-bar-inner {
+            background: linear-gradient(180deg, #00ff00 0%, #00cc00 50%, #009900 100%);
+            height: 100%;
+            transition: width 0.3s ease-out;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+    
+        .health-bar-inner.low {
+            background: linear-gradient(180deg, #ffff00 0%, #ffcc00 50%, #ff9900 100%);
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+        }
+    
+        .health-bar-inner.critical {
+            background: linear-gradient(180deg, #ff0000 0%, #cc0000 50%, #990000 100%);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            animation: health-pulse 0.5s infinite;
+        }
+    
+        @keyframes health-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    
+        .health-bar-segments {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+    
+        .health-segment {
+            flex: 1;
+            border-right: 2px solid rgba(0, 0, 0, 0.3);
+        }
+    
+        .health-segment:last-child {
+            border-right: none;
+        }
+    
+        .health-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+            font-weight: bold;
+            pointer-events: none;
+        }
+    
+        .timer-display {
+            font-size: 24px;
+            color: #00ff00;
+            text-align: center;
+            margin: 5px 0;
+            text-shadow: 0 0 8px #00ff00;
+        }
+    
+        .timer-display.warning {
+            color: #ffff00;
+            animation: pulse 0.5s infinite;
+        }
+    
+        .timer-display.danger {
+            color: #ff0000;
+            animation: pulse 0.3s infinite;
+        }
+    
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    
+        .score-display {
+            font-size: 20px;
+            color: #ffd700;
+            text-align: center;
+            text-shadow: 2px 2px 0 #ff0000;
+        }
+    
+        .multipliers {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            min-height: 20px;
+            margin-top: 5px;
+        }
+    
+        .multiplier {
+            background: #ff00ff;
+            color: #fff;
+            padding: 5px 10px;
+            border: 2px solid #fff;
+            font-size: 10px;
+            animation: bounce 0.5s;
+            box-shadow: 0 0 8px #ff00ff;
+        }
+    
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    
+        .arena {
+            background: linear-gradient(180deg, #2a5298 0%, #1e3a5f 50%, #8b4513 100%);
+            border: 4px solid #8b4513;
+            padding: 10px;
+            min-height: 250px;
+            position: relative;
+            margin-bottom: 10px;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+    
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+    
+        .choice-card {
+            background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
+            border: 3px solid #ffd700;
+            padding: 10px 5px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s, opacity 0.3s ease-in-out;
+            font-size: 12px;
+            line-height: 1.4;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 0 #996600, 0 6px 10px rgba(0, 0, 0, 0.5);
+        }
+    
+        .choice-card:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 4px 0 #996600, 0 8px 15px rgba(255, 215, 0, 0.6);
+        }
+    
+        .choice-card:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #996600;
+        }
+    
+        .floating-score {
+            position: fixed;
+            color: #fff;
+            text-shadow: 2px 2px 0 #ff00ff;
+            font-size: 16px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: float-up-fade 1s forwards;
+            z-index: 1001;
+        }
+    
+        @keyframes float-up-fade {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+    
+        .explosion {
+            position: absolute;
+            font-size: 40px;
+            animation: explode 0.6s forwards;
+            pointer-events: none;
+        }
+    
+        @keyframes explode {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1) rotate(180deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
+        }
+    
+        .instruction {
+            text-align: center;
+            font-size: 10px;
+            color: #ffff00;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 0 #000;
+            animation: blink 1.5s infinite;
+        }
+    
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.3; }
+        }
+    
+        .results-screen {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border: 4px solid #ffd700;
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+    
+        .results-screen.active {
+            display: block;
+        }
+    
+        .final-score {
+            font-size: 32px;
+            color: #ffd700;
+            margin: 10px 0;
+            text-shadow: 2px 2px 0 #ff0000;
+        }
+    
+        .top-picks {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: left;
+        }
+    
+        .top-picks h3 {
+            color: #00ff00;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    
+        .top-picks ol {
+            list-style: none;
+            counter-reset: item;
+        }
+    
+        .top-picks li {
+            counter-increment: item;
+            padding: 5px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid #ffd700;
+            font-size: 9px;
+        }
+    
+        .top-picks li:before {
+            content: counter(item) ". ";
+            color: #ffd700;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+    
+        .high-scores {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ff00ff;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    
+        .high-scores h3 {
+            color: #ff00ff;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+    
+        .high-score-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+            margin: 3px 0;
+            border-bottom: 1px solid #444;
+            font-size: 8px;
+        }
+    
+        .arcade-button {
+            background: linear-gradient(180deg, #ff0000 0%, #cc0000 100%);
+            color: #fff;
+            border: 3px solid #fff;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            cursor: pointer;
+            margin: 5px;
+            box-shadow: 0 4px 0 #800000, 0 6px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s;
+        }
+    
+        .arcade-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 0 #800000, 0 8px 20px rgba(255, 0, 0, 0.5);
+        }
+    
+        .arcade-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #800000;
+        }
+    
+        .arcade-button.secondary {
+            background: linear-gradient(180deg, #4a90e2 0%, #2563eb 100%);
+            box-shadow: 0 4px 0 #1e40af, 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+    
+        .arcade-button.secondary:hover {
+            box-shadow: 0 5px 0 #1e40af, 0 8px 20px rgba(37, 99, 235, 0.5);
+        }
+    
+        .arcade-button.secondary:active {
+            box-shadow: 0 2px 0 #1e40af;
+        }
+    
+        .progress-text {
+            text-align: center;
+            font-size: 10px;
+            color: #ffff00;
+            margin-top: 50px;
+        }
+    
+        .name-input-screen {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border: 4px solid #ffd700;
+            padding: 20px;
+            text-align: center;
+            min-height: 400px;
+            margin-top: 20px;
+        }
+    
+        .name-input-screen h2 {
+            font-size: 14px;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+    
+        .name-input-screen input {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            padding: 10px;
+            width: 100%;
+           
+            max-width: 250px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+    
+        .screenshot-area {
+            background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
+            border: 4px solid #ffd700;
+            padding: 20px;
+            margin: 10px auto;
+            max-width: 400px;
+        }
+    
+        .audio-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+            font-size: 24px;
+            transition: transform 0.2s;
+        }
+    
+        .audio-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+    
+        .audio-toggle:active {
+            transform: scale(0.95);
+        }
+    
+        @keyframes screen-shake {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-5px, 2px); }
+            20% { transform: translate(5px, -2px); }
+            30% { transform: translate(-5px, -2px); }
+            40% { transform: translate(5px, 2px); }
+            50% { transform: translate(-5px, 2px); }
+            60% { transform: translate(5px, -2px); }
+            70% { transform: translate(-5px, -2px); }
+            80% { transform: translate(5px, 2px); }
+            90% { transform: translate(-5px, -2px); }
+        }
+    
+        .shake {
+            animation: screen-shake 0.5s;
+        }
+    
+        @keyframes invert-flash {
+            0%, 100% { filter: invert(0); }
+            50% { filter: invert(1); }
+        }
+    
+        .invert {
+            animation: invert-flash 0.4s;
+        }
+    
+        @keyframes wave-distort {
+            0% { transform: skewX(0deg); }
+            25% { transform: skewX(5deg); }
+            50% { transform: skewX(-5deg); }
+            75% { transform: skewX(5deg); }
+            100% { transform: skewX(0deg); }
+        }
+    
+        .wave {
+            animation: wave-distort 0.6s;
+        }
+    
+        .anime-cutscene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2000;
+            pointer-events: none;
+            display: none;
+        }
+    
+        .anime-cutscene.active {
+            display: block;
+        }
+    
+        .anime-iris {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 80px;
+            background: linear-gradient(90deg, #ff0000, #ff00ff, #00ffff, #ffff00);
+            animation: iris-expand 1s forwards;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+        }
+    
+        @keyframes iris-expand {
+            0% { width: 0; }
+            50% { width: 100%; }
+            100% { width: 100%; opacity: 0; }
+        }
+    
+        .anime-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.9) 80%);
+            animation: dark-fade 1s;
+        }
+    
+        @keyframes dark-fade {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    
+        .sprite-effect {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            pointer-events: none;
+            z-index: 1500;
+            animation: sprite-float 1s forwards;
+        }
+    
+        @keyframes sprite-float {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
+        }
+    
+        .background-image {
+            position: relative;
+            width: 100%;
+            height: 30vh;
+            overflow: hidden;
         }
 
-        .panel.small {
-            flex:1
+        .background-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center bottom;
+            display: block;
         }
 
-        #batchList {
-            grid-template-columns: repeat(2, 1fr)
+        .ko-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
-    }
+    
+        .ko-overlay.active {
+            display: flex;
+            animation: ko-fade-in 0.5s;
+        }
+    
+        @keyframes ko-fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    
+        .ko-text {
+            font-size: 72px;
+            color: #ff0000;
+            text-shadow: 
+                3px 3px 0 #fff,
+                6px 6px 0 #000,
+                0 0 30px #ff0000;
+            animation: ko-zoom 1s ease-out;
+            margin-bottom: 20px;
+        }
+    
+        @keyframes ko-zoom {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+    
+        .ko-subtext {
+            font-size: 20px;
+            color: #ffd700;
+            text-shadow: 2px 2px 0 #000;
+            animation: ko-fade-in 1s 0.5s both;
+        }
+    
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .tutorial-overlay.active {
+            display: flex;
+        }
+
+        .tutorial-content {
+            background: linear-gradient(180deg, #1a4d8f 0%, #0d2847 100%);
+            border: 4px solid #ffd700;
+            padding: 30px 20px;
+            margin-top: 220px;
+            max-width: 500px;
+            width: 100%;
+            min-height: 330px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            position: relative;
+            z-index: 3001;
+        }
+
+        .tutorial-title {
+            font-size: 16px;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .tutorial-text {
+            font-size: 11px;
+            color: #fff;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .tutorial-highlight {
+            position: fixed;
+            border: 4px solid #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.9), inset 0 0 30px rgba(255, 215, 0, 0.3);
+            pointer-events: none;
+            z-index: 2999;
+            animation: pulse-glow 1.5s infinite;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.9), inset 0 0 20px rgba(255, 215, 0, 0.3);
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(255, 215, 0, 1), inset 0 0 40px rgba(255, 215, 0, 0.5);
+            }
+        }
+
+        .tutorial-arrow {
+            position: fixed;
+            color: #ffd700;
+            font-size: 48px;
+            z-index: 3000;
+            animation: bounce-arrow 1s infinite;
+            text-shadow: 2px 2px 0 #000;
+            pointer-events: none;
+        }
+
+        @keyframes bounce-arrow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    
+        @media (max-width: 600px) {
+            .game-container { padding: 5px; }
+            .header { padding: 8px; }
+            .title { font-size: 16px; }
+            .timer-display { font-size: 20px; }
+            .score-display { font-size: 16px; }
+            .arena { padding: 8px; min-height: 200px; }
+            .choices { gap: 5px; }
+            .choice-card { font-size: 11px; min-height: 70px; padding: 5px; }
+            .multiplier { font-size: 9px; padding: 4px 8px; }
+            .ko-text { font-size: 48px; }
+            .ko-subtext { font-size: 16px; }
+            .tutorial-content { padding: 20px 15px; }
+            .tutorial-title { font-size: 14px; }
+            .tutorial-text { font-size: 10px; }
+        }
+    
     </style>
 </head>
-<body>
-    <div class="wrap">
-        <h1>🧪 This SCIENTIFIC Algorithm Will Find Your Top 5 FHE Activities (Yes It's Real Science, Trust Us)</h1>
-        <p class="lead">It's like if Marie Kondo and a NASA scientist had a baby and that baby ranked FHE ideas for the Saddleback YSA Ward.</p>
-
-        <div class="grid">
-            <div class="panel">
-                <strong>Pick one or more each round</strong>
-                <ul id="batchList" aria-live="polite"></ul>
-
-                <div class="controls">
-                    <button id="pickBtn" class="big-btn">Pick</button>
-                    <button id="passBtn" class="secondary big-btn">Pass</button>
+<body><div class="intro-video-container" id="introVideoContainer">
+    <video class="intro-video" id="introVideo" autoplay muted playsinline>
+        <source src="intro.webm" type="video/webm">
+        Your browser does not support the video tag.
+    </video>
+    <button class="skip-button" id="skipButton" aria-label="Skip video">
+        <svg viewBox="0 0 24 24" fill="#ffd700" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
+        </svg>
+    </button>
+</div>
+    <div class="crt-overlay"></div>
+    
+    <!-- Background music audio element -->
+    <audio id="bgMusic" loop>
+        <source src="abg.mp3" type="audio/mpeg">
+    </audio>
+    
+    <div class="audio-toggle" id="audioToggle" onclick="toggleAudio()">🔇</div>
+    
+    <div class="ko-overlay" id="koOverlay">
+        <div class="ko-text">K.O.!</div>
+        <div class="ko-subtext">YOU WIN.</div>
+    </div>
+    
+    <div class="anime-cutscene" id="animeCutscene">
+        <div class="anime-background"></div>
+        <div class="anime-iris" id="animeIris">💥 CRITICAL! 💥</div>
+    </div>
+    
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-content">
+            <div id="tutorialScreen1" class="tutorial-screen">
+                <div class="tutorial-title">TUTORIAL</div>
+                <div class="tutorial-text">
+                    PICK YOUR FAVORITE ACTIVITY FROM EACH GROUP<br><br>
+                    WHAT YOU DON'T PICK GETS KNOCKED OUT!<br><br>
+                    FASTER PICKS = MORE POINTS! EXTRA STYLE POINTS FOR PERFECT TIMING
                 </div>
-
-                <div class="status">
-                    <div>
-                        Available: 
-                        <span id="availableCount">0</span>
-                         · Favorites: 
-                        <span id="favCount">0</span>
-                    </div>
-                    <div class="progress" title="Progress">
-                        <i id="progressBar"></i>
-                    </div>
-                    <div id="roundNote" class="status" style="margin-top:6px;color:var(--muted);font-size:13px"></div>
-                </div>
+                <button class="arcade-button" onclick="nextTutorial()">NEXT</button>
+                <button class="arcade-button secondary" onclick="skipTutorial()">SKIP</button>
             </div>
-
-            <div class="panel small">
-                <strong>Found favorites</strong>
-                <ol id="favorites" aria-live="polite"></ol>
-
-                <div class="share-buttons" id="shareButtons" style="display:none">
-                    <button onclick="shareEmail()" class="secondary big-btn">Email Favorites</button>
-                    <button onclick="shareSMS()" class="secondary big-btn">Text Favorites</button>
+            <div id="tutorialScreen2" class="tutorial-screen" style="display: none;">
+                <div class="tutorial-title">PICK YOUR FAVORITE</div>
+                <div class="tutorial-text">
+                    TAP THE ACTIVITY YOU LIKE MOST<br><br>
+                    THERE ARE NO WRONG PICKS - FIGHT INDECISION! 
                 </div>
-
-                <details style="margin-top:10px">
-                    <summary style="color:var(--muted)">Eliminated items (rescue eligible)</summary>
-                    <div class="eliminated-list" id="eliminatedList"></div>
-                </details>
-
-                <div style="margin-top:10px;display:flex;gap:8px">
-                    <button id="rescueAll" class="secondary">Rescue eligible</button>
-                    <button id="resetBtn" class="secondary">Reset</button>
-                </div>
+                <button class="arcade-button" onclick="nextTutorial()">NEXT</button>
+               
             </div>
-
-            <div class="panel">
-                <strong>Submit a New Activity Idea</strong>
-                <div style="margin-top:10px">
-                    <label>Your Name</label>
-                    <input type="text" id="nameInput" placeholder="Enter your name">
+            <div id="tutorialScreen3" class="tutorial-screen" style="display: none;">
+                <div class="tutorial-title">WATCH THE ENEMY HP</div>
+                <div class="tutorial-text">
+                    DECISIONS WEAKEN ENEMY’S HP!<br><br>
+                    WIN BY REDUCING ENEMY TO ZERO!
                 </div>
-                <div style="margin-top:10px">
-                    <label>Activity Idea</label>
-                    <textarea id="ideaInput" placeholder="Describe your activity idea..."></textarea>
-                </div>
-                <div style="display:flex;gap:8px;margin-top:10px">
-                    <button onclick="submitViaEmail()" class="secondary big-btn">Email Idea</button>
-                    <button onclick="submitViaSMS()" class="secondary big-btn">Text Idea</button>
-                </div>
-                <div id="messageBox" style="margin-top:8px;color:var(--muted);font-size:13px"></div>
+                <button class="arcade-button" onclick="startGameAfterTutorial()">READY TO FIGHT!</button>
             </div>
         </div>
     </div>
 
+    <div class="game-container" id="gameContainer">
+        
+        <div class="name-input-screen" id="nameInputScreen">
+            <h2>ENTER YOUR NAME</h2>
+            <input type="text" id="playerName" maxlength="10" placeholder="PLAYER1" />
+            <div>
+                <button class="arcade-button" onclick="showTutorialAndStart()">START GAME</button>
+            </div>
+            <div style="margin-top: 130px;">
+                <button class="arcade-button secondary" onclick="submitActivityIdea()" >SUGGEST FHE IDEA</button>
+            </div>
+        </div>
+
+        <div class="name-input-screen" id="activitySubmitScreen" style="display: none;">
+        </div>
+
+        <div id="gameScreen" style="display: none;">
+            <div class="header">
+                <div class="title">FHE FIGHTER II</div>
+                <div class="timer-display" id="timer">15.00</div>
+                <div class="score-display" id="score">SCORE: 0</div>
+                <div class="multipliers" id="multipliers"></div>
+                <div class="health-bars">
+                    <div class="health-bar-container">
+                        <div class="health-label">ENEMY HP</div>
+                        <div class="health-bar-outer">
+                            <div class="health-bar-inner" id="progressBar" style="width: 100%;">
+                                <div class="health-bar-segments">
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                    <div class="health-segment"></div>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arena">
+                <div class="instruction">TAP TO CHOOSE YOUR FAVORITE!</div>
+                <div class="choices" id="choices"></div>
+                <div class="progress-text" id="progressMessage"></div>
+            </div>
+        </div>
+
+        <div class="results-screen" id="resultsScreen">
+            <div class="screenshot-area" id="screenshotArea">
+                <div class="title">GAME OVER</div>
+                <div class="final-score" id="finalScore">0</div>
+                <div style="font-size: 14px; color: #ffd700; margin: 10px 0;" id="playerNameDisplay"></div>
+                
+                <div class="top-picks">
+                    <h3>YOUR TOP 5 ACTIVITIES</h3>
+                    <ol id="topPicksList"></ol>
+                </div>
+            </div>
+
+            <div class="high-scores">
+                <h3>HIGH SCORES</h3>
+                <div id="highScoresList"></div>
+            </div>
+
+            <div>
+                <button class="arcade-button secondary" onclick="shareScore()">SHARE SCORE</button>
+                <button class="arcade-button" onclick="resetGame()">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+    <!-- Background Image at Bottom -->
+    <div class="background-image">
+        <img src="bg2.png" alt="Background">
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-    /* -------- DATA (activities) -------- */
-    const ITEMS = [
-    "Board Games", "Nature Walk", "Nerf Guns", "Family Feud", "Charades", "Nursing Home", "Small Group Dinners", "Local Band", "Frisbee Golf", "Capture The Flag","Thrift Swap", "Cookie Decorating", 
-    "Four Square", "Volleyball", "Poetry Slam", "Pancakes", "AI Workshop", "Career Panel", "Meal Delivery", "Dodgeball",
-    "Mental Health", "Karaoke Night", "City Council Meeting","Burn Stuff", "Sardines", "PowerPoint Night",
-     "Pickleball", "Arts & Crafts",
-     "Chair Soccer", "Video Games"
+    // Intro video handling
+const introVideoContainer = document.getElementById('introVideoContainer');
+const introVideo = document.getElementById('introVideo');
+const skipButton = document.getElementById('skipButton');
+
+function skipIntro() {
+    introVideoContainer.classList.add('hidden');
+}
+
+skipButton.addEventListener('click', skipIntro);
+introVideo.addEventListener('ended', skipIntro);
+
+// Fallback: skip after 30 seconds if video doesn't play
+setTimeout(skipIntro, 34400);
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjPdmkcpuRZJeQjdF53ZvPsILjnnecRAIfdbV1qqJ3knO-Kgx5IJNz557hrxIs80G3/exec';
+    
+    let audioEnabled = false;
+    let bgMusic = null;
+    
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new AudioContext();
+        }
+        if (!bgMusic) {
+            bgMusic = document.getElementById('bgMusic');
+        }
+    }
+    
+    function toggleAudio() {
+        audioEnabled = !audioEnabled;
+        const toggle = document.getElementById('audioToggle');
+        toggle.textContent = audioEnabled ? '🎵' : '🔇';
+        
+        if (audioEnabled) {
+            initAudio();
+            if (bgMusic) {
+                bgMusic.volume = 0.3;
+                bgMusic.play().catch(err => console.log('Audio play failed:', err));
+            }
+        } else {
+            if (bgMusic) {
+                bgMusic.pause();
+            }
+        }
+    }
+     
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden && bgMusic && !bgMusic.paused) {
+            bgMusic.pause();
+        } else if (!document.hidden && audioEnabled && bgMusic && bgMusic.paused) {
+            bgMusic.play().catch(err => console.log('Audio play failed:', err));
+        }
+    });
+    
+    window.addEventListener('beforeunload', function() {
+        if (bgMusic) {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+    });
+    
+    window.addEventListener('pagehide', function() {
+        if (bgMusic) {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+    });
+    
+    window.addEventListener('blur', function() {
+        if (bgMusic && !bgMusic.paused) {
+            bgMusic.pause();
+        }
+    });
+    
+    function playSound(type) {
+        if (!audioEnabled || !audioCtx) return;
+        
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        switch(type) {
+            case 'select':
+                oscillator.frequency.value = 800;
+                oscillator.type = 'square';
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.1);
+                break;
+            case 'combo':
+                oscillator.frequency.value = 1200;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+                break;
+            case 'critical':
+                for (let i = 0; i < 3; i++) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = 1500 + (i * 200);
+                    osc.type = 'sawtooth';
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4 + i * 0.1);
+                    osc.start(audioCtx.currentTime + i * 0.1);
+                    osc.stop(audioCtx.currentTime + 0.4 + i * 0.1);
+                }
+                break;
+            case 'bonus':
+                oscillator.frequency.value = 600;
+                oscillator.type = 'triangle';
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.2);
+                break;
+            case 'name':
+                oscillator.frequency.value = 400;
+                oscillator.type = 'square';
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.15);
+                break;
+        }
+    }
+    
+    const ACTIVITIES = [
+        "Board Games", "Nature Walk", "Nerf Guns", "Family Feud", "Charades", 
+        "Nursing Home", "Small Group Dinners", "Local Band", "Frisbee Golf", 
+        "Capture The Flag", "Thrift Swap", "Cookie Decorating", "Four Square", 
+        "Volleyball", "Poetry Slam", "Pancakes", "AI Workshop", "Career Panel", 
+        "Meal Delivery", "Dodgeball", "Mental Health", "Karaoke Night", 
+        "City Council Meeting", "Burn Stuff", "Sardines", "PowerPoint Night",
+        "Pickleball", "Arts & Crafts", "Chair Soccer", "Video Games"
     ];
 
-    /* -------- STATE --------
-    state.current: items waiting in the current round (to be batched)
-    state.evaluating: current batch displayed
-    state.survived: survivors collected during the round
-    state.eliminated: { id: { eliminatedBy: [ids] } }
-    state.favorites: ordered array
-    history & redoStack store snapshots for undo/redo
-    settings.batchSize: 6
-    ----------------------------------*/
-    let state = {
+    const FAKE_HIGH_SCORES = [
+        { name: "RYU", score: 8750 },
+        { name: "D&C", score: 8200 },
+        { name: "JST", score: 7890 },
+        { name: "ROUGE", score: 7450 },
+        { name: "YSA", score: 7100 },
+        { name: "DALLIN", score: 6800 },
+        { name: "AMY", score: 6550 },
+        { name: "1820", score: 6200 }
+    ];
+
+    let gameState = {
+        playerName: '',
+        score: 0,
         current: [],
         evaluating: [],
         survived: [],
         eliminated: {},
         favorites: [],
-        history: [],
-        redoStack: [],
-        settings: {
-            batchSize: 6
-        }
+        timer: 15,
+        timerInterval: null,
+        highScores: [...FAKE_HIGH_SCORES]
     };
 
-    /* -------- utilities -------- */
-    const deep = v => JSON.parse(JSON.stringify(v));
-    const shuffle = arr => arr.slice().sort(() => Math.random() - 0.5);
-    const unique = arr => Array.from(new Set(arr));
-    const idFor = s => s; // id is the name string
+    const BATCH_SIZE = 3;
 
-    function availableItems() {
-        return ITEMS.filter(i => !state.favorites.includes(i) && !state.eliminated[i]);
-    }
-
-    /* -------- history (undo/redo) -------- */
-    function snapshot() {
-        state.history.push(deep({
-            current: state.current,
-            evaluating: state.evaluating,
-            survived: state.survived,
-            eliminated: state.eliminated,
-            favorites: state.favorites
-        }));
-        if (state.history.length > 300)
-            state.history.shift();
-        state.redoStack = [];
-        renderControls();
-    }
-    function undo() {
-        if (!state.history.length)
-            return;
-        state.redoStack.push(deep({
-            current: state.current,
-            evaluating: state.evaluating,
-            survived: state.survived,
-            eliminated: state.eliminated,
-            favorites: state.favorites
-        }));
-        const s = state.history.pop();
-        state.current = s.current;
-        state.evaluating = s.evaluating;
-        state.survived = s.survived;
-        state.eliminated = s.eliminated;
-        state.favorites = s.favorites;
-        renderAll();
-    }
-    function redo() {
-        if (!state.redoStack.length)
-            return;
-        state.history.push(deep({
-            current: state.current,
-            evaluating: state.evaluating,
-            survived: state.survived,
-            eliminated: state.eliminated,
-            favorites: state.favorites
-        }));
-        const s = state.redoStack.pop();
-        state.current = s.current;
-        state.evaluating = s.evaluating;
-        state.survived = s.survived;
-        state.eliminated = s.eliminated;
-        state.favorites = s.favorites;
-        renderAll();
+    function shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
     }
 
-    /* -------- core flow (batch-elimination) -------- */
+    function getAvailableItems() {
+        return ACTIVITIES.filter(id => 
+            !gameState.favorites.includes(id) && 
+            !gameState.eliminated[id]
+        );
+    }
+
+    function showTutorialAndStart() {
+        const nameInput = document.getElementById('playerName').value.trim() || 'PLAYER1';
+        gameState.playerName = nameInput.toUpperCase().slice(0, 10);
+        
+        playSound('name');
+        
+        document.getElementById('nameInputScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'block';
+        
+        const available = getAvailableItems();
+        gameState.current = shuffle(available);
+        gameState.evaluating = [];
+        gameState.survived = [];
+        
+        const batchSize = Math.min(BATCH_SIZE, gameState.current.length);
+        gameState.evaluating = gameState.current.splice(0, batchSize);
+        gameState.timer = 15;
+        
+        renderBatch();
+        updateUI();
+        
+        showTutorial();
+    }
+
+    function skipTutorial() {
+        playSound('name');
+        document.getElementById('tutorialOverlay').classList.remove('active');
+        removeHighlights();
+        tutorialStep = 1;
+        startTimer();
+    }
+
+    function startGameAfterTutorial() {
+        playSound('name');
+        document.getElementById('tutorialOverlay').classList.remove('active');
+        removeHighlights();
+        tutorialStep = 1;
+        startTimer();
+    }
+
+    function removeHighlights() {
+        document.querySelectorAll('.tutorial-highlight').forEach(el => el.remove());
+        document.querySelectorAll('.tutorial-arrow').forEach(el => el.remove());
+    }
+
+    function highlightElement(selector, arrowPosition = 'top') {
+        removeHighlights();
+        
+        const element = document.querySelector(selector);
+        if (!element) return;
+        
+        const rect = element.getBoundingClientRect();
+        
+        const highlight = document.createElement('div');
+        highlight.className = 'tutorial-highlight';
+        highlight.style.left = (rect.left - 8) + 'px';
+        highlight.style.top = (rect.top - 8) + 'px';
+        highlight.style.width = (rect.width + 16) + 'px';
+        highlight.style.height = (rect.height + 16) + 'px';
+        document.body.appendChild(highlight);
+        
+        const arrow = document.createElement('div');
+        arrow.className = 'tutorial-arrow';
+        
+        if (arrowPosition === 'top') {
+            arrow.textContent = '↓';
+            arrow.style.left = (rect.left + rect.width / 2 - 24) + 'px';
+            arrow.style.top = (rect.top - 60) + 'px';
+        } else if (arrowPosition === 'bottom') {
+            arrow.textContent = '↑';
+            arrow.style.left = (rect.left + rect.width / 2 - 24) + 'px';
+            arrow.style.top = (rect.bottom + 10) + 'px';
+        }
+        
+        document.body.appendChild(arrow);
+    }
 
     function startNewRound() {
-        // pool is all available (not favorites, not eliminated)
-        state.current = shuffle(availableItems());
-        state.evaluating = [];
-        state.survived = [];
-        // if only one candidate, it's logically the next favorite
-        if (state.current.length === 1) {
-            // automatically promote to favorite (but snapshot first)
-            snapshot();
-            addFavorite(state.current[0]);
+        const available = getAvailableItems();
+        
+        if (available.length === 0) {
+            endGame();
             return;
         }
-        if (state.current.length === 0) {
-            // nothing to do
-            renderAll();
+        
+        if (available.length === 1) {
+            addFavorite(available[0]);
             return;
         }
+        
+        gameState.current = shuffle(available);
+        gameState.evaluating = [];
+        gameState.survived = [];
+        
         loadNextBatch();
-        renderAll();
     }
 
     function loadNextBatch() {
-        state.evaluating = state.current.splice(0, state.settings.batchSize);
-        renderBatch();
-    }
-
-    function processPicked(pickedIds) {
-        if (!state.evaluating || !state.evaluating.length)
-            return;
-        // survivors are the picked items; if none picked (pass), everyone survives this batch
-        const picked = unique(pickedIds || []);
-        if (picked.length === 0) {
-            state.survived = state.survived.concat(state.evaluating);
-        } else {
-            // add picked to survivors
-            state.survived = state.survived.concat(picked);
-            // losers are those in evaluating not in picked
-            const losers = state.evaluating.filter(i => picked.indexOf(i) === -1);
-            losers.forEach(loser => {
-                if (!state.eliminated[loser])
-                    state.eliminated[loser] = {
-                        eliminatedBy: []
-                    };
-                // union picked with existing eliminatedBy
-                state.eliminated[loser].eliminatedBy = unique(state.eliminated[loser].eliminatedBy.concat(picked));
-            });
-        }
-        // clear evaluating
-        state.evaluating = [];
-        // if no more batches this round, finalize round (survived -> next round's pool)
-        if (state.current.length === 0) {
+        if (gameState.current.length === 0) {
             finalizeRound();
-        } else {
-            loadNextBatch();
+            return;
         }
-        renderAll();
+        
+        const batchSize = Math.min(BATCH_SIZE, gameState.current.length);
+        gameState.evaluating = gameState.current.splice(0, batchSize);
+        gameState.timer = 15;
+        
+        renderBatch();
+        startTimer();
+        updateUI();
     }
 
     function finalizeRound() {
-        // prepare next round's pool from survivors (unique)
-        state.current = unique(state.survived.slice());
-        state.survived = [];
-        // If after this the pool is empty: no candidates remain (done)
-        if (state.current.length === 0) {
-            renderAll();
+        if (gameState.survived.length === 1) {
+            addFavorite(gameState.survived[0]);
             return;
         }
-        // If pool is a single item, it's the logically next favorite
-        if (state.current.length === 1) {
-            addFavorite(state.current[0]);
+        
+        if (gameState.survived.length === 0) {
+            endGame();
             return;
         }
-        // otherwise continue with next batch of the new round
+        
+        gameState.current = shuffle(gameState.survived);
+        gameState.survived = [];
         loadNextBatch();
     }
 
-    /* When a favorite is added, some eliminated items may become eligible to return:
-       An eliminated item returns if every item that eliminated it is now a favorite.
-    */
-    function rescueEligibleEliminated() {
-        const toRescue = [];
-        Object.keys(state.eliminated).forEach(id => {
-            const eliminators = state.eliminated[id].eliminatedBy || [];
-            if (eliminators.length === 0)
-                return;
-            const allElimsAreFavs = eliminators.every(e => state.favorites.includes(e));
-            if (allElimsAreFavs)
-                toRescue.push(id);
-        });
-        toRescue.forEach(id => delete state.eliminated[id]);
-        // If we aren't mid-batch and there are rescued items, ensure a round starts that will include them
-        if (state.evaluating.length === 0 && state.current.length === 0 && toRescue.length) {
-            startNewRound();
-        }
-    }
-
-    /* Add a favorite (only when logically determined) */
     function addFavorite(itemId) {
-        if (!itemId)
-            return;
-        if (state.favorites.includes(itemId))
-            return;
-        // remove from any holder
-        // ensure snapshot handled by caller
-        state.favorites.push(itemId);
-        delete state.eliminated[itemId]; // clear eliminated if somehow present
-        // rescue others that become eligible
-        rescueEligibleEliminated();
-        // begin new round for remaining available items if any
-        if (availableItems().length > 0) {
-            startNewRound();
-        } else {
-            // finished
-            state.current = [];
-            state.evaluating = [];
-            renderAll();
-        }
-    }
-
-    /* Manual rescue via UI */
-    function rescueItem(id) {
-        if (state.eliminated[id])
-            delete state.eliminated[id];
-        if (!state.current.includes(id) && !state.favorites.includes(id)) {
-            state.current.unshift(id);
-        }
-        renderAll();
-    }
-
-    /* Remove a favorite (brings it back into pool) */
-    function removeFavorite(id) {
-        state.favorites = state.favorites.filter(f => f !== id);
-        // put back into pool to be re-evaluated
-        if (!state.current.includes(id))
-            state.current.unshift(id);
-        // start a round if necessary
-        if (state.evaluating.length === 0)
-            startNewRound();
-        else
-            renderAll();
-    }
-
-    /* --------- Rendering --------- */
-    const batchListEl = document.getElementById('batchList');
-    const favoritesEl = document.getElementById('favorites');
-    const eliminatedListEl = document.getElementById('eliminatedList');
-    const availableCountEl = document.getElementById('availableCount');
-    const favCountEl = document.getElementById('favCount');
-    const progressBarEl = document.getElementById('progressBar');
-    const roundNoteEl = document.getElementById('roundNote');
-
-    function renderBatch() {
-        batchListEl.innerHTML = '';
-        state.evaluating.forEach(id => {
-            const li = document.createElement('li');
-            li.textContent = id;
-            li.dataset.id = id;
-            li.tabIndex = 0;
-            li.addEventListener('click', () => li.classList.toggle('selected'));
-            li.addEventListener('keydown', e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    li.classList.toggle('selected');
-                }
-            });
-            batchListEl.appendChild(li);
-        });
-        renderControls();
-    }
-
-    function renderFavorites() {
-        favoritesEl.innerHTML = '';
-        state.favorites.forEach(name => {
-            const li = document.createElement('li');
-            li.dataset.id = name;
-            const label = document.createElement('span');
-            label.textContent = name;
-            const right = document.createElement('div');
-            right.style.display = 'flex';
-            right.style.gap = '8px';
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'small-btn';
-            removeBtn.textContent = 'Remove';
-            removeBtn.onclick = () => {
-                snapshot();
-                removeFavorite(name);
-            };
-            right.appendChild(removeBtn);
-            li.appendChild(label);
-            li.appendChild(right);
-            li.draggable = true;
-            favoritesEl.appendChild(li);
-        });
+        if (gameState.favorites.includes(itemId)) return;
         
-        // Show/hide share buttons
-        const shareButtonsEl = document.getElementById('shareButtons');
-        if (shareButtonsEl) {
-            shareButtonsEl.style.display = state.favorites.length ? 'flex' : 'none';
+        gameState.favorites.push(itemId);
+        delete gameState.eliminated[itemId];
+        
+        rescueEligibleItems();
+        
+        if (gameState.favorites.length >= 5) {
+            endGame();
+            return;
         }
+        
+        startNewRound();
     }
 
-    /* Favorites drag & drop reordering */
-    let draggingEl = null;
-    favoritesEl.addEventListener('dragstart', e => {
-        draggingEl = e.target.closest('li');
-        if (draggingEl)
-            draggingEl.classList.add('dragging');
-    });
-    favoritesEl.addEventListener('dragend', () => {
-        if (draggingEl)
-            draggingEl.classList.remove('dragging');
-        draggingEl = null;
-        updateFavoritesOrderFromDOM();
-    });
-    favoritesEl.addEventListener('dragover', e => {
-        e.preventDefault();
-        const after = getDragAfterElement(favoritesEl, e.clientY);
-        const dragging = document.querySelector('.dragging');
-        if (!dragging)
-            return;
-        if (after == null)
-            favoritesEl.appendChild(dragging);
-        else
-            favoritesEl.insertBefore(dragging, after);
-    });
-    function getDragAfterElement(container, y) {
-        const els = [...container.querySelectorAll('li:not(.dragging)')];
-        let closest = null,
-            closestOffset = Number.NEGATIVE_INFINITY;
-        els.forEach(child => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closestOffset) {
-                closestOffset = offset;
-                closest = child;
+    function rescueEligibleItems() {
+        const toRescue = [];
+        
+        Object.keys(gameState.eliminated).forEach(id => {
+            const eliminatedBy = gameState.eliminated[id].eliminatedBy || [];
+            if (eliminatedBy.length === 0) return;
+            
+            const allAreFavorites = eliminatedBy.every(e => gameState.favorites.includes(e));
+            if (allAreFavorites) {
+                toRescue.push(id);
             }
         });
-        return closest;
-    }
-    function updateFavoritesOrderFromDOM() {
-        const newOrder = [...favoritesEl.querySelectorAll('li')].map(li => li.dataset.id);
-        if (newOrder.length && JSON.stringify(newOrder) !== JSON.stringify(state.favorites)) {
-            snapshot();
-            state.favorites = newOrder;
-            rescueEligibleEliminated();
-            renderAll();
-        }
+        
+        toRescue.forEach(id => delete gameState.eliminated[id]);
     }
 
-    function renderEliminated() {
-        eliminatedListEl.innerHTML = '';
-        const keys = Object.keys(state.eliminated);
-        if (!keys.length) {
-            eliminatedListEl.innerHTML = '<div style="color:var(--muted)">None</div>';
-            return;
-        }
-        keys.forEach(id => {
-            const row = document.createElement('div');
-            row.className = 'elim-item';
-            const left = document.createElement('div');
-            left.innerHTML = `<strong>${id}</strong><div style="color:var(--muted);font-size:13px">eliminated by: ${state.eliminated[id].eliminatedBy.join(', ')}</div>`;
-            const right = document.createElement('div');
-            const rescueBtn = document.createElement('button');
-            rescueBtn.className = 'small-btn';
-            rescueBtn.textContent = 'Rescue';
-            rescueBtn.onclick = () => {
-                snapshot();
-                rescueItem(id);
-            };
-            right.appendChild(rescueBtn);
-            row.appendChild(left);
-            row.appendChild(right);
-            eliminatedListEl.appendChild(row);
+    function renderBatch() {
+        const choicesEl = document.getElementById('choices');
+        choicesEl.innerHTML = '';
+        
+        gameState.evaluating.forEach(activity => {
+            const card = document.createElement('div');
+            card.className = 'choice-card';
+            card.textContent = activity;
+            card.dataset.activityId = activity;
+            card.onclick = () => selectActivity(activity, card);
+            choicesEl.appendChild(card);
         });
     }
 
-    function renderControls() {
-        availableCountEl.textContent = availableItems().length;
-        favCountEl.textContent = state.favorites.length;
-        const progressPercent = Math.round((state.favorites.length / ITEMS.length) * 100);
-        progressBarEl.style.width = Math.min(100, Math.max(0, progressPercent)) + '%';
-        roundNoteEl.textContent = state.evaluating.length ? `Round in progress — showing ${state.evaluating.length} items (batch)` : (state.current.length ? `Round queued — ${state.current.length} items waiting` : `No active batch`);
-        document.getElementById('pickBtn').disabled = !state.evaluating.length;
-        document.getElementById('passBtn').disabled = !state.evaluating.length;
-    }
+    function selectActivity(activity, element) {
+        stopTimer();
+        
+        playSound('select');
+        
+        const timeBonus = Math.floor(gameState.timer * 10);
+        let points = 200 + timeBonus;
+        const multipliers = [];
+        let effectType = 'normal';
 
-    function renderAll() {
-        // if there's no evaluating but current has candidates, load next batch
-        if (!state.evaluating.length && state.current.length)
+        if (gameState.timer < 9) {
+            points += 100;
+            multipliers.push('COMBO!');
+            playSound('combo');
+            effectType = 'shake';
+        }
+
+        const timeStr = gameState.timer.toFixed(2);
+        const lastDigit = timeStr[timeStr.length - 1];
+        if (lastDigit === '0' || lastDigit === '5') {
+            points += 500;
+            multipliers.push('CRITICAL!');
+            playSound('critical');
+            effectType = 'anime';
+        }
+
+        if (timeStr.includes('6') && timeStr.includes('7')) {
+            points += 777;
+            multipliers.push('6-7 BONUS!');
+            playSound('bonus');
+            effectType = 'wave';
+        }
+
+        if (Math.random() > 0.7) {
+            points += Math.floor(Math.random() * 300);
+            multipliers.push('LUCKY!');
+            playSound('bonus');
+            if (effectType === 'normal') effectType = 'invert';
+        }
+
+        gameState.score += points;
+        
+        applyScreenEffect(effectType);
+        
+        gameState.survived.push(activity);
+        
+        const losers = gameState.evaluating.filter(a => a !== activity);
+        losers.forEach(loser => {
+            if (!gameState.eliminated[loser]) {
+                gameState.eliminated[loser] = { eliminatedBy: [] };
+            }
+            if (!gameState.eliminated[loser].eliminatedBy.includes(activity)) {
+                gameState.eliminated[loser].eliminatedBy.push(activity);
+            }
+        });
+
+        gameState.evaluating = [];
+
+        showMultipliers(multipliers);
+        createExplosion(element);
+        showFloatingScore(element, points);
+        createSpriteEffect(element);
+        
+        document.querySelectorAll('.choice-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.pointerEvents = 'none';
+        });
+
+        setTimeout(() => {
             loadNextBatch();
-        renderBatch();
-        renderFavorites();
-        renderEliminated();
-        renderControls();
+        }, 1500);
     }
 
-    /* -------- Sharing & Submission -------- */
-    const RECIPIENT_EMAIL = 'email@daviddot.com';
-    const RECIPIENT_PHONE = '+13106124412';
+    function showFloatingScore(element, points) {
+        const rect = element.getBoundingClientRect();
+        const scoreEl = document.createElement('div');
+        scoreEl.className = 'floating-score';
+        scoreEl.textContent = `+${points}`;
+        
+        scoreEl.style.left = (rect.right - 10) + 'px'; 
+        scoreEl.style.top = (rect.top + 10) + 'px';
+        
+        document.body.appendChild(scoreEl);
+        
+        setTimeout(() => scoreEl.remove(), 1000);
+    }
 
-    function shareEmail() {
-        if (!state.favorites.length) {
-            alert('No favorites to share yet!');
-            return;
+    function applyScreenEffect(type) {
+        const container = document.getElementById('gameContainer');
+        
+        switch(type) {
+            case 'shake':
+                container.classList.add('shake');
+                setTimeout(() => container.classList.remove('shake'), 500);
+                break;
+            case 'invert':
+                container.classList.add('invert');
+                setTimeout(() => container.classList.remove('invert'), 400);
+                break;
+            case 'wave':
+                container.classList.add('wave');
+                setTimeout(() => container.classList.remove('wave'), 600);
+                break;
+            case 'anime':
+                showAnimeCutscene();
+                break;
         }
-        const subject = encodeURIComponent('My Top Activity Picks');
-        const body = encodeURIComponent(`Here are my favorite activities:\n\n${state.favorites.map((item, i) => `${i + 1}. ${item}`).join('\n')}`);
-        window.location.href = `mailto:${RECIPIENT_EMAIL}?subject=${subject}&body=${body}`;
     }
 
-    function shareSMS() {
-        if (!state.favorites.length) {
-            alert('No favorites to share yet!');
-            return;
+    function showAnimeCutscene() {
+        const cutscene = document.getElementById('animeCutscene');
+        const iris = document.getElementById('animeIris');
+        
+        const messages = ['💥 CRITICAL! 💥', '⚡ ULTRA COMBO! ⚡', '🌟 LEGENDARY! 🌟'];
+        iris.textContent = messages[Math.floor(Math.random() * messages.length)];
+        
+        cutscene.classList.add('active');
+        setTimeout(() => cutscene.classList.remove('active'), 1000);
+    }
+
+    function createSpriteEffect(element) {
+        const sprites = ['⭐', '💫', '✨', '🌟', '💥', '⚡', '🔥'];
+        const rect = element.getBoundingClientRect();
+        
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const sprite = document.createElement('div');
+                sprite.className = 'sprite-effect';
+                sprite.textContent = sprites[Math.floor(Math.random() * sprites.length)];
+                sprite.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                sprite.style.top = (rect.top + Math.random() * rect.height) + 'px';
+                document.body.appendChild(sprite);
+                
+                setTimeout(() => sprite.remove(), 1000);
+            }, i * 150);
         }
-        const message = encodeURIComponent(`My top activities: ${state.favorites.slice(0, 5).join(', ')}`);
-        window.location.href = `sms:${RECIPIENT_PHONE}?body=${message}`;
     }
 
-    function submitViaEmail() {
-        const name = document.getElementById('nameInput').value.trim();
-        const idea = document.getElementById('ideaInput').value.trim();
-        const msgBox = document.getElementById('messageBox');
+    function createExplosion(element) {
+        const explosions = ['💥', '⚡', '🌟', '💫', '✨'];
+        const rect = element.getBoundingClientRect();
         
-        if (!name || !idea) {
-            msgBox.textContent = 'Please fill in both fields';
-            msgBox.style.color = '#d32f2f';
-            return;
+        for (let i = 0; i < 5; i++) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.textContent = explosions[Math.floor(Math.random() * explosions.length)];
+            explosion.style.position = 'fixed'; 
+            explosion.style.left = (rect.left + Math.random() * rect.width) + 'px';
+            explosion.style.top = (rect.top + Math.random() * rect.height) + 'px';
+            document.body.appendChild(explosion);
+            
+            setTimeout(() => explosion.remove(), 600);
+        }
+    }
+
+    function showMultipliers(multipliers) {
+        const multipliersEl = document.getElementById('multipliers');
+        multipliersEl.innerHTML = '';
+        
+        multipliers.forEach((text, i) => {
+            setTimeout(() => {
+                const mult = document.createElement('div');
+                mult.className = 'multiplier';
+                mult.textContent = text;
+                multipliersEl.appendChild(mult);
+                
+                setTimeout(() => mult.remove(), 2000);
+            }, i * 200);
+        });
+    }
+
+    function startTimer() {
+        const timerEl = document.getElementById('timer');
+        gameState.timerInterval = setInterval(() => {
+            gameState.timer -= 0.01;
+            
+            if (gameState.timer <= 0) {
+                gameState.timer = 0;
+                stopTimer();
+                const randomActivity = gameState.evaluating[Math.floor(Math.random() * gameState.evaluating.length)];
+                
+                const choices = document.getElementById('choices');
+                const randomCard = Array.from(choices.children).find(card => card.dataset.activityId === randomActivity);
+                
+                if (randomCard) {
+                    selectActivity(randomActivity, randomCard);
+                } else {
+                    console.error("Could not find card for random selection.");
+                    loadNextBatch();
+                }
+            }
+            
+            timerEl.textContent = gameState.timer.toFixed(2);
+            timerEl.className = 'timer-display';
+            if (gameState.timer < 5) timerEl.className += ' danger';
+            else if (gameState.timer < 10) timerEl.className += ' warning';
+        }, 10);
+    }
+
+    function stopTimer() {
+        if (gameState.timerInterval) {
+            clearInterval(gameState.timerInterval);
+            gameState.timerInterval = null;
+        }
+    }
+
+    function updateUI() {
+        const available = getAvailableItems();
+        const remaining = available.length;
+        const totalActivities = ACTIVITIES.length;
+        const favoritesCollected = gameState.favorites.length;
+        const maxFavorites = 5;
+        
+        document.getElementById('score').textContent = `SCORE: ${gameState.score}`;
+        
+        const totalProgress = maxFavorites + (totalActivities - maxFavorites);
+        const currentProgress = remaining + (maxFavorites - favoritesCollected);
+        const progressPercent = (currentProgress / totalProgress) * 100;
+        
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        
+        progressBar.style.width = progressPercent + '%';
+       
+        progressBar.className = 'health-bar-inner';
+        if (progressPercent < 20) {
+            progressBar.classList.add('critical');
+        } else if (progressPercent < 40) {
+            progressBar.classList.add('low');
         }
         
-        const subject = encodeURIComponent('New Activity Idea from ' + name);
-        const body = encodeURIComponent(`Name: ${name}\n\nActivity Idea:\n${idea}`);
-        window.location.href = `mailto:${RECIPIENT_EMAIL}?subject=${subject}&body=${body}`;
-        
-        msgBox.textContent = 'Opening email...';
-        msgBox.style.color = 'var(--muted)';
+        const progressMsg = document.getElementById('progressMessage');
+const picksLeft = maxFavorites - favoritesCollected;
+
+if (favoritesCollected === 0) {
+    const startMessages = [
+        { text: "", weight: 76 }, // no message most of the time
+        { text: "TRUST YOUR GUT, DON’T HESITATE!", weight: 2 },
+        { text: "WOW!!! WHAT A PICK!", weight: 1 },
+        { text: "THIS TEXT IS DISTRACTING YOU", weight: 2 },
+        { text: "YOUR THUMBS ARE UNSTOPPABLE!", weight: 2 },
+        { text: "YOU PICK LIKE A LEGEND!", weight: 2 },
+        { text: "ZAP THE SURVEY INTO SUBMISSION!", weight: 2 },
+        { text: "KEEP SLAMMING THOSE PICKS", weight: 2 },
+        { text: "WOWZA, PICK-SLAMMING GENIUS!", weight: 2 },
+        { text: "CRITICAL CHOICE CRUSH!", weight: 1 },
+        { text: "CHOICE CHAMPION STRIKES AGAIN!", weight: 2 },
+        { text: "FIST OF FAVORITES UNLEASHED!", weight: 2 },
+        { text: "YOUR CONFIDENCE IS CONTAGIOUS", weight: 2 },
+        { text: "DECISION-DRIVEN DESTRUCTION!", weight: 1 },
+        { text: "YOU LOVE PLANNING ACTIVITIES", weight: 1 }
+    ];
+
+    const totalWeight = startMessages.reduce((sum, msg) => sum + msg.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const msg of startMessages) {
+        if (random < msg.weight) {
+            progressMsg.textContent = msg.text;
+            break;
+        }
+        random -= msg.weight;
+    }
+} else if (picksLeft > 3) {
+    progressMsg.textContent = `${favoritesCollected} FAVORITE${favoritesCollected > 1 ? 'S' : ''} LOCKED! ${picksLeft} SPOTS LEFT!`;
+} else if (picksLeft > 1) {
+    progressMsg.textContent = `${favoritesCollected} DOWN, ${picksLeft} TO GO! ALMOST DONE!`;
+} else if (picksLeft === 1) {
+    progressMsg.textContent = `BOSS FIGHT! VICTORY IS NEAR!`;
+}
+
+
     }
 
-    function submitViaSMS() {
-        const name = document.getElementById('nameInput').value.trim();
-        const idea = document.getElementById('ideaInput').value.trim();
-        const msgBox = document.getElementById('messageBox');
+    function endGame() {
+        stopTimer();
         
-        if (!name || !idea) {
-            msgBox.textContent = 'Please fill in both fields';
-            msgBox.style.color = '#d32f2f';
-            return;
+        const koOverlay = document.getElementById('koOverlay');
+        koOverlay.classList.add('active');
+        
+        if (audioEnabled) {
+            playSound('critical');
+            setTimeout(() => playSound('combo'), 300);
         }
         
-        const message = encodeURIComponent(`${name}: ${idea}`);
-        window.location.href = `sms:${RECIPIENT_PHONE}?body=${message}`;
-        
-        msgBox.textContent = 'Opening messages...';
-        msgBox.style.color = 'var(--muted)';
+        setTimeout(() => {
+            koOverlay.classList.remove('active');
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('resultsScreen').classList.add('active');
+            
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('playerNameDisplay').textContent = gameState.playerName;
+            
+            const topPicksList = document.getElementById('topPicksList');
+            topPicksList.innerHTML = '';
+            gameState.favorites.forEach(pick => {
+                const li = document.createElement('li');
+                li.textContent = pick;
+                topPicksList.appendChild(li);
+            });
+            
+            gameState.highScores.push({ 
+                name: gameState.playerName, 
+                score: gameState.score 
+            });
+            gameState.highScores.sort((a, b) => b.score - a.score);
+            gameState.highScores = gameState.highScores.slice(0, 8);
+            
+            const highScoresList = document.getElementById('highScoresList');
+            highScoresList.innerHTML = '';
+            gameState.highScores.forEach((entry, i) => {
+                const div = document.createElement('div');
+                div.className = 'high-score-entry';
+                div.innerHTML = `<span>${i + 1}. ${entry.name}</span><span>${entry.score}</span>`;
+                highScoresList.appendChild(div);
+            });
+            
+            submitToGoogleForm();
+        }, 2500);
     }
 
-    /* -------- UI hooks -------- */
-    document.getElementById('pickBtn').addEventListener('click', () => {
-        if (!state.evaluating.length)
-            return;
-        const selected = [...batchListEl.querySelectorAll('li.selected')].map(li => li.dataset.id);
-        snapshot();
-        processPicked(selected);
-    });
-    document.getElementById('passBtn').addEventListener('click', () => {
-        if (!state.evaluating.length)
-            return;
-        snapshot();
-        processPicked([]);
-    });
-    document.getElementById('rescueAll').addEventListener('click', () => {
-        snapshot();
-        rescueEligibleEliminated();
-        renderAll();
-    });
-    document.getElementById('resetBtn').addEventListener('click', () => {
-        if (!confirm('Reset and start over?'))
-            return;
-        state.current = [];
-        state.evaluating = [];
-        state.survived = [];
-        state.eliminated = {};
-        state.favorites = [];
-        state.history = [];
-        state.redoStack = [];
-        startNewRound();
-    });
+    function submitToGoogleForm() {
+        const params = new URLSearchParams();
+        params.append('name', gameState.playerName);
+        params.append('score', gameState.score);
+        params.append('picks', gameState.favorites.join(', '));
+        
+        fetch(GOOGLE_SHEET_URL + '?' + params.toString(), {
+            method: 'GET',
+            mode: 'no-cors'
+        }).catch(err => console.log('Form submission:', err));
+    }
 
-    /* -------- bootstrap -------- */
-    startNewRound();
+    async function shareScore() {
+        const screenshotArea = document.getElementById('screenshotArea');
+        
+        try {
+            const canvas = await html2canvas(screenshotArea, {
+                backgroundColor: '#0d2847',
+                scale: 2
+            });
+            
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], 'fhe-score.png', { type: 'image/png' });
+                
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'My FHE Fighter Score!',
+                        text: `I scored ${gameState.score} points in FHE Fighter II!`
+                    });
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'fhe-fighter-score.png';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    alert('Screenshot saved! Share it with your friends!');
+                }
+            });
+        } catch (err) {
+            console.error('Screenshot failed:', err);
+            alert('Could not create screenshot. Try taking a screenshot manually!');
+        }
+    }
+
+    function resetGame() {
+        gameState = {
+            playerName: '',
+            score: 0,
+            current: [],
+            evaluating: [],
+            survived: [],
+            eliminated: {},
+            favorites: [],
+            timer: 15,
+            timerInterval: null,
+            highScores: gameState.highScores
+        };
+        
+        document.getElementById('resultsScreen').classList.remove('active');
+        document.getElementById('nameInputScreen').style.display = 'block';
+        document.getElementById('playerName').value = '';
+        document.getElementById('multipliers').innerHTML = '';
+        document.getElementById('gameScreen').style.display = 'none';
+    }
+
+    function submitActivityIdea() {
+        playSound('name');
+       window.location.href = 'mailto:email@daviddot.com?subject=FHE Activity Idea';
+    }
+
+    let tutorialStep = 1;
+
+    function showTutorial() {
+        playSound('name');
+        tutorialStep = 1;
+        document.getElementById('tutorialOverlay').classList.add('active');
+        document.getElementById('tutorialScreen1').style.display = 'block';
+        document.getElementById('tutorialScreen2').style.display = 'none';
+        document.getElementById('tutorialScreen3').style.display = 'none';
+        removeHighlights();
+    }
+
+    function nextTutorial() {
+        playSound('select');
+        tutorialStep++;
+        
+        if (tutorialStep === 2) {
+            document.getElementById('tutorialScreen1').style.display = 'none';
+            document.getElementById('tutorialScreen2').style.display = 'block';
+            document.getElementById('tutorialScreen3').style.display = 'none';
+            setTimeout(() => highlightElement('.choices', 'top'), 100);
+        } else if (tutorialStep === 3) {
+            document.getElementById('tutorialScreen1').style.display = 'none';
+            document.getElementById('tutorialScreen2').style.display = 'none';
+            document.getElementById('tutorialScreen3').style.display = 'block';
+            setTimeout(() => highlightElement('.health-bar-container', 'bottom'), 100);
+        }
+    }
     </script>
 </body>
+<footer style="text-align:center; font-size:0.4em; padding:1em 0; color:#888;">
+    <span id="credits" style="cursor:pointer;">Credits</span>
+    <span id="creditText" style="display:none;">Music remix "the aerodynamics of a Jeep Wrangler", toho-moko. CC BY-NC-SA 3.0</span>
+</footer>
+  <script>
+    const credits = document.getElementById('credits');
+    const text = document.getElementById('creditText');
+    credits.addEventListener('click', () => {
+      text.style.display = text.style.display === 'none' ? 'inline' : 'none';
+    });
+  </script>
+  
+  
 </html>
