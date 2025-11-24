@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Type Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .pixelated {
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        html {
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+        @font-face {
+            font-family: 'EssentiarumVG';
+            src: url('fonts/EssentiarumVG.woff2') format('woff2'),
+                 url('fonts/EssentiarumVG.woff') format('woff');
+            font-display: swap;
+        }
+        #copyright {
+            position: relative;
+            bottom: 0px;
+            left: 6px;
+            color: #888;
+            font-size: 7px;
+            margin: 0;
+            padding: 5px 0;
+            line-height: 1;
+        }
+        @media (max-width: 640px) {
+            #copyright {
+                display: none;
+            }
+        }
+        .type-icon {
+            font-family: 'EssentiarumVG';
+            font-size: 1.60rem;
+            line-height: 1;
+            display: inline-block;
+        }
+        .type-label {
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            margin-left: 0.24em;
+            margin-top: 0.45em;
+            font-weight: 700;
+            font-size: 0.85rem;
+            line-height: 1;
+        }
+        button.type-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            color: white;
+            padding-top: 4px;
+            padding-bottom: 6px;
+            transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+            border: 2px solid transparent;
+            position: relative;
+            z-index: 0;
+        }
+        button.type-btn:hover {
+            transform: scale(1.05);
+        }
+        @media (hover: hover) and (pointer: fine) {
+            button.type-btn.selected:hover::before {
+                animation: rotateGradient 4s linear infinite;
+            }
+        }
+        button.type-btn.selected::before {
+            content: "";
+            position: absolute;
+            inset: -4px;
+            border-radius: 9999px;
+            padding: 4px;
+            background: conic-gradient(from var(--angle),
+                #ff0000, #FFD700, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000
+            );
+            -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            z-index: -1;
+        }
+        @property --angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+        @keyframes rotateGradient {
+            to { --angle: 360deg; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-100 to-blue-200 min-h-screen">
+    <div id="app">
+        <div class="min-h-screen p-2 sm:p-8 flex items-center justify-center">
+            <div class="w-full sm:max-w-md bg-white rounded-lg shadow-xl p-2 sm:p-8 text-center">
+                <p class="text-xl text-gray-700">Loading...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function getIconChar(type) {
+            const map = {
+                ground: 'a', bug: 'b', normal: 'c', dark: 'd', fighting: 'f',
+                grass: 'g', ghost: 'h', ice: 'i', rock: 'k', electric: 'l',
+                steel: 'm', dragon: 'n', poison: 'o', psychic: 'p',
+                fire: 'r', flying: 'v', water: 'w', fairy: 'y'
+            };
+            return map[type] || '?';
+        }
+    </script>
+    
+    <script>
+        // 🔧 PASTE YOUR GOOGLE SHEETS WEBHOOK URL HERE:
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxya77jjiWfTLhXcFJcwSV70ytLXfr4Ok9cOlkrKvBgfY5Mq2vMQ2CqjPooBQTg5ZNOVw/exec';
+
+        // 📝 POKÉMON CSV NAME DATA
+        const POKEMON_NAMES_CSV_RAW = `pokemonId,en,ja,fr,de,es,it,ko,zh_HK,zh
+1,Bulbasaur,フシギダネ,Bulbizarre,Bisasam,Bulbasaur,Bulbasaur,이상해씨,妙蛙種子,妙蛙种子
+1025,Pecharunt,モモワロウ,Pêchaminus,Infamomo,Pecharunt,Pecharunt,복숭악동,桃歹郎,桃歹郎`;
+
+        const POKEMON_CSV = `1,Bulbasaur,Grass,Poison,1
+2,Ivysaur,Grass,Poison,1
+3,Venusaur,Grass,Poison,1
+4,Charmander,Fire,,1
+1025,Pecharunt,Poison,Ghost,9`;
+
+        // 🌍 LANGUAGE TRANSLATIONS
+        const TRANSLATIONS = {
+            en: {
+                types: {
+                    bug: 'Bug', flying: 'Flying', ground: 'Ground', poison: 'Poison',
+                    electric: 'Electric', rock: 'Rock', fighting: 'Fighting', steel: 'Steel',
+                    fire: 'Fire', dragon: 'Dragon', psychic: 'Psychic', ice: 'Ice',
+                    fairy: 'Fairy', dark: 'Dark', water: 'Water', normal: 'Normal',
+                    grass: 'Grass', ghost: 'Ghost'
+                },
+                text: {
+                    selectLanguage: '🌍 Language', quizTitle: 'Pokémon Type Quiz',
+                    filterByGen: 'Filter by Generation', all: 'ALL',
+                    submit: 'Submit', next: 'Next', loading: 'Loading...',
+                    evaluationComplete: 'Evaluation Complete',
+                    trainerRankRecorded: 'Your Trainer Rank has been recorded.',
+                    yourScore: 'Your Score:', resultsBreakdown: 'Results Breakdown:',
+                    correct: 'Correct:', yourAnswer: 'Your answer:',
+                    takeQuizAgain: 'Take Quiz Again', pointsShort: 'pts',
+                    normalMode: 'Normal Mode', endlessMode: 'Endless Mode',
+                    currentStreak: 'Streak', personalBest: 'Best', question: 'Question',
+                    streakEnded: 'Streak Ended!', yourStreak: 'Your Streak',
+                    highestStreak: 'Personal Best', shareStreak: 'Share Streak',
+                    lastQuestion: 'Last Question', tryAgain: 'Try Again',
+                    selectAtLeastOneGen: 'Please select at least one generation to start the quiz',
+                    quizInstructions: 'Select 1 or 2 categories for each Pokémon. Earn 1 point per correct category; picking twice can raise or lower your score.'
+                }
+            },
+            ja: {
+                types: {
+                    bug: 'むし', flying: 'ひこう', ground: 'じめん', poison: 'どく',
+                    electric: 'でんき', rock: 'いわ', fighting: 'かくとう', steel: 'はがね',
+                    fire: 'ほのお', dragon: 'ドラゴン', psychic: 'エスパー', ice: 'こおり',
+                    fairy: 'フェアリー', dark: 'あく', water: 'みず', normal: 'ノーマル',
+                    grass: 'くさ', ghost: 'ゴースト'
+                },
+                text: {
+                    selectLanguage: '🌍 言語', quizTitle: 'ポケモン タイプ クイズ',
+                    selectAtLeastOneGen: 'クイズを始めるには、少なくとも1つの世代を選択してください',
+                    quizInstructions: '各ポケモンについて1～2つのカテゴリーを選んでください。正しいカテゴリーごとに1ポイント獲得できます。',
+                    filterByGen: '世代で絞り込み', all: 'すべて',
+                    submit: '送信', next: '次へ', loading: '読み込み中...',
+                    evaluationComplete: '評価完了', trainerRankRecorded: 'トレーナーランクが記録されました。',
+                    yourScore: 'あなたのスコア:', resultsBreakdown: '結果の内訳:',
+                    correct: '正解:', yourAnswer: 'あなたの答え:',
+                    takeQuizAgain: 'もう一度クイズをする', pointsShort: 'pts',
+                    normalMode: 'ノーマルモード', endlessMode: 'エンドレスモード',
+                    currentStreak: '連勝', personalBest: '最高記録', question: '質問',
+                    streakEnded: '連勝終了！', yourStreak: 'あなたの連勝',
+                    highestStreak: '自己ベスト', shareStreak: '連勝を共有',
+                    lastQuestion: '最後の質問', tryAgain: 'もう一度挑戦'
+                }
+            },
+            es: {
+                types: {
+                    bug: 'Bicho', flying: 'Volador', ground: 'Tierra', poison: 'Veneno',
+                    electric: 'Eléctrico', rock: 'Roca', fighting: 'Lucha', steel: 'Acero',
+                    fire: 'Fuego', dragon: 'Dragón', psychic: 'Psíquico', ice: 'Hielo',
+                    fairy: 'Hada', dark: 'Siniestro', water: 'Agua', normal: 'Normal',
+                    grass: 'Planta', ghost: 'Fantasma'
+                },
+                text: {
+                    selectLanguage: '🌍 Idioma', quizTitle: 'Quiz de Tipos Pokémon',
+                    selectAtLeastOneGen: 'Selecciona al menos una generación para comenzar',
+                    quizInstructions: 'Selecciona 1 o 2 categorías para cada Pokémon. Gana 1 punto por categoría correcta.',
+                    filterByGen: 'Filtrar por Generación', all: 'TODOS',
+                    submit: 'Enviar', next: 'Siguiente', loading: 'Cargando...',
+                    evaluationComplete: 'Evaluación Completa',
+                    trainerRankRecorded: 'Tu Rango de Entrenador ha sido registrado.',
+                    yourScore: 'Tu Puntuación:', resultsBreakdown: 'Desglose:',
+                    correct: 'Correcto:', yourAnswer: 'Tu respuesta:',
+                    takeQuizAgain: 'Repetir Quiz', pointsShort: 'pts',
+                    normalMode: 'Modo Normal', endlessMode: 'Modo Infinito',
+                    currentStreak: 'Racha', personalBest: 'Mejor', question: 'Pregunta',
+                    streakEnded: '¡Racha Terminada!', yourStreak: 'Tu Racha',
+                    highestStreak: 'Récord', shareStreak: 'Compartir',
+                    lastQuestion: 'Última Pregunta', tryAgain: 'Intentar de Nuevo'
+                }
+            }
+        };
+
+        let POKEMON_NAMES = {};
+
+        function parsePokemonNamesFromCSV(csvText) {
+            const data = {};
+            const lines = csvText.trim().split('\n').filter(line => line.trim() !== '');
+            if (lines.length === 0) return data;
+
+            const headers = lines[0].split(',').map(h => h.trim());
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length !== headers.length) continue;
+
+                const pokemonId = values[0];
+                const nameTranslations = {};
+
+                for (let j = 1; j < headers.length; j++) {
+                    let langCode = headers[j];
+                    const translation = values[j];
+                    
+                    if (langCode === 'zh_HK' || langCode === 'zh_TW') {
+                        langCode = 'zh-Hant';
+                    } else if (langCode === 'zh') {
+                        langCode = 'zh-Hans';
+                    }
+                    
+                    nameTranslations[langCode] = translation;
+                }
+                
+                if (pokemonId) {
+                    data[pokemonId] = nameTranslations;
+                }
+            }
+
+            return data;
+        }
+
+        function getBrowserLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            if (browserLang.startsWith('ja')) return 'ja';
+            if (browserLang.startsWith('es')) return 'es';
+            if (browserLang.startsWith('zh-HK') || browserLang.startsWith('zh-TW')) return 'zh-Hant';
+            if (browserLang.startsWith('zh')) return 'zh-Hans';
+            if (browserLang.startsWith('fr')) return 'fr';
+            if (browserLang.startsWith('de')) return 'de';
+            if (browserLang.startsWith('ko')) return 'ko';
+            if (browserLang.startsWith('it')) return 'it';
+            return 'en';
+        }
+
+        let currentLang = localStorage.getItem('currentLang') || getBrowserLanguage();
+
+        function translateType(typeKey) {
+            if (!typeKey) return '';
+            return TRANSLATIONS[currentLang]?.types[typeKey.toLowerCase()] || typeKey;
+        }
+
+        function translatePokemonName(pokemonId, defaultName) {
+            const idKey = String(pokemonId);
+            if (currentLang === 'en') return defaultName;
+            
+            const translatedName = POKEMON_NAMES[idKey]?.[currentLang];
+            if (translatedName) return translatedName;
+            
+            if (currentLang.startsWith('zh')) {
+                const zhName = POKEMON_NAMES[idKey]?.['zh-Hans'] || POKEMON_NAMES[idKey]?.['zh-Hant'];
+                if (zhName) return zhName;
+            }
+            
+            return defaultName;
+        }
+
+        function translateText(key, defaultValue) {
+            return TRANSLATIONS[currentLang]?.text?.[key] || defaultValue;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('currentLang', lang);
+            render();
+        }
+
+        let spriteMode = 'default';
+        let selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let gameMode = 'normal';
+        let currentStreak = 0;
+        let highestStreak = parseInt(localStorage.getItem('highestStreak') || '0');
+        let collectedPokemon = []; // Track collected Pokemon in endless mode
+        
+        const SPRITE_MODE_GENS = {
+            'default': [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            'gbc': [1, 2],
+            'gb': [1],
+            '3d': [1, 2],
+            'card': [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            'moves': [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        };
+
+        const TYPE_COLORS = {
+            bug: '#91A119', dark: '#50413f', dragon: '#5060E1', electric: '#FAC000',
+            fairy: '#EF70EF', fighting: '#FF8000', fire: '#E62829', flying: '#81B9EF',
+            ghost: '#704170', grass: '#3FA129', ground: '#915121', ice: '#3fd8ff',
+            normal: '#9FA19F', poison: '#9141CB', psychic: '#EF4179', rock: '#AFA981',
+            steel: '#60A1B8', water: '#2980EF'
+        };
+
+        const GEN_COLORS = {
+            1: ['#F15C01', '#71C671'], 2: ['#DAA520', '#AAB9CF'],
+            3: ['#CD2236', '#818FC6'], 4: ['#90BEED', '#DD7CB1'],
+            5: ['#78828E', '#EBC5C3'], 6: ['#5A96C5', '#F16A81'],
+            7: ['#F1912B', '#5599CA'], 8: ['#59C2F1', '#D5598C'],
+            9: ['#F34134', '#AE7BD0']
+        };
+
+        const types = ['bug', 'flying', 'ground', 'poison', 'electric', 'rock', 'fighting','steel', 'fire', 'dragon', 'psychic', 'ice', 'fairy','dark', 'water', 'normal','grass','ghost'];
+        
+        const GEN_REGIONS = {
+            1: 'Kanto', 2: 'Johto', 3: 'Hoenn', 4: 'Sinnoh',
+            5: 'Unova', 6: 'Kalos', 7: 'Alola', 8: 'Galar & Hisui',
+            9: 'Paldea'
+        };
+        
+        const GEN_YEARS = {
+            1: 1996, 2: 1999, 3: 2002, 4: 2006, 5: 2010,
+            6: 2013, 7: 2016, 8: 2019, 9: 2022
+        };
+
+        let quizPokemon = [];
+        let currentIndex = 0;
+        let selectedTypes = [];
+        let results = [];
+        let screen = 'quiz';
+
+        function getSpriteExtension(mode) {
+            if (mode === '3d') return 'webm';
+            if (mode === 'card' || mode === 'moves') return 'webp';
+            if (mode === 'default') return 'webp';
+            return 'png';
+        }
+
+        function parsePokemonData(csv) {
+            const lines = csv.trim().split('\n').filter(line => line.trim() !== '');
+            return lines.map(line => {
+                const parts = line.split(',');
+                const id = parts[0].trim();
+                const name = parts[1].trim();
+                const type1 = parts[2].trim();
+                const type2 = parts[3] ? parts[3].trim() : '';
+                const gen = parts[4] ? parts[4].trim() : '1';
+                
+                const types = [type1.toLowerCase()];
+                if (type2) types.push(type2.toLowerCase());
+                
+                const pokemonId = parseInt(id);
+                const ext = getSpriteExtension(spriteMode);
+                
+                const spritePath = spriteMode === 'default' 
+                    ? `images/${pokemonId}.${ext}`
+                    : `images/${spriteMode}/${pokemonId}.${ext}`;
+                
+                return {
+                    id: pokemonId,
+                    name: name,
+                    types: types,
+                    gen: parseInt(gen),
+                    sprite: spritePath,
+                    spriteBackup: spriteMode === 'default' ? `images/${pokemonId}.svg` : null
+                };
+            }).filter(p => !isNaN(p.id) && p.id > 0);
+        }
+
+        function calculateScore(correctTypes, userTypes) {
+            let points = 0;
+            const hasOneType = correctTypes.length === 1;
+            const hasTwoTypes = correctTypes.length === 2;
+
+            const correctGuesses = userTypes.filter(ut => correctTypes.includes(ut)).length;
+            const wrongGuesses = userTypes.filter(ut => !correctTypes.includes(ut)).length;
+            
+            points = correctGuesses - wrongGuesses;
+
+            if (correctGuesses > 0 && points < 1) {
+                points = 1;
+            }
+
+            if (hasOneType && correctGuesses === 1 && wrongGuesses === 0) {
+                points += 1;
+            } else if (hasTwoTypes && correctGuesses === 2 && wrongGuesses === 0) {
+                points += 1;
+            }
+
+            const maxPoints = hasOneType ? 2 : 3;
+            return { points: Math.max(0, points), maxPoints, isPerfect: points === maxPoints };
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function toggleGen(gen) {
+            const allowedGens = SPRITE_MODE_GENS[spriteMode] || [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            if (!allowedGens.includes(gen)) return;
+            
+            if (selectedGens.includes(gen)) {
+                selectedGens = selectedGens.filter(g => g !== gen);
+            } else {
+                selectedGens.push(gen);
+                selectedGens.sort((a, b) => a - b);
+            }
+            
+            if (selectedGens.length === 0) {
+                selectedGens = [...allowedGens];
+            }
+            
+            initQuiz();
+        }
+
+        function toggleAllGens() {
+            const allowedGens = SPRITE_MODE_GENS[spriteMode] || [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            if (selectedGens.length === allowedGens.length) {
+                selectedGens = [];
+            } else {
+                selectedGens = [...allowedGens];
+                initQuiz();
+            }
+            render();
+        }
+        
+        function setGameMode(mode) {
+            gameMode = mode;
+            if (mode === 'endless') {
+                currentStreak = 0;
+                collectedPokemon = []; // Reset collection
+            }
+            initQuiz();
+        }
+        
+        async function shareStreak() {
+            const shareText = `🎮 Pokémon Type Quiz - Endless Mode 🎮\n\n✨ My Streak: ${currentStreak} perfect answers!\n🏆 Personal Best: ${highestStreak}\n\nCan you beat my score?`;
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({ text: shareText });
+                } catch (err) {
+                    console.log('Share cancelled');
+                }
+            } else {
+                try {
+                    await navigator.clipboard.writeText(shareText);
+                    alert('Streak copied to clipboard!');
+                } catch (err) {
+                    prompt('Copy this text:', shareText);
+                }
+            }
+        }
+
+        function initQuiz() {
+            try {
+                if (Object.keys(POKEMON_NAMES).length === 0) {
+                    POKEMON_NAMES = parsePokemonNamesFromCSV(POKEMON_NAMES_CSV_RAW);
+                }
+                const allPokemon = parsePokemonData(POKEMON_CSV);
+                const filteredPokemon = allPokemon.filter(p => selectedGens.includes(p.gen));
+                
+                if (filteredPokemon.length === 0 && allPokemon.length > 0) {
+                    const allowedGens = SPRITE_MODE_GENS[spriteMode] || [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                    selectedGens = [...allowedGens];
+                    return initQuiz();
+                }
+                
+                const shuffled = shuffleArray(filteredPokemon);
+                quizPokemon = shuffled.slice(0, Math.min(5, filteredPokemon.length));
+                currentIndex = 0;
+                selectedTypes = [];
+                results = [];
+                screen = 'quiz';
+                render();
+            } catch (error) {
+                console.error('Error initializing quiz:', error);
+            }
+        }
+
+        function setSpriteMode(mode) {
+            spriteMode = mode;
+            const allowedGens = SPRITE_MODE_GENS[mode] || [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            selectedGens = selectedGens.filter(g => allowedGens.includes(g));
+            if (selectedGens.length === 0) {
+                selectedGens = [...allowedGens];
+            }
+            initQuiz();
+        }
+
+        function toggleType(type) {
+            if (selectedTypes.includes(type)) {
+                selectedTypes = selectedTypes.filter(t => t !== type);
+            } else if (selectedTypes.length < 2) {
+                selectedTypes.push(type);
+            }
+            render();
+        }
+
+        async function submitAnswerBackground(result) {
+            const data = {
+                timestamp: new Date().toISOString(),
+                spriteMode: spriteMode,
+                language: currentLang,
+                gameMode: gameMode,
+                pokemonId: result.pokemonId,
+                pokemonName: result.pokemon,
+                correctTypes: result.correctTypes,
+                userTypes: result.userTypes,
+                points: result.points,
+                streak: gameMode === 'endless' ? currentStreak : null
+            };
+
+            try {
+                await fetch(GOOGLE_SHEET_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error('Error submitting:', error);
+            }
+        }
+
+        function submitAnswer() {
+            if (selectedTypes.length === 0) return;
+
+            const currentPokemon = quizPokemon[currentIndex];
+            const correctTypes = currentPokemon.types.sort();
+            const userTypes = [...selectedTypes].sort();
+            const scoreResult = calculateScore(correctTypes, userTypes);
+
+            const result = {
+                pokemonId: currentPokemon.id,
+                pokemon: currentPokemon.name,
+                correctTypes: correctTypes.join(', '),
+                userTypes: userTypes.join(', '),
+                points: scoreResult.points,
+                maxPoints: scoreResult.maxPoints
+            };
+
+            results.push(result);
+
+            if (gameMode === 'endless') {
+                if (!scoreResult.isPerfect) {
+                    submitAnswerBackground(result);
+                    if (currentStreak > highestStreak) {
+                        highestStreak = currentStreak;
+                        localStorage.setItem('highestStreak', currentStreak.toString());
+                    }
+                    screen = 'endlessGameOver';
+                    render();
+                    return;
+                } else {
+                    currentStreak++;
+                    collectedPokemon.push({
+                        id: currentPokemon.id,
+                        name: currentPokemon.name
+                    }); // Add to collection
+                    submitAnswerBackground(result);
+                    selectedTypes = [];
+                    currentIndex++;
+                    
+                    if (currentIndex >= quizPokemon.length) {
+                        const allPokemon = parsePokemonData(POKEMON_CSV);
+                        const filteredPokemon = allPokemon.filter(p => selectedGens.includes(p.gen));
+                        const shuffled = shuffleArray(filteredPokemon);
+                        quizPokemon = [...quizPokemon, ...shuffled.slice(0, 5)];
+                    }
+                    render();
+                    return;
+                }
+            }
+
+            submitAnswerBackground(result);
+            selectedTypes = [];
+
+            if (currentIndex < quizPokemon.length - 1) {
+                currentIndex++;
+                render();
+            } else {
+                screen = 'submitting';
+                render();
+                
+                setTimeout(() => {
+                    screen = 'complete';
+                    render();
+                }, 300);
+            }
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+
+            if (screen === 'submitting') {
+                app.innerHTML = `
+                    <div class="min-h-screen p-8 flex items-center justify-center">
+                        <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+                            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-4"></div>
+                            <p class="text-xl text-gray-700">${translateText('loading', 'Loading...')}</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (screen === 'complete') {
+                const totalPoints = results.reduce((sum, r) => sum + r.points, 0);
+                const maxPoints = results.reduce((sum, r) => sum + r.maxPoints, 0);
+                const resultsHTML = results.map((result, idx) => {
+                    const isCorrect = result.correctTypes === result.userTypes;
+                    const quizPoke = quizPokemon.find(p => p.name === result.pokemon);
+                    const pokeId = quizPoke ? quizPoke.id : (idx + 1);
+                    const imgPath = `icons/poke/${pokeId}.png`;
+                    
+                    const translatedPokemonName = translatePokemonName(pokeId, result.pokemon);
+                    const translatedCorrectTypes = result.correctTypes.split(', ')
+                        .map(t => translateType(t.trim())).join(', ');
+                    const translatedUserTypes = result.userTypes.split(', ')
+                        .map(t => translateType(t.trim())).join(', ');
+                    
+                    return `
+                        <div class="border rounded-lg p-4 mb-3 ${isCorrect ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-lg">${translatedPokemonName}</span>
+                                    <img src="${imgPath}" alt="${translatedPokemonName}" style="width: 85px; height: 70px; image-rendering: pixelated;" />
+                                </div>
+                                <span class="text-sm font-semibold ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                                    ${result.points}/${result.maxPoints} ${translateText('pointsShort', 'pts')}
+                                </span>
+                            </div>
+                            <div class="text-sm">
+                                <div class="mb-1">
+                                    <span class="text-gray-600">${translateText('correct', 'Correct')}: </span>
+                                    <span class="font-semibold text-green-700">${translatedCorrectTypes}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">${translateText('yourAnswer', 'Your answer')}: </span>
+                                    <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">${translatedUserTypes}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                app.innerHTML = `
+                    <div class="min-h-screen p-8 flex items-center justify-center">
+                        <div class="max-w-2xl w-full bg-white rounded-lg shadow-xl p-8">
+                            <div class="text-center mb-6">
+                                <div class="text-6xl mb-4">✓</div>
+                                <h1 class="text-3xl font-bold text-green-600 mb-4">
+                                    ${translateText('evaluationComplete', 'Evaluation Complete')}
+                                </h1>
+                                <p class="text-gray-600 mb-6">
+                                    ${translateText('trainerRankRecorded', 'Your Trainer Rank has been recorded.')}
+                                </p>
+                                <div class="bg-blue-50 p-6 rounded-lg mb-6">
+                                    <p class="text-lg text-gray-700 mb-2">
+                                        ${translateText('yourScore', 'Your Score')}:
+                                    </p>
+                                    <p class="text-4xl font-bold text-blue-600">${totalPoints}/${maxPoints}</p>
+                                    <p class="text-gray-600 mt-2">${Math.round((totalPoints/maxPoints) * 100)}%</p>
+                                </div>
+                            </div>
+                            <div class="mb-6">
+                                <h2 class="text-xl font-bold mb-4 text-gray-800">
+                                    ${translateText('resultsBreakdown', 'Results Breakdown')}:
+                                </h2>
+                                ${resultsHTML}
+                            </div>
+                            <button onclick="initQuiz()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg">
+                                ${translateText('takeQuizAgain', 'Take Quiz Again')}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (screen === 'endlessGameOver') {
+                const lastResult = results[results.length - 1];
+                const quizPoke = quizPokemon.find(p => p.name === lastResult.pokemon);
+                const pokeId = quizPoke ? quizPoke.id : currentIndex;
+                const imgPath = `icons/poke/${pokeId}.png`;
+                
+                app.innerHTML = `
+                    <div class="min-h-screen p-8 flex items-center justify-center">
+                        <div class="max-w-2xl w-full bg-white rounded-lg shadow-xl p-8">
+                            <div class="text-center mb-6">
+                                <div class="text-6xl mb-4">💔</div>
+                                <h1 class="text-3xl font-bold text-red-600 mb-4">
+                                    ${translateText('streakEnded', 'Streak Ended!')}
+                                </h1>
+                                <div class="bg-red-50 p-6 rounded-lg mb-6">
+                                    <p class="text-lg text-gray-700 mb-2">
+                                        ${translateText('yourStreak', 'Your Streak')}:
+                                    </p>
+                                    <p class="text-5xl font-bold text-red-600 mb-3">${currentStreak}</p>
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        ${translateText('highestStreak', 'Personal Best')}: ${highestStreak}
+                                    </p>
+                                    ${collectedPokemon.length > 0 ? `
+                                    <div class="mb-4 bg-white p-4 rounded-lg">
+                                        <p class="text-sm text-gray-700 font-semibold mb-2">Your Final Collection:</p>
+                                        <div class="flex flex-wrap justify-center gap-1 max-h-48 overflow-y-auto">
+                                            ${collectedPokemon.map(poke => `
+                                                <img src="icons/poke/${poke.id}.png" 
+                                                     alt="${poke.name}" 
+                                                     title="${poke.name}"
+                                                     class="w-10 h-10 sm:w-12 sm:h-12" 
+                                                     style="image-rendering: pixelated;" />
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                    ` : ''}
+                                    <button onclick="shareStreak()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg mb-2">
+                                        📤 ${translateText('shareStreak', 'Share Streak')}
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                                <h2 class="text-xl font-bold mb-3 text-gray-800">
+                                    ${translateText('lastQuestion', 'Last Question')}:
+                                </h2>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-bold text-lg">${translatePokemonName(pokeId, lastResult.pokemon)}</span>
+                                        <img src="${imgPath}" alt="${lastResult.pokemon}" style="width: 85px; height: 70px; image-rendering: pixelated;" />
+                                    </div>
+                                    <span class="text-sm font-semibold text-red-600">
+                                        ${lastResult.points}/${lastResult.maxPoints} ${translateText('pointsShort', 'pts')}
+                                    </span>
+                                </div>
+                                <div class="text-sm">
+                                    <div class="mb-1">
+                                        <span class="text-gray-600">${translateText('correct', 'Correct')}: </span>
+                                        <span class="font-semibold text-green-700">${lastResult.correctTypes.split(', ').map(t => translateType(t.trim())).join(', ')}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">${translateText('yourAnswer', 'Your answer')}: </span>
+                                        <span class="font-semibold text-red-700">${lastResult.userTypes.split(', ').map(t => translateType(t.trim())).join(', ')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <button onclick="setGameMode('endless')" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg">
+                                    ${translateText('tryAgain', 'Try Again')}
+                                </button>
+                                <button onclick="setGameMode('normal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg">
+                                    ${translateText('normalMode', 'Normal Mode')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const aboutModalHTML = `
+<div id="aboutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target === this) this.classList.add('hidden')">
+    <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <h2 class="text-xl font-bold mb-3 text-blue-900">About</h2>
+        <p class="text-gray-700 mb-4">
+            Since 1996, over 1000 Pokémon species have been discovered, each assigned up to 2 elemental attributes called <strong>types</strong>. This quiz gathers data to survey which visual designs are most intuitive for identifying these types.
+            <br><br>
+            Custom font by Philippe Van Lieu. Fan sprites by mbcmechachu and National Pokédex Version Delta. Pokémon © 1995 Nintendo. Used for commentary and informational purposes only.
+        </p>
+        <button 
+            onclick="document.getElementById('aboutModal').classList.add('hidden')"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+        >
+            Close
+        </button>
+    </div>
+</div>
+`;
+
+            if (selectedGens.length === 0) {
+                app.innerHTML = `
+                <div class="sm:min-h-screen sm:p-8 sm:flex sm:items-center sm:justify-center">
+                    <div class="w-full sm:max-w-4xl mx-auto">
+                        <div class="bg-white rounded-lg shadow-xl p-2 sm:p-8">
+                            <h1 class="text-3xl font-bold text-center mb-4 text-blue-900">
+                                ${translateText('quizTitle', 'Pokémon Type Quiz')}
+                                <button onclick="document.getElementById('aboutModal').classList.remove('hidden')" class="inline-flex items-center justify-center w-6 h-6 text-xs bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full ml-1 align-middle -translate-y-1">?</button>
+                            </h1>
+                            
+                            <div class="flex justify-center gap-2 mb-4">
+                                <button onclick="setGameMode('normal')" class="${gameMode === 'normal' ? 'bg-blue-600' : 'bg-blue-400'} hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg text-sm transition-colors">
+                                    📝 ${translateText('normalMode', 'Normal Mode')}
+                                </button>
+                                <button onclick="setGameMode('endless')" class="${gameMode === 'endless' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-lg text-sm transition-colors">
+                                    ∞ ${translateText('endlessMode', 'Endless Mode')}
+                                </button>
+                            </div>
+                            
+                            <div class="flex justify-center mb-4">
+                                <div class="flex items-center space-x-2 w-full max-w-xs">
+                                    <span class="flex items-center text-gray-700 text-sm font-semibold whitespace-nowrap">
+                                        <span class="text-lg mr-1">🌐</span> A / 文 / あ
+                                    </span>
+                                    <select onchange="setLanguage(this.value)" class="p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm w-full">
+                                        <option value="" disabled selected>${translateText('selectLanguage', 'Select Language...')}</option>
+                                        <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇺🇸 English</option>
+                                        <option value="ja" ${currentLang === 'ja' ? 'selected' : ''}>🇯🇵 日本語</option>
+                                        <option value="es" ${currentLang === 'es' ? 'selected' : ''}>🇪🇸 Español</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center py-12 sm:min-h-[700px] justify-center">
+                                <p class="text-xl text-gray-600 mb-4">
+                                    ${translateText('selectAtLeastOneGen', 'Please select at least one generation to start the quiz')}
+                                </p>
+                            </div>
+                            ${aboutModalHTML}
+                        </div>
+                    </div>
+                </div>
+                `;
+                return;
+            }
+
+            const currentPokemon = quizPokemon[currentIndex];
+
+            app.innerHTML = `
+            <div class="min-h-screen p-0 sm:p-8 flex items-center justify-center">
+                <div class="w-full sm:max-w-4xl mx-auto">
+                    <div class="bg-white rounded-lg shadow-xl p-2 sm:p-8">
+                        <h1 class="text-3xl font-bold text-center mb-4 text-blue-900">
+                            ${translateText('quizTitle', 'Pokémon Type Quiz')}
+                            <button onclick="document.getElementById('aboutModal').classList.remove('hidden')" class="inline-flex items-center justify-center w-6 h-6 text-xs bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full ml-1 align-middle -translate-y-1">?</button>
+                        </h1>
+                        
+                        <div class="flex justify-center gap-2 mb-4">
+                            <button onclick="setGameMode('normal')" class="${gameMode === 'normal' ? 'bg-blue-600' : 'bg-blue-400'} hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg text-sm transition-colors">
+                                📝 ${translateText('normalMode', 'Normal Mode')}
+                            </button>
+                            <button onclick="setGameMode('endless')" class="${gameMode === 'endless' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-lg text-sm transition-colors">
+                                ∞ ${translateText('endlessMode', 'Endless Mode')}
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-center mb-4">
+                            <div class="flex items-center space-x-2 w-full max-w-xs">
+                                <span class="flex items-center text-gray-700 text-sm font-semibold whitespace-nowrap">
+                                    <span class="text-lg mr-1">🌐</span> A / 文 / あ
+                                </span>
+                                <select onchange="setLanguage(this.value)" class="p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm w-full">
+                                    <option value="" disabled selected>${translateText('selectLanguage', 'Select Language...')}</option>
+                                    <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇺🇸 English</option>
+                                    <option value="ja" ${currentLang === 'ja' ? 'selected' : ''}>🇯🇵 日本語</option>
+                                    <option value="es" ${currentLang === 'es' ? 'selected' : ''}>🇪🇸 Español</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <p class="text-left text-gray-600 mb-3 sm:mb-6 ml-8 mr-6 lg:ml-28 lg:mr-28 text-sm sm:text-base">
+                            ${translateText('quizInstructions', 'Select 1 or 2 categories for each Pokémon.')}
+                        </p>
+                        ${aboutModalHTML}
+                        
+                        <div class="sm:min-h-[500px]">
+                            ${gameMode === 'endless' ? `
+                            <div class="text-center mb-3 bg-purple-100 rounded-lg p-3">
+                               
+                                ${collectedPokemon.length > 0 ? `
+                                <div class="mt-3 pt-3 border-t border-purple-200">
+                                    <p class="text-xs text-purple-700 font-semibold mb-2">Your Collection:</p>
+                                    <div class="flex flex-wrap justify-center gap-1 max-h-32 overflow-y-auto">
+                                        ${collectedPokemon.map(poke => `
+                                            <img src="icons/poke/${poke.id}.png" 
+                                                 alt="${poke.name}" 
+                                                 title="${poke.name}"
+                                                 class="w-8 h-8 sm:w-10 sm:h-10" 
+                                                 style="image-rendering: pixelated;" />
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                            ` : ''}
+                            
+                            <div class="text-center mb-3 sm:mb-4 text-xs sm:text-sm text-gray-500">
+                                <div class="text-sm text-purple-800 font-semibold">
+                                    🔥 ${translateText('currentStreak', 'Streak')}: <span class="text-2xl font-bold">${currentStreak}</span>
+                                </div>
+                                <div class="text-xs text-purple-600 mt-1">
+                                    🏆 ${translateText('personalBest', 'Best')}: ${highestStreak}
+                                </div>   ${gameMode === 'normal' ? `# ${currentIndex + 1} / ${quizPokemon.length}` : `${translateText('question', 'Question')} #${currentIndex + 1}`}
+                            </div>
+
+                            <div class="flex flex-col items-center mb-4 sm:mb-8">
+                                <img src="${currentPokemon.sprite}" alt="${currentPokemon.name}" class="w-48 h-48 sm:w-58 sm:h-58 object-contain" />
+                                
+                                <div class="relative w-full flex justify-center mb-4">
+                                    <h2 class="absolute left-1/2 -translate-x-1/2 text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-4">
+                                        ${translatePokemonName(currentPokemon.id, currentPokemon.name)}
+                                    </h2>
+                                    ${selectedTypes.length > 0 ? `
+                                    <span class="absolute left-1/2 translate-x-[60px] translate-y-[5px] text-sm sm:text-base font-semibold text-gray-600 mt-1 sm:mt-4 whitespace-nowrap">
+                                        (${selectedTypes.map(type => translateType(type)).join(', ')})
+                                    </span>
+                                    ` : ''}
+                                </div>
+                                <div class="h-4"></div>
+                            </div>
+
+                            <div class="bg-gray-300 py-2 mb-6 -mt-2 sm:hidden rounded-2xl">
+                                <div class="grid grid-cols-3 gap-x-2 gap-y-3 justify-items-center px-2 max-w-sm mx-auto">
+                                    ${types.map(type => `
+                                    <button onclick="toggleType('${type}')" style="background-color: ${TYPE_COLORS[type]}; height: 46px; width: 110px;" class="type-btn ${selectedTypes.includes(type) ? 'selected' : ''} ${type === 'dark' ? 'text-gray-100' : ''}">
+                                        <span class="type-icon">${getIconChar(type)}</span>
+                                        <span class="type-label">${translateType(type)}</span>
+                                    </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="hidden sm:block bg-gray-300 sm:p-4 sm:rounded-xl sm:mb-6 sm:mt-6">
+                                <div class="sm:grid sm:grid-cols-3 sm:gap-x-1 sm:gap-y-2 sm:justify-items-center sm:mx-auto sm:max-w-md">
+                                    ${types.map(type => `
+                                    <button onclick="toggleType('${type}')" style="background-color: ${TYPE_COLORS[type]}; height: 36px; width: 120px;" class="type-btn ${selectedTypes.includes(type) ? 'selected' : ''} ${type === 'dark' ? 'text-gray-100' : ''}">
+                                        <span class="type-icon">${getIconChar(type)}</span>
+                                        <span class="type-label">${translateType(type)}</span>
+                                    </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="-mt-4 sm:mt-0 flex items-center justify-center">
+                                <button onclick="submitAnswer()" ${selectedTypes.length === 0 ? 'disabled' : ''} class="font-bold py-3 sm:py-3 px-32 sm:px-34 rounded-lg text-white text-base sm:text-lg ${selectedTypes.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}">
+                                    ${currentIndex < quizPokemon.length - 1 ? translateText('next', 'Next') : translateText('submit', 'Submit')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        window.onload = function() {
+            try {
+                initQuiz();
+            } catch (error) {
+                console.error('Error on load:', error);
+            }
+        };
+    </script>
+    <p id="copyright">Pokémon © 1995 Nintendo. Used for commentary and informational purposes only.</p>
+</body>
+</html>

@@ -13586,7 +13586,7 @@
 		num: 721.96711,
 		name: "Floette  ",
 		baseSpecies: "Floette",
-		forme: "Blue Orange White Yellow Flower",
+		forme: "BluOrgWhtYel Flower",
 		types: ["Fairy"],
 		gender: "F",
 		baseStats: {hp: 74, atk: 65, def: 67, spa: 125, spd: 128, spe: 92},

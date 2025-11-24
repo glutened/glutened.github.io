@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Type Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .pixelated {
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }html {
+      overflow-y: scroll;overflow-x: hidden;
+    }@font-face {
+  font-family: 'EssentiarumVG';
+  src: url('fonts/EssentiarumVG.woff2') format('woff2'),
+       url('fonts/EssentiarumVG.woff') format('woff');
+  font-display: swap;
+}
+#copyright {
+  position: relative;
+  bottom: 0px;
+  left: 6px;
+  color: #888;
+  font-size: 7px;
+  margin: 0;
+  padding: 5px 0;
+  line-height: 1;
+}
+.brightness-low {
+    filter: brightness(0.40);
+}
+@media (max-width: 640px) {
+  #copyright {
+    display: none;
+  }
+}
+.type-icon {
+  font-family: 'EssentiarumVG';
+  font-size: 1.60rem;
+  line-height: 1;
+  display: inline-block;
+}
+
+.type-label {
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  margin-left: 0.24em;
+  margin-top: 0.45em;
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+button.type-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: white;
+  padding-top: 4px;
+  padding-bottom: 6px;
+  transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  border: 2px solid transparent;
+  position: relative;
+  z-index: 0;
+}
+button.type-btn:hover {
+  transform: scale(1.05);
+}
+
+
+@media (hover: hover) and (pointer: fine) {
+  button.type-btn.selected:hover::before {
+    animation: rotateGradient 4s linear infinite;
+  }
+}
+
+button.type-btn.selected::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  padding: 4px;
+  background: conic-gradient(from var(--angle),
+    #ff0000, #FFD700, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: -1;
+}
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotateGradient {
+  to { --angle: 360deg; }
+}
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-100 to-blue-200 min-h-screen">
+    <div id="app">
+        <div class="min-h-screen p-2 sm:p-8 flex items-center justify-center">
+
+            <div class="w-full sm:max-w-md bg-white rounded-lg shadow-xl p-2 sm:p-8 text-center">
+
+                <p class="text-xl text-gray-700">Loading...</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        function getIconChar(type) {
+          const map = {
+            ground: 'a', bug: 'b', normal: 'c', dark: 'd', fighting: 'f',
+            grass: 'g', ghost: 'h', ice: 'i', rock: 'k', electric: 'l',
+            steel: 'm', dragon: 'n', poison: 'o', psychic: 'p',
+            fire: 'r', flying: 'v', water: 'w', fairy: 'y'
+          };
+          return map[type] || '?';
+        }
+        </script>
+        <script src="translate.js"></script>  <script>
+        // 🔧 PASTE YOUR GOOGLE SHEETS WEBHOOK URL HERE:
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxya77jjiWfTLhXcFJcwSV70ytLXfr4Ok9cOlkrKvBgfY5Mq2vMQ2CqjPooBQTg5ZNOVw/exec';
+
+             // 🔧 PASTE YOUR CSV DATA HERE (no header row):
+             // 📝 POKÉMON CSV NAME DATA (Includes header row as requested)
+       
+        // This will be populated by the CSV parser
+        let POKEMON_NAMES = {};
+
+        // --- Core CSV Parsing Function ---
+        /**
+         * Parses the raw CSV string into an object optimized for lookup.
+         * CSV Header expected: pokemonId,en,ja,fr,de,es,it,ko,zh_HK,zh...
+         * Output format: { "1": { en: "Bulbasaur", ja: "フシギダネ", ... } }
+         */
+        function parsePokemonNamesFromCSV(csvText) {
+            const data = {};
+            const lines = csvText.trim().split('\n').filter(line => line.trim() !== '');
+
+            if (lines.length === 0) return data;
+
+            // 1. Get Headers from the first line
+            const headers = lines[0].split(',').map(h => h.trim());
+
+            // 2. Iterate over data lines (starting from index 1)
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                
+                // Ensure the number of values matches the number of headers
+                if (values.length !== headers.length) {
+                    console.warn(`Skipping malformed CSV line ${i}: ${lines[i]}`);
+                    continue;
+                }
+
+                const pokemonId = values[0];
+                const nameTranslations = {};
+
+                // Map values to language headers (starting from index 1)
+                for (let j = 1; j < headers.length; j++) {
+                    let langCode = headers[j];
+                    const translation = values[j];
+                    
+                    // Normalize non-standard Chinese codes provided in the CSV
+                    if (langCode === 'zh_HK' || langCode === 'zh_TW') {
+                        langCode = 'zh-Hant'; // Traditional Chinese
+                    } else if (langCode === 'zh') {
+                        langCode = 'zh-Hans'; // Simplified Chinese
+                    }
+                    
+                    nameTranslations[langCode] = translation;
+                }
+                
+                if (pokemonId) {
+                    data[pokemonId] = nameTranslations;
+                }
+            }
+
+            return data;
+        }
+        // --- End Core CSV Parsing Function ---
+
+
+        // --- Translation Variables and Functions ---
+        // Get preferred language from browser or default to 'en'
+        function getBrowserLanguage() {
+    const browserLang = navigator.language || navigator.userLanguage;
+    // Map browser language codes to our supported languages
+    if (browserLang.startsWith('ja')) return 'ja';
+    if (browserLang.startsWith('es')) return 'es';
+    if (browserLang.startsWith('zh-HK') || browserLang.startsWith('zh-TW')) return 'zh-Hant';
+    if (browserLang.startsWith('zh')) return 'zh-Hans';
+    if (browserLang.startsWith('fr')) return 'fr';
+    if (browserLang.startsWith('de')) return 'de';
+    if (browserLang.startsWith('ko')) return 'ko';
+    if (browserLang.startsWith('it')) return 'it';
+    return 'en';
+}
+
+let currentLang = localStorage.getItem('currentLang') || getBrowserLanguage();
+        // Translation functions
+        function translateType(typeKey) {
+            if (!typeKey) return '';
+            return TRANSLATIONS[currentLang]?.types[typeKey.toLowerCase()] || typeKey;
+        }
+
+        function translatePokemonName(pokemonId, defaultName) {
+            // Convert to string key if necessary
+            const idKey = String(pokemonId);
+            if (currentLang === 'en') return defaultName;
+            
+            // Check for explicit translation
+            const translatedName = POKEMON_NAMES[idKey]?.[currentLang];
+            if (translatedName) return translatedName;
+            
+            // Fallback for Chinese (e.g., if zh-Hant requested but only zh-Hans exists)
+            if (currentLang.startsWith('zh')) {
+                const zhName = POKEMON_NAMES[idKey]?.['zh-Hans'] || POKEMON_NAMES[idKey]?.['zh-Hant'];
+                if (zhName) return zhName;
+            }
+            
+            return defaultName;
+        }
+
+        function translateText(key, defaultValue) {
+            return TRANSLATIONS[currentLang]?.text?.[key] || defaultValue;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('currentLang', lang); // Store preference
+            render(); // Re-render to apply new language
+        }
+        // --- End Translation Functions ---
+
+
+        // 🔧 SPRITE MODE: 'default' (webp with svg fallback), 'gbc', 'gb', '3d', 'card', 'gif', 'moves', 'palette', or 'tcg'
+let spriteMode = 'default';
+let selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // All generations selected by default
+let includeGen2Unofficial = false; // Flag for unofficial Gen 2 sprites
+
+// Get allowed generations for each sprite mode
+function getAllowedGens(mode) {
+    const restrictions = {
+        'gif': [1, 2],
+        '3d': [1, 2],
+        'card': [1, 2],
+        'palette': [1, 2],
+        'tcg': [1, 2],
+        'gb': includeGen2Unofficial ? [1, 2] : [1],
+        'gbc': includeGen2Unofficial ? [1, 2] : [1]
+    };
+    return restrictions[mode] || [1, 2, 3, 4, 5, 6, 7, 8, 9];
+}
+// Check if current sprite mode has generation restrictions
+function hasGenRestrictions(mode) {
+    return ['gif', '3d', 'card', 'gb', 'tcg','gbc'].includes(mode);
+}
+
+// Check if sprite mode supports Gen 2 unofficial toggle
+function supportsGen2Toggle(mode) {
+    return ['gb', 'gbc'].includes(mode);
+}
+
+// Get sprite mode display name
+function getSpriteModeLabel(mode) {
+    const labels = {
+        'default': 'Default',
+        'gbc': 'Color',
+        'gb': 'Grayscale',
+        '3d': '3D',
+        'tcg': 'tcg',
+        'palette': 'Palette',
+        'card': 'Card',
+        'gif': 'GIF',
+        'moves': 'Moves'
+    };
+    return labels[mode] || mode;
+}
+
+function setSpriteMode(mode) {
+    spriteMode = mode;
+    includeGen2Unofficial = false; // Reset when changing modes
+    
+    // Auto-adjust selected generations based on sprite mode restrictions
+    const allowedGens = getAllowedGens(mode);
+    selectedGens = selectedGens.filter(gen => allowedGens.includes(gen));
+    
+    // If no generations selected after filtering, select all allowed
+    if (selectedGens.length === 0) {
+        selectedGens = [...allowedGens];
+    }
+    
+    initQuiz();
+}
+
+function toggleGen2Unofficial() {
+    includeGen2Unofficial = !includeGen2Unofficial;
+    
+    // Update selected generations
+    const allowedGens = getAllowedGens(spriteMode);
+    if (includeGen2Unofficial && !selectedGens.includes(2)) {
+        selectedGens.push(2);
+        selectedGens.sort((a, b) => a - b);
+    } else if (!includeGen2Unofficial && selectedGens.includes(2)) {
+        selectedGens = selectedGens.filter(g => g !== 2);
+    }
+    
+    initQuiz();
+}
+
+function toggleGen(gen) {
+    const allowedGens = getAllowedGens(spriteMode);
+    
+    // Don't allow toggling generations not allowed by current sprite mode
+    if (!allowedGens.includes(gen)) {
+        return;
+    }
+    
+    if (selectedGens.includes(gen)) {
+        selectedGens = selectedGens.filter(g => g !== gen);
+    } else {
+        selectedGens.push(gen);
+        selectedGens.sort((a, b) => a - b);
+    }
+    
+    if (selectedGens.length === 0) {
+        selectedGens = [...allowedGens];
+    }
+    
+    initQuiz();
+}
+
+function toggleAllGens() {
+    const allowedGens = getAllowedGens(spriteMode);
+    
+    if (selectedGens.length === allowedGens.length) {
+        // Turn off - clear all
+        selectedGens = [];
+    } else {
+        // Turn on - select all allowed
+        selectedGens = [...allowedGens];
+        initQuiz();
+    }
+    render();
+}
+// Parse CSV into Pokemon data
+function parsePokemonData(csv) {
+    const lines = csv.trim().split('\n').filter(line => line.trim() !== '');
+    return lines.map(line => {
+        const parts = line.split(',');
+        const id = parts[0].trim();
+        const name = parts[1].trim();
+        const type1 = parts[2].trim();
+        const type2 = parts[3] ? parts[3].trim() : '';
+        const gen = parts[4] ? parts[4].trim() : '1';
+        
+        const types = [type1.toLowerCase()];
+        if (type2) {
+            types.push(type2.toLowerCase());
+        }
+        const pokemonId = parseInt(id);
+        const ext = getSpriteExtension(spriteMode);
+        
+        const spritePath = spriteMode === 'default' 
+            ? `images/${pokemonId}.${ext}`
+            : `images/${spriteMode}/${pokemonId}.${ext}`;
+        
+        return {
+            id: pokemonId,
+            name: name,
+            types: types,
+            gen: parseInt(gen),
+            sprite: spritePath,
+            spriteBackup: spriteMode === 'default' ? `images/${pokemonId}.svg` : null
+        };
+    }).filter(p => !isNaN(p.id) && p.id > 0);
+}
+
+        const TYPE_COLORS = {
+  bug: '#91A119',
+  dark: '#50413f',
+  dragon: '#5060E1',
+  electric: '#FAC000',
+  fairy: '#EF70EF',
+  fighting: '#FF8000',
+  fire: '#E62829',
+  flying: '#81B9EF',
+  ghost: '#704170',
+  grass: '#3FA129',
+  ground: '#915121',
+  ice: '#3fd8ff',
+  normal: '#9FA19F',
+  poison: '#9141CB',
+  psychic: '#EF4179',
+  rock: '#AFA981',
+  steel: '#60A1B8',
+  water: '#2980EF',
+
+}; const GEN_COLORS = {
+    1: ['#F15C01', '#71C671'],
+    2: ['#DAA520', '#AAB9CF'],
+    3: ['#CD2236', '#818FC6'],
+    4: ['#90BEED', '#DD7CB1'],
+    5: ['#78828E', '#EBC5C3'],
+    6: ['#5A96C5', '#F16A81'],
+    7: ['#F1912B', '#5599CA'],
+    8: ['#59C2F1', '#D5598C'],
+    9: ['#F34134', '#AE7BD0']
+};
+
+
+        const types = ['bug', 'flying', 'ground', 'poison', 'electric', 'rock', 'fighting','steel', 'fire',  'dragon', 'psychic', 'ice',  'fairy','dark', 'water',  'normal','grass','ghost' ];
+        const GEN_REGIONS = {
+    1: 'Kanto', 2: 'Johto', 3: 'Hoenn', 4: 'Sinnoh', 
+    5: 'Unova', 6: 'Kalos', 7: 'Alola', 8: 'Galar & Hisui', 
+    9: 'Paldea'
+};
+        const GEN_YEARS = {
+            1: 1996,
+            2: 1999,
+            3: 2002,
+            4: 2006,
+            5: 2010,
+            6: 2013,
+            7: 2016,
+            8: 2019,
+            9: 2022
+        };
+
+        let quizPokemon = [];
+        let currentIndex = 0;
+        let selectedTypes = [];
+        let results = [];
+        let screen = 'quiz';
+        function showPaletteModal(sprite, name) {
+    const modal = document.getElementById('paletteModal');
+    const img = document.getElementById('paletteModalImg');
+    img.src = sprite;
+    img.alt = name;
+    modal.classList.remove('hidden');
+}
+
+function setPaletteBg(theme) {
+    const content = document.getElementById('paletteModalContent');
+    if (theme === 'light') {
+        content.style.backgroundColor = '#ffffff'; // off-white
+    } else {
+        content.style.backgroundColor = '#1a1a1a'; // off-black
+    }
+}
+        // Get file extension based on sprite mode
+function getSpriteExtension(mode) {
+    if (mode === '3d' || mode === 'gif') return 'webm';
+    if (mode === 'card' || mode === 'moves') return 'jpg';
+    if (mode === 'palette') return 'png';
+    if (mode === 'default') return 'webp';
+    return 'png';
+}
+
+        // Parse CSV into Pokemon data
+        function parsePokemonData(csv) {
+            const lines = csv.trim().split('\n').filter(line => line.trim() !== '');
+            return lines.map(line => {
+                const parts = line.split(',');
+                const id = parts[0].trim();
+                const name = parts[1].trim();
+                const type1 = parts[2].trim();
+                const type2 = parts[3] ? parts[3].trim() : '';
+                const gen = parts[4] ? parts[4].trim() : '1';
+                
+                const types = [type1.toLowerCase()];
+                if (type2) {
+             types.push(type2.toLowerCase());
+                }
+                const pokemonId = parseInt(id);
+                const ext = getSpriteExtension(spriteMode);
+                
+                const spritePath = spriteMode === 'default' 
+                    ? `images/${pokemonId}.${ext}`
+                    : `images/${spriteMode}/${pokemonId}.${ext}`;
+                
+                return {
+                    id: pokemonId,
+                    name: name,
+                    types: types,
+                    gen: parseInt(gen),
+                    sprite: spritePath,
+                    spriteBackup: spriteMode === 'default' ? `images/${pokemonId}.svg` : null
+                };
+            }).filter(p => !isNaN(p.id) && p.id > 0);
+        }
+
+        function calculateScore(correctTypes, userTypes) {
+            let points = 0;
+            const hasOneType = correctTypes.length === 1;
+            const hasTwoTypes = correctTypes.length === 2;
+
+            const correctGuesses = userTypes.filter(ut => correctTypes.includes(ut)).length;
+            const wrongGuesses = userTypes.filter(ut => !correctTypes.includes(ut)).length;
+            
+            points = correctGuesses - wrongGuesses;
+
+            if (correctGuesses > 0 && points < 1) {
+                points = 1;
+            }
+
+            if (hasOneType && correctGuesses === 1 && wrongGuesses === 0) {
+                points += 1;
+            } else if (hasTwoTypes && correctGuesses === 2 && wrongGuesses === 0) {
+                points += 1;
+            }
+
+            return Math.max(0, points);
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function toggleGen(gen) {
+            if (selectedGens.includes(gen)) {
+                selectedGens = selectedGens.filter(g => g !== gen);
+            } else {
+                selectedGens.push(gen);
+                selectedGens.sort((a, b) => a - b);
+            }
+            
+            if (selectedGens.length === 0) {
+                selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            }
+            
+            initQuiz();
+        }
+
+        function selectAllGens() {
+            selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            initQuiz();
+        }
+
+        function toggleAllGens() {
+            if (selectedGens.length === 9) {
+                // Turn off - clear all
+                selectedGens = [];
+            } else {
+                // Turn on - select all
+                selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                initQuiz();
+            }
+            render();
+        }
+
+        function clearAllGens() {
+            selectedGens = [];
+            render();
+        }
+
+        function initQuiz() {
+    try {
+        if (Object.keys(POKEMON_NAMES).length === 0) {
+            POKEMON_NAMES = parsePokemonNamesFromCSV(POKEMON_NAMES_CSV_RAW);
+        }
+        const allPokemon = parsePokemonData(POKEMON_CSV);
+        
+        // Filter by allowed generations for current sprite mode
+        const allowedGens = getAllowedGens(spriteMode);
+        const filteredByMode = allPokemon.filter(p => allowedGens.includes(p.gen));
+        
+        // Then filter by selected generations
+        const filteredPokemon = filteredByMode.filter(p => selectedGens.includes(p.gen));
+        
+        if (filteredPokemon.length === 0 && allPokemon.length > 0) {
+            selectedGens = [...allowedGens];
+            return initQuiz();
+        }
+        
+        const shuffled = shuffleArray(filteredPokemon);
+        quizPokemon = shuffled.slice(0, Math.min(5, filteredPokemon.length));
+        currentIndex = 0;
+        selectedTypes = [];
+        results = [];
+        screen = 'quiz';
+        render();
+    } catch (error) {
+        console.error('Error initializing quiz:', error);
+        document.getElementById('app').innerHTML = `
+            <div class="min-h-screen p-8 flex items-center justify-center">
+                <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+                    <p class="text-xl text-red-600 mb-4">Error loading quiz</p>
+                    <p class="text-gray-600">${error.message}</p>
+                </div>
+            </div>
+        `;
+    }
+}
+        function setSpriteMode(mode) {
+            spriteMode = mode;
+            initQuiz();
+        }
+
+        function renderTypeButtons() {
+    // Helper function to generate the buttons for a specific view
+    function generateTypeButtonsHTML(typeList, buttonStyles) {
+        return typeList.map(type => {
+            const translatedType = translateType(type);
+            const isSelected = selectedTypes.includes(type);
+            const disabledClass = selectedTypes.length === 2 && !isSelected ? 'brightness-low cursor-not-allowed' : '';
+            const darkTextClass = type === 'dark' ? 'text-gray-100' : '';
+
+            return `
+            <button
+            onclick="toggleType('${type}')"
+            style="background-color: ${TYPE_COLORS[type]}; ${buttonStyles}"
+            class="type-btn ${isSelected ? 'selected' : ''} ${darkTextClass} ${disabledClass}"
+            >
+            <span class="type-icon">${getIconChar(type)}</span>
+            <span class="type-label">${translatedType}</span>
+            </button>
+            `;
+        }).join('');
+    }
+
+    // 1. Update Mobile Grid
+    const mobileGrid = document.getElementById('mobile-type-grid');
+    if (mobileGrid) {
+        mobileGrid.innerHTML = generateTypeButtonsHTML(types, 'height: 46px; width: 110px;');
+    }
+
+    // 2. Update Desktop Grid
+    const desktopGrid = document.getElementById('desktop-type-grid');
+    if (desktopGrid) {
+        desktopGrid.innerHTML = generateTypeButtonsHTML(types, 'height: 36px; width: 120px;');
+    }
+
+    // 3. Update Selected Types Display (NEW!)
+    const selectedTypesDisplay = document.getElementById('selected-types-display');
+    if (selectedTypesDisplay) {
+        if (selectedTypes.length > 0) {
+            selectedTypesDisplay.textContent = `(${selectedTypes.map(type => translateType(type)).join(', ')})`;
+            selectedTypesDisplay.style.display = 'inline';
+        } else {
+            selectedTypesDisplay.textContent = '';
+            selectedTypesDisplay.style.display = 'none';
+        }
+    }
+
+    // 4. Update Submit Button State
+    const submitButton = document.querySelector('button[onclick="submitAnswer()"]');
+    if (submitButton) {
+        submitButton.classList.remove('bg-blue-500', 'hover:bg-blue-600', 'bg-gray-300', 'cursor-not-allowed');
+
+        if (selectedTypes.length === 0) {
+            submitButton.disabled = true;
+            submitButton.classList.add('bg-gray-300', 'cursor-not-allowed');
+        } else {
+            submitButton.disabled = false;
+            submitButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
+        }
+    }
+}
+        function toggleType(type) {
+            if (selectedTypes.includes(type)) {
+                selectedTypes = selectedTypes.filter(t => t !== type);
+            } else if (selectedTypes.length < 2) {
+                selectedTypes.push(type);
+            }
+            
+            // ⭐ FIX: Call the dedicated function, NOT render()
+            renderTypeButtons(); 
+        }
+
+
+        function submitAnswer() {
+            if (selectedTypes.length === 0) return;
+
+            const currentPokemon = quizPokemon[currentIndex];
+            const correctTypes = currentPokemon.types.sort();
+            const userTypes = [...selectedTypes].sort();
+            const points = calculateScore(correctTypes, userTypes);
+
+            results.push({
+                pokemon: currentPokemon.name,
+                correctTypes: correctTypes.join(', '),
+                userTypes: userTypes.join(', '),
+                points: points
+            });
+
+            selectedTypes = [];
+
+            if (currentIndex < quizPokemon.length - 1) {
+                currentIndex++;
+                render();
+            } else {
+                submitAnswerBackground();
+            }
+        }
+
+        // Submit individual answer in background
+        async function submitAnswerBackground(result) {
+            const data = {
+                timestamp: new Date().toISOString(),
+                spriteMode: spriteMode,
+                pokemonId: result.pokemonId,
+                pokemonName: result.pokemon,
+                correctTypes: result.correctTypes,
+                userTypes: result.userTypes,
+                points: result.points
+            };
+
+            try {
+                await fetch(GOOGLE_SHEET_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+            }
+        }
+
+        function submitAnswer() {
+            if (selectedTypes.length === 0) return;
+
+            const currentPokemon = quizPokemon[currentIndex];
+            const correctTypes = currentPokemon.types.sort();
+            const userTypes = [...selectedTypes].sort();
+            const points = calculateScore(correctTypes, userTypes);
+
+            const result = {
+                pokemonId: currentPokemon.id,
+                pokemon: currentPokemon.name,
+                correctTypes: correctTypes.join(', '),
+                userTypes: userTypes.join(', '),
+                points: points
+            };
+
+            results.push(result);
+
+            // Submit in background for all questions
+            submitAnswerBackground(result);
+
+            selectedTypes = [];
+
+            if (currentIndex < quizPokemon.length - 1) {
+                // Not the last question - move to next immediately
+                currentIndex++;
+                render();
+            } else {
+                // Last question - show submitting briefly then results
+                screen = 'submitting';
+                render();
+                
+                // Show results after brief moment
+                setTimeout(() => {
+                    screen = 'complete';
+                    render();
+                }, 300);
+            }
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+
+            if (screen === 'submitting') {
+                app.innerHTML = `
+                    <div class="min-h-screen p-8 flex items-center justify-center">
+                        <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+                            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-4"></div>
+                            <p class="text-xl text-gray-700">Loading...</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (screen === 'complete') {
+                const totalPoints = results.reduce((sum, r) => sum + r.points, 0);
+                const maxPoints = quizPokemon.reduce((sum, p) => sum + (p.types.length === 1 ? 2 : 3), 0);
+                const resultsHTML = results.map((result, idx) => {
+    // console.log('Result object:', result); // See what's in the result
+    
+    const isCorrect = result.correctTypes === result.userTypes;
+    const maxPossible = result.correctTypes.split(', ').length === 1 ? 2 : 3;
+    
+    // Determine Pokemon ID for image and translation
+    const quizPoke = quizPokemon.find(p => p.name === result.pokemon);
+    const pokeId = quizPoke ? quizPoke.id : (idx + 1);
+    const imgPath = `icons/poke/${pokeId}.png`;
+    // console.log('Image path:', imgPath);
+    
+    // --- Translation application ---
+    const translatedPokemonName = translatePokemonName(pokeId, result.pokemon);
+
+    const translatedCorrectTypes = result.correctTypes.split(', ')
+        .map(t => translateType(t.trim())).join(', ');
+    const translatedUserTypes = result.userTypes.split(', ')
+        .map(t => translateType(t.trim())).join(', ');
+    // -------------------------------
+    
+    return `
+        <div class="border rounded-lg p-4 mb-3 ${isCorrect ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                    <span class="font-bold text-lg">${translatedPokemonName}</span>
+                    <img src="${imgPath}" alt="${translatedPokemonName}" style="width: 85px; height: 70px; image-rendering: pixelated;" onerror="console.error('Failed to load:', this.src)" />
+                </div>
+                <span class="text-sm font-semibold ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                    ${result.points}/${maxPossible} ${translateText('pointsShort', 'pts')}
+                </span>
+            </div>
+            <div class="text-sm">
+                <div class="mb-1">
+                    <span class="text-gray-600">${translateText('correct', 'Correct')}: </span>
+                    <span class="font-semibold text-green-700">${translatedCorrectTypes}</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">${translateText('yourAnswer', 'Your answer')}: </span>
+                    <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">${translatedUserTypes}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}).join('');
+                
+app.innerHTML = `
+    <div class="min-h-screen p-8 flex items-center justify-center">
+        <div class="max-w-2xl w-full bg-white rounded-lg shadow-xl p-8">
+            <div class="text-center mb-6">
+                <div class="text-6xl mb-4">✓</div>
+                <h1 class="text-3xl font-bold text-green-600 mb-4">
+                    ${translateText('evaluationComplete', 'Evaluation Complete')}
+                </h1>
+                <p class="text-gray-600 mb-6">
+                    ${translateText('trainerRankRecorded', 'Your Trainer Rank has been recorded.')}
+                </p>
+                <div class="bg-blue-50 p-6 rounded-lg mb-6">
+                    <p class="text-lg text-gray-700 mb-2">
+                        ${translateText('yourScore', 'Your Score')}:
+                    </p>
+                    <p class="text-4xl font-bold text-blue-600">${totalPoints}/${maxPoints}</p>
+                    <p class="text-gray-600 mt-2">${Math.round((totalPoints/maxPoints) * 100)}%</p>
+                </div>
+            </div>
+            <div class="mb-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">
+                    ${translateText('resultsBreakdown', 'Results Breakdown')}:
+                </h2>
+                ${resultsHTML}
+            </div>
+            <button onclick="initQuiz()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg">
+                ${translateText('takeQuizAgain', 'Take Quiz Again')}
+            </button>
+        </div>
+    </div>
+`;
+return;}
+            // About Modal HTML (reused across all views)
+const aboutModalHTML = `
+<div id="aboutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target === this) this.classList.add('hidden')">
+    <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <h2 class="text-xl font-bold mb-3 text-blue-900">About</h2>
+        <p class="text-gray-700 mb-4">
+    Since 1996, over 1000 Pokémon species have been discovered, each assigned up to 2 elemental attributes called <strong>types</strong>. This quiz gathers data to survey which visual designs are most intuitive for identifying these types.
+    <br><br>
+    Custom font by Philippe Van Lieu. Fan sprites by mbcmechachu and National Pokédex Version Delta. Pokémon © 1995 Nintendo. Used for commentary and informational purposes only.
+</p>
+        <button 
+            onclick="document.getElementById('aboutModal').classList.add('hidden')"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+        >
+            Close
+        </button>
+    </div>
+</div>
+`;
+ // Check if no generations are selected
+ if (selectedGens.length === 0) {
+                app.innerHTML = `
+                <div class="sm:min-h-screen sm:p-8 sm:flex sm:items-center sm:justify-center">
+                    <div class="w-full sm:max-w-4xl mx-auto">
+                        <div class="bg-white rounded-lg shadow-xl p-2 sm:p-8"> 
+                       
+                       <!-- FIX APPLIED HERE -->
+                       <div class="mb-4">
+<div class="flex items-center space-x-2 mb-2">
+   <span class="flex items-center text-gray-700 text-sm font-semibold whitespace-nowrap">
+       <span class="text-lg mr-1" aria-hidden="true">🌐</span> 
+       A / 文 / あ
+   </span>
+
+   <select onchange="setLanguage(this.value)" 
+           class="py-1 px-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm w-28">
+       
+       <option value="" disabled selected>${translateText('selectLanguage', 'Select Language...')}</option>
+       
+       <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇺🇸 English </option>
+       <option value="ja" ${currentLang === 'ja' ? 'selected' : ''}>🇯🇵 日本語 </option>
+       <option value="es" ${currentLang === 'es' ? 'selected' : ''}>🇪🇸 Español </option>
+       <option value="zh-Hans" ${currentLang === 'zh-Hans' ? 'selected' : ''}>🇨🇳 简体中文 </option>
+       <option value="zh-Hant" ${currentLang === 'zh-Hant' ? 'selected' : ''}>🇭🇰 繁體中文 </option>
+       <option value="fr" ${currentLang === 'fr' ? 'selected' : ''}>🇫🇷 Français </option>
+       <option value="de" ${currentLang === 'de' ? 'selected' : ''}>🇩🇪 Deutsch </option>
+       <option value="ko" ${currentLang === 'ko' ? 'selected' : ''}>🇰🇷 한국어 </option>
+       <option value="it" ${currentLang === 'it' ? 'selected' : ''}>🇮🇹 Italiano </option>
+       <option value="pt" ${currentLang === 'pt' ? 'selected' : ''}>🇧🇷 Português</option>
+       <option value="id" ${currentLang === 'id' ? 'selected' : ''}>🇮🇩 Bahasa Indonesia</option>
+       <option value="th" ${currentLang === 'th' ? 'selected' : ''}>🇹🇭 ไทย</option>
+       <option value="ru" ${currentLang === 'ru' ? 'selected' : ''}>🇷🇺 Русский</option>
+       <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
+       <option value="hi" ${currentLang === 'hi' ? 'selected' : ''}>🇮🇳 हिन्दी</option>
+       <option value="bg" ${currentLang === 'bg' ? 'selected' : ''}>🇧🇬 Български</option>
+       <option value="cs" ${currentLang === 'cs' ? 'selected' : ''}>🇨🇿 Čeština</option>
+       <option value="da" ${currentLang === 'da' ? 'selected' : ''}>🇩🇰 Dansk</option>
+       <option value="nl" ${currentLang === 'nl' ? 'selected' : ''}>🇳🇱 Nederlands</option>
+       <option value="fi" ${currentLang === 'fi' ? 'selected' : ''}>🇫🇮 Suomi</option>
+       <option value="el" ${currentLang === 'el' ? 'selected' : ''}>🇬🇷 Ελληνικά</option>
+       <option value="he" ${currentLang === 'he' ? 'selected' : ''}>🇮🇱 עברית</option>
+       <option value="hu" ${currentLang === 'hu' ? 'selected' : ''}>🇭🇺 Magyar</option>
+       <option value="no" ${currentLang === 'no' ? 'selected' : ''}>🇳🇴 Norsk</option>
+       <option value="pl" ${currentLang === 'pl' ? 'selected' : ''}>🇵🇱 Polski</option>
+       <option value="ro" ${currentLang === 'ro' ? 'selected' : ''}>🇷🇴 Română</option>
+       <option value="sv" ${currentLang === 'sv' ? 'selected' : ''}>🇸🇪 Svenska</option>
+       <option value="vi" ${currentLang === 'vi' ? 'selected' : ''}>🇻🇳 Tiếng Việt</option>
+   </select>
+</div>
+
+<h1 class="text-3xl font-bold text-center text-blue-900 mt-6 sm:mt-0">
+   ${translateText('quizTitle', 'Pokémon Type Quiz')} 
+   <button
+       onclick="document.getElementById('aboutModal').classList.remove('hidden')"
+       class="inline-flex items-center justify-center w-6 h-6 text-xs bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full ml-1 align-middle -translate-y-1"
+       aria-label="About"
+   >
+       ?
+   </button>
+</h1>
+</div>
+                       
+<br><br>                                                 
+<div class="flex justify-center items-center gap-2 mb-6 flex-wrap">
+<span class="text-sm text-gray-600 font-bold">Image Mode:</span>
+<button 
+   onclick="setSpriteMode('default')"
+   class="${spriteMode === 'default' ? 'bg-indigo-600' : 'bg-indigo-400'} hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   Art
+</button>
+<button 
+   onclick="setSpriteMode('gb')"
+   class="${spriteMode === 'gb' ? 'bg-gray-600' : 'bg-gray-400'} hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   Gray
+</button> <button 
+   onclick="setSpriteMode('gbc')"
+   class="${spriteMode === 'gbc' ? 'bg-blue-600' : 'bg-blue-400'} hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   Color
+</button>
+<button 
+   onclick="setSpriteMode('gif')"
+   class="${spriteMode === 'gif' ? 'bg-orange-600' : 'bg-orange-400'} hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   2D Motion
+</button>
+<button 
+   onclick="setSpriteMode('3d')"
+   class="${spriteMode === '3d' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   3D Motion
+</button>
+<button 
+   onclick="setSpriteMode('palette')"
+   class="${spriteMode === 'palette' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   Palette
+</button>
+<button 
+   onclick="setSpriteMode('card')"
+   class="${spriteMode === 'card' ? 'bg-green-600' : 'bg-green-400'} hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   Plush
+</button>
+
+</div>
+            <br>                       
+<div class="mb-4 sm:mb-6">
+    <p class="text-center text-sm font-semibold text-gray-700 mb-3">
+        ${translateText('filterByGen', 'Filter by Generation')}:
+    </p>
+    
+    ${hasGenRestrictions(spriteMode) ? `
+    <div class="text-center h-8 mb-3 flex items-center justify-center gap-3 flex-wrap">
+        <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
+            ${spriteMode === 'gif' || spriteMode === '3d' || spriteMode === 'card' 
+                ? 'This mode only supports Gen 1 + Gen 2' 
+                : includeGen2Unofficial 
+                    ? 'Gen 1 + Gen 2' 
+                    : 'Gen 1 Only'}
+        </span>
+        ${supportsGen2Toggle(spriteMode) ? `
+            <button 
+                onclick="toggleGen2Unofficial()"
+                class="${includeGen2Unofficial ? 'bg-blue-600' : 'bg-gray-400'} hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs transition-colors"
+            >
+                ${includeGen2Unofficial ? '✓ ' : ''}Include Gen 2
+            </button>
+        ` : ''}
+    </div>
+` : `
+<div class="h-8 mb-3"></div>
+`}
+    <div class="max-w-5xl mx-auto px-2">
+        
+
+        <div class="hidden sm:block">
+    <div class="relative pb-8">
+        <div class="absolute top-6 left-12 right-12 h-1 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300"></div>
+        
+        <div class="relative flex justify-center items-start gap-6">
+            <div class="flex flex-col items-center flex-shrink-0 relative cursor-pointer" onclick="toggleAllGens()">
+                <button 
+                    class="relative inline-flex items-center justify-center h-12 rounded-full w-12 transition-colors ${selectedGens.length === 9 ? 'bg-green-500' : 'bg-gray-300'} hover:scale-110 shadow-lg z-10 font-bold text-white text-xs pointer-events-none"
+                >
+                ${translateText('all', 'ALL')}
+                </button>
+                ${selectedGens.length === 9 ? `
+                    <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full bg-green-500"></div>
+                ` : ''}
+                <span class="text-xs ${selectedGens.length === 9 ? 'text-black font-bold' : 'text-gray-400'} mt-2 whitespace-nowrap font-semibold">&nbsp;</span>
+            </div>
+            ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(gen => `
+                <div class="flex flex-col items-center flex-shrink-0 relative cursor-pointer" onclick="toggleGen(${gen})" title="${GEN_REGIONS[gen]}">
+                    <button 
+                        class="${selectedGens.includes(gen) ? 'text-black shadow-xl' : 'bg-white text-gray-400 border-2 border-gray-300 shadow-lg'} hover:scale-110 font-bold rounded-full w-12 h-12 transition-all z-10 flex items-center justify-center text-base overflow-hidden relative pointer-events-none"
+                    >
+                        ${selectedGens.includes(gen) ? `
+                            <div class="absolute inset-0 flex flex-col">
+                                <div class="flex-1" style="background-color: ${GEN_COLORS[gen][0]};"></div>
+                                <div class="flex-1" style="background-color: ${GEN_COLORS[gen][1]};"></div>
+                            </div>
+                            <div class="absolute top-1/2 left-0 right-0 h-1.5 bg-white -translate-y-1/2 z-10"></div>
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full z-20"></div>
+                        ` : ''}
+                        <span class="relative z-30">${gen}</span>
+                    </button>
+                    ${selectedGens.includes(gen) ? `
+                        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full bg-green-500"></div>
+                    ` : ''}
+                    <span class="text-xs ${selectedGens.includes(gen) ? 'text-black font-bold' : 'text-gray-400'} mt-2 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+</div>
+<!-- Generation Timeline - Mobile (two rows) -->
+<!-- Mobile version with same restrictions -->
+        <div class="sm:hidden space-y-6">
+            <!-- First row: ALL + Gen 1-4 -->
+            <div class="relative pb-6">
+                <div class="absolute top-5 left-5 right-5 h-1 bg-gradient-to-r from-blue-300 to-purple-300"></div>
+                <div class="relative flex justify-center items-start gap-2">
+                    <div class="flex flex-col items-center flex-shrink-0 relative cursor-pointer" onclick="toggleAllGens()">
+                        <button 
+                            class="relative inline-flex items-center justify-center h-12 rounded-full w-12 transition-colors ${selectedGens.length === getAllowedGens(spriteMode).length ? 'bg-green-500' : 'bg-gray-300'} hover:scale-105 shadow-lg z-10 font-bold text-white text-[12px] pointer-events-none"
+                        >
+                        ${translateText('all', 'ALL')}
+                        </button>
+                        ${selectedGens.length === getAllowedGens(spriteMode).length ? `
+                           
+                        ` : ''}
+                        <span class="text-[12px] ${selectedGens.length === getAllowedGens(spriteMode).length ? 'text-black font-bold' : 'text-gray-400'} mt-1 whitespace-nowrap"></span>
+                    </div>
+                    ${[1, 2, 3, 4].map(gen => {
+                        const allowedGens = getAllowedGens(spriteMode);
+                        const isAllowed = allowedGens.includes(gen);
+                        const isSelected = selectedGens.includes(gen);
+                        
+                        return `
+                        <div class="flex flex-col items-center flex-shrink-0 relative ${isAllowed ? 'cursor-pointer' : 'opacity-30 cursor-not-allowed'}" ${isAllowed ? `onclick="toggleGen(${gen})"` : ''} title="${GEN_REGIONS[gen]}">
+                            <button 
+                                class="${isSelected && isAllowed ? 'bg-blue-600 text-white' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-105 font-bold rounded-full w-12 h-12 transition-all shadow-lg z-10 flex items-center justify-center text-sm pointer-events-none"
+                            >
+                                ${gen}
+                            </button>
+                            ${isSelected && isAllowed ? `
+                                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-10 h-1.5 rounded-full bg-green-500"></div>
+                            ` : ''}
+                            <span class="text-[12px] ${isSelected && isAllowed ? 'text-black font-bold' : 'text-gray-400'} mt-1 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                        </div>
+                    `;
+                    }).join('')}
+                </div>
+            </div>
+            
+            <!-- Second row: Gen 5-9 -->
+            <div class="relative pb-6 ">
+                <div class="absolute top-5 left-5 right-5 h-1 bg-gradient-to-r from-purple-300 to-pink-300"></div>
+                <div class="relative flex justify-center items-start gap-2">
+                    ${[5, 6, 7, 8, 9].map(gen => {
+                        const allowedGens = getAllowedGens(spriteMode);
+                        const isAllowed = allowedGens.includes(gen);
+                        const isSelected = selectedGens.includes(gen);
+                        
+                        return `
+                        <div class="flex flex-col items-center flex-shrink-0 relative ${isAllowed ? 'cursor-pointer' : 'opacity-30 cursor-not-allowed'}" ${isAllowed ? `onclick="toggleGen(${gen})"` : ''} title="${GEN_REGIONS[gen]}">
+                            <button 
+                                class="${isSelected && isAllowed ? 'bg-blue-600 text-white' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-105 font-bold rounded-full w-12 h-12 transition-all shadow-lg z-10 flex items-center justify-center text-sm pointer-events-none"
+                            >
+                                ${gen}
+                            </button>
+                            ${isSelected && isAllowed ? `
+                                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-10 h-1.5 rounded-full bg-green-500"></div>
+                            ` : ''}
+                            <span class="text-[12px] ${isSelected && isAllowed ? 'text-black font-bold' : 'text-gray-400'} mt-1 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                        </div>
+                    `;
+                    }).join('')}
+                </div>
+            </div>
+        </div>
+                            <div class="text-center py-12 sm:min-h-[700px] justify-center">
+    <p class="text-xl text-gray-600 mb-4">
+        ${translateText('selectAtLeastOneGen', 'Please select at least one generation to start the quiz')}
+    </p>
+</div>${aboutModalHTML}
+                                   
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const currentPokemon = quizPokemon[currentIndex];
+        const translatedName = currentPokemon ? translatePokemonName(currentPokemon.id, currentPokemon.name) : translateText('loading', 'Loading...');
+
+            app.innerHTML = `
+            <div class="min-h-screen p-0 sm:px-8 sm:pt-8 sm:pb-0 flex items-center justify-center">
+                    <div class="w-full sm:max-w-4xl mx-auto">
+
+                        <div class="bg-white rounded-lg shadow-xl p-2 sm:p-8"> 
+                       
+                            <!-- FIX APPLIED HERE -->
+                            <div class="mb-4">
+    <div class="flex items-center space-x-2 mb-2">
+        <span class="flex items-center text-gray-700 text-sm font-semibold whitespace-nowrap">
+            <span class="text-lg mr-1" aria-hidden="true">🌐</span> 
+            A / 文 / あ
+        </span>
+
+        <select onchange="setLanguage(this.value)" 
+                class="py-1 px-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm w-28">
+            
+            <option value="" disabled selected>${translateText('selectLanguage', 'Select Language...')}</option>
+            
+            <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇺🇸 English </option>
+            <option value="ja" ${currentLang === 'ja' ? 'selected' : ''}>🇯🇵 日本語 </option>
+            <option value="es" ${currentLang === 'es' ? 'selected' : ''}>🇪🇸 Español </option>
+            <option value="zh-Hans" ${currentLang === 'zh-Hans' ? 'selected' : ''}>🇨🇳 简体中文 </option>
+            <option value="zh-Hant" ${currentLang === 'zh-Hant' ? 'selected' : ''}>🇭🇰 繁體中文 </option>
+            <option value="fr" ${currentLang === 'fr' ? 'selected' : ''}>🇫🇷 Français </option>
+            <option value="de" ${currentLang === 'de' ? 'selected' : ''}>🇩🇪 Deutsch </option>
+            <option value="ko" ${currentLang === 'ko' ? 'selected' : ''}>🇰🇷 한국어 </option>
+            <option value="it" ${currentLang === 'it' ? 'selected' : ''}>🇮🇹 Italiano </option>
+            <option value="pt" ${currentLang === 'pt' ? 'selected' : ''}>🇧🇷 Português</option>
+            <option value="id" ${currentLang === 'id' ? 'selected' : ''}>🇮🇩 Bahasa Indonesia</option>
+            <option value="th" ${currentLang === 'th' ? 'selected' : ''}>🇹🇭 ไทย</option>
+            <option value="ru" ${currentLang === 'ru' ? 'selected' : ''}>🇷🇺 Русский</option>
+            <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
+            <option value="hi" ${currentLang === 'hi' ? 'selected' : ''}>🇮🇳 हिन्दी</option>
+            <option value="bg" ${currentLang === 'bg' ? 'selected' : ''}>🇧🇬 Български</option>
+            <option value="cs" ${currentLang === 'cs' ? 'selected' : ''}>🇨🇿 Čeština</option>
+            <option value="da" ${currentLang === 'da' ? 'selected' : ''}>🇩🇰 Dansk</option>
+            <option value="nl" ${currentLang === 'nl' ? 'selected' : ''}>🇳🇱 Nederlands</option>
+            <option value="fi" ${currentLang === 'fi' ? 'selected' : ''}>🇫🇮 Suomi</option>
+            <option value="el" ${currentLang === 'el' ? 'selected' : ''}>🇬🇷 Ελληνικά</option>
+            <option value="he" ${currentLang === 'he' ? 'selected' : ''}>🇮🇱 עברית</option>
+            <option value="hu" ${currentLang === 'hu' ? 'selected' : ''}>🇭🇺 Magyar</option>
+            <option value="no" ${currentLang === 'no' ? 'selected' : ''}>🇳🇴 Norsk</option>
+            <option value="pl" ${currentLang === 'pl' ? 'selected' : ''}>🇵🇱 Polski</option>
+            <option value="ro" ${currentLang === 'ro' ? 'selected' : ''}>🇷🇴 Română</option>
+            <option value="sv" ${currentLang === 'sv' ? 'selected' : ''}>🇸🇪 Svenska</option>
+            <option value="vi" ${currentLang === 'vi' ? 'selected' : ''}>🇻🇳 Tiếng Việt</option>
+        </select>
+    </div>
+
+    <h1 class="text-3xl font-bold text-center text-blue-900 mt-6 sm:mt-0">
+        ${translateText('quizTitle', 'Pokémon Type Quiz')} 
+        <button
+            onclick="document.getElementById('aboutModal').classList.remove('hidden')"
+            class="inline-flex items-center justify-center w-6 h-6 text-xs bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full ml-1 align-middle -translate-y-1"
+            aria-label="About"
+        >
+            ?
+        </button>
+    </h1>
+</div>
+                            
+     <br><br>                                                 
+<div class="flex justify-center items-center gap-2 mb-6 flex-wrap">
+    <span class="text-sm text-gray-600 font-bold">Image Mode:</span>
+    <button 
+        onclick="setSpriteMode('default')"
+        class="${spriteMode === 'default' ? 'bg-indigo-600' : 'bg-indigo-400'} hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+    >
+        Art
+    </button>
+    <button 
+        onclick="setSpriteMode('gb')"
+        class="${spriteMode === 'gb' ? 'bg-gray-600' : 'bg-gray-400'} hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+    >
+        Gray
+    </button> <button 
+        onclick="setSpriteMode('gbc')"
+        class="${spriteMode === 'gbc' ? 'bg-blue-600' : 'bg-blue-400'} hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+    >
+        Color
+    </button>
+    <button 
+        onclick="setSpriteMode('gif')"
+        class="${spriteMode === 'gif' ? 'bg-orange-600' : 'bg-orange-400'} hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+    >
+        2D Motion
+    </button>
+    <button 
+        onclick="setSpriteMode('3d')"
+        class="${spriteMode === '3d' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+    >
+        3D Motion
+    </button>
+    <button 
+   onclick="setSpriteMode('palette')"
+   class="${spriteMode === 'palette' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   Palette
+</button>
+    <button 
+        onclick="setSpriteMode('card')"
+        class="${spriteMode === 'card' ? 'bg-green-600' : 'bg-green-400'} hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+    >
+        Plush
+    </button>
+   
+</div>
+               <br>            
+<div class="mb-4 sm:mb-6">
+    <p class="text-center text-sm font-semibold text-gray-700 mb-3">
+        ${translateText('filterByGen', 'Filter by Generation')}:
+    </p>
+    
+    ${hasGenRestrictions(spriteMode) ? `
+    <div class="text-center h-8 mb-3 flex items-center justify-center gap-3 flex-wrap">
+        <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
+            ${spriteMode === 'gif' || spriteMode === '3d' || spriteMode === 'card' 
+                ? 'This mode only supports Gen 1 + Gen 2' 
+                : includeGen2Unofficial 
+                    ? 'Gen 1 + Gen 2' 
+                    : 'Gen 1 Only'}
+        </span>
+        ${supportsGen2Toggle(spriteMode) ? `
+            <button 
+                onclick="toggleGen2Unofficial()"
+                class="${includeGen2Unofficial ? 'bg-blue-600' : 'bg-gray-400'} hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs transition-colors"
+            >
+                ${includeGen2Unofficial ? '✓ ' : ''}Include Gen 2
+            </button>
+        ` : ''}
+    </div>
+` : `
+<div class="h-8 mb-3"></div>
+`}
+    
+    <div class="max-w-5xl mx-auto px-2">
+        
+        <div class="hidden sm:block">
+    <div class="relative pb-8">
+        <div class="absolute top-6 left-12 right-12 h-1 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300"></div>
+        
+        <div class="relative flex justify-center items-start gap-6">
+            <div class="flex flex-col items-center flex-shrink-0 relative cursor-pointer" onclick="toggleAllGens()">
+                <button 
+                    class="relative inline-flex items-center justify-center h-12 rounded-full w-12 transition-colors ${selectedGens.length === getAllowedGens(spriteMode).length ? 'bg-green-500' : 'bg-gray-300'} hover:scale-110 shadow-lg z-10 font-bold text-white text-xs pointer-events-none"
+                >
+                ${translateText('all', 'ALL')}
+                </button>
+                ${selectedGens.length === getAllowedGens(spriteMode).length ? `
+                    <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full bg-green-500"></div>
+                ` : ''}
+                <span class="text-xs ${selectedGens.length === getAllowedGens(spriteMode).length ? 'text-black font-bold' : 'text-gray-400'} mt-2 whitespace-nowrap">&nbsp;</span>
+            </div>
+            ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(gen => {
+                const allowedGens = getAllowedGens(spriteMode);
+                const isAllowed = allowedGens.includes(gen);
+                const isSelected = selectedGens.includes(gen);
+                
+                return `
+                <div class="flex flex-col items-center flex-shrink-0 relative ${isAllowed ? 'cursor-pointer' : 'opacity-30 cursor-not-allowed'}" ${isAllowed ? `onclick="toggleGen(${gen})"` : ''} title="${GEN_REGIONS[gen]}${!isAllowed ? ' (Not natively supported)' : ''}">
+                    <button 
+                        class="${isSelected && isAllowed ? 'text-black shadow-xl' : 'bg-white text-gray-400 border-2 border-gray-300 shadow-lg'} hover:scale-110 font-bold rounded-full w-12 h-12 transition-all z-10 flex items-center justify-center text-base overflow-hidden relative pointer-events-none"
+                    >
+                        ${isSelected && isAllowed ? `
+                            <div class="absolute inset-0 flex flex-col">
+                                <div class="flex-1" style="background-color: ${GEN_COLORS[gen][0]};"></div>
+                                <div class="flex-1" style="background-color: ${GEN_COLORS[gen][1]};"></div>
+                            </div>
+                            <div class="absolute top-1/2 left-0 right-0 h-1.5 bg-white -translate-y-1/2 z-10"></div>
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full z-20"></div>
+                        ` : ''}
+                        <span class="relative z-30">${gen}</span>
+                    </button>
+                    ${isSelected && isAllowed ? `
+                        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full bg-green-500"></div>
+                    ` : ''}
+                    <span class="text-xs ${isSelected && isAllowed ? 'text-black font-bold' : 'text-gray-400'} mt-2 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                </div>
+            `;
+            }).join('')}
+        </div>
+    </div>
+</div>
+
+        <!-- Mobile version with same restrictions -->
+        <div class="sm:hidden space-y-6">
+            <!-- First row: ALL + Gen 1-4 -->
+            <div class="relative pb-6">
+                <div class="absolute top-5 left-5 right-5 h-1 bg-gradient-to-r from-blue-300 to-purple-300"></div>
+                <div class="relative flex justify-center items-start gap-2">
+                    <div class="flex flex-col items-center flex-shrink-0 relative cursor-pointer" onclick="toggleAllGens()">
+                        <button 
+                            class="relative inline-flex items-center justify-center h-12 rounded-full w-12 transition-colors ${selectedGens.length === getAllowedGens(spriteMode).length ? 'bg-green-500' : 'bg-gray-300'} hover:scale-105 shadow-lg z-10 font-bold text-white text-[12px] pointer-events-none"
+                        >
+                        ${translateText('all', 'ALL')}
+                        </button>
+                        ${selectedGens.length === getAllowedGens(spriteMode).length ? `
+                           
+                        ` : ''}
+                        <span class="text-[12px] ${selectedGens.length === getAllowedGens(spriteMode).length ? 'text-black font-bold' : 'text-gray-400'} mt-1 whitespace-nowrap"></span>
+                    </div>
+                    ${[1, 2, 3, 4].map(gen => {
+                        const allowedGens = getAllowedGens(spriteMode);
+                        const isAllowed = allowedGens.includes(gen);
+                        const isSelected = selectedGens.includes(gen);
+                        
+                        return `
+                        <div class="flex flex-col items-center flex-shrink-0 relative ${isAllowed ? 'cursor-pointer' : 'opacity-30 cursor-not-allowed'}" ${isAllowed ? `onclick="toggleGen(${gen})"` : ''} title="${GEN_REGIONS[gen]}">
+                            <button 
+                                class="${isSelected && isAllowed ? 'bg-blue-600 text-white' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-105 font-bold rounded-full w-12 h-12 transition-all shadow-lg z-10 flex items-center justify-center text-sm pointer-events-none"
+                            >
+                                ${gen}
+                            </button>
+                            ${isSelected && isAllowed ? `
+                                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-10 h-1.5 rounded-full bg-green-500"></div>
+                            ` : ''}
+                            <span class="text-[12px] ${isSelected && isAllowed ? 'text-black font-bold' : 'text-gray-400'} mt-1 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                        </div>
+                    `;
+                    }).join('')}
+                </div>
+            </div>
+            
+            <!-- Second row: Gen 5-9 -->
+            <div class="relative pb-6 ">
+                <div class="absolute top-5 left-5 right-5 h-1 bg-gradient-to-r from-purple-300 to-pink-300"></div>
+                <div class="relative flex justify-center items-start gap-2">
+                    ${[5, 6, 7, 8, 9].map(gen => {
+                        const allowedGens = getAllowedGens(spriteMode);
+                        const isAllowed = allowedGens.includes(gen);
+                        const isSelected = selectedGens.includes(gen);
+                        
+                        return `
+                        <div class="flex flex-col items-center flex-shrink-0 relative ${isAllowed ? 'cursor-pointer' : 'opacity-30 cursor-not-allowed'}" ${isAllowed ? `onclick="toggleGen(${gen})"` : ''} title="${GEN_REGIONS[gen]}">
+                            <button 
+                                class="${isSelected && isAllowed ? 'bg-blue-600 text-white' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-105 font-bold rounded-full w-12 h-12 transition-all shadow-lg z-10 flex items-center justify-center text-sm pointer-events-none"
+                            >
+                                ${gen}
+                            </button>
+                            ${isSelected && isAllowed ? `
+                                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-10 h-1.5 rounded-full bg-green-500"></div>
+                            ` : ''}
+                            <span class="text-[12px] ${isSelected && isAllowed ? 'text-black font-bold' : 'text-gray-400'} mt-1 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                        </div>
+                    `;
+                    }).join('')}
+                </div>
+            </div>
+        </div>
+        
+                            <br>                            <p class="text-left text-gray-600 mb-3 sm:mb-6 ml-8 mr-6 lg:ml-28 lg:mr-28 text-sm sm:text-base">
+    ${translateText('quizInstructions', 'Select 1 or 2 categories for each Pokémon. Earn 1 point per correct category; picking twice can raise or lower your score.')}
+<br><br></p>${aboutModalHTML}
+<div class="sm:min-h-[500px]">
+<div class="text-center mb-3 sm:mb-4 text-xs sm:text-sm text-gray-500">
+    # ${currentIndex + 1} / ${quizPokemon.length}
+</div>
+
+                            <div class="flex flex-col items-center mb-4 sm:mb-8">
+                               
+${spriteMode === 'default'
+    ? `<img 
+        src="${currentPokemon.sprite}" 
+        onerror="this.onerror=null; this.src='${currentPokemon.spriteBackup}';"
+        alt="${currentPokemon.name}"
+        class="w-48 h-48 sm:w-58 sm:h-58 object-contain"
+    />`
+    : (spriteMode === '3d' || spriteMode === 'gif')
+    ? `<div class="relative inline-block p-5 -m-8 sm:p-12 sm:-m-12 cursor-pointer" onclick="const video = this.querySelector('video'); video.currentTime = 0; video.play(); const btn = this.querySelector('div');btn.style.transform = 'scale(0.95)'; btn.style.opacity = '0.7'; setTimeout(() => { btn.style.transform = 'scale(1)'; btn.style.opacity = '1'; }, 200);">
+        <video 
+            src="${currentPokemon.sprite}" 
+            muted
+            playsinline
+            onended="this.pause(); this.currentTime = 0;"
+            class="w-48 h-48 sm:w-58 sm:h-58 max-w-full pointer-events-none"
+            style="${spriteMode === 'gif' ? 'image-rendering: pixelated;' : ''}${spriteMode === '3d' ? ' clip-path: inset(0 0 1px 0);' : ''}"
+        ></video>
+        <div class="absolute -bottom-0 -left-0 sm:bottom-0 sm:right-3 bg-black bg-opacity-40 rounded-full w-10 h-10 flex items-center justify-center pointer-events-none transition-all duration-150">
+    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"/>
+    </svg>
+
+
+    
+</div>
+    
+    </div>`
+    : spriteMode === 'card'
+    ? `<img 
+        src="${currentPokemon.sprite}" 
+        alt="${currentPokemon.name}"
+        class="w-48 h-48 sm:w-58 sm:h-58 object-contain"
+    />`
+    : spriteMode === 'palette'
+    ? `<div class="w-48 h-48 sm:w-58 sm:h-58 border-8 border-gray-300 flex items-center justify-center bg-gray-400 cursor-pointer" style="box-sizing: border-box;" onclick="showPaletteModal('${currentPokemon.sprite}', '${currentPokemon.name}')">
+        <img 
+            src="${currentPokemon.sprite}" 
+            alt="${currentPokemon.name}"
+            class="h-full pointer-events-none"
+        />
+    </div>
+    
+    <!-- Palette Modal -->
+    <div id="paletteModal" class="hidden fixed inset-0 bg-opacity-0 z-50 flex justify-center pt-4" onclick="document.getElementById('paletteModal').classList.add('hidden')">
+        <div class="flex flex-col items-center gap-2">
+            <div id="paletteModalContent" class="flex items-center justify-center bg-gray-500" style="padding: 2rem;" onclick="event.stopPropagation()">
+                <img id="paletteModalImg" src="" alt="" style="height: 55vh; width: auto; image-rendering: pixelated;">
+            </div>
+            <div class="flex gap-2 text-xs" onclick="event.stopPropagation()">
+                <button onclick="event.stopPropagation(); setPaletteBg('light')" class="px-3 py-1 bg-white bg-opacity-100 hover:bg-opacity-100 rounded font-semibold">☼</button>
+                <button onclick="event.stopPropagation(); setPaletteBg('dark')" class="px-3 py-1 bg-gray-900 bg-opacity-80 hover:bg-opacity-100 text-white rounded font-semibold">☾</button>
+                <button onclick="event.stopPropagation(); document.getElementById('paletteModal').classList.add('hidden')" class="px-3 py-1 bg-red-600 bg-opacity-80 hover:bg-opacity-100 text-white rounded font-semibold">✕</button>
+            </div>
+        </div>
+    </div>`
+    : spriteMode === 'moves'
+    ? `<img 
+        src="${currentPokemon.sprite}" 
+        alt="${currentPokemon.name}"
+        class="w-48 h-48 sm:w-58 sm:h-58 object-contain"
+    />`
+    : `<img 
+        src="${currentPokemon.sprite}" 
+        alt="${currentPokemon.name}"
+        class="w-32 h-32 sm:w-48 sm:h-48 pixelated"
+    />`
+}
+                                <div class="relative w-full flex justify-center mb-4">
+  <!-- Pokémon name stays centered -->
+  <h2 class="absolute left-1/2 -translate-x-1/2 text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-4 -mb-2 sm:mb-0">
+    ${translatePokemonName(currentPokemon.id, currentPokemon.name)}
+  </h2>
+
+  <!-- Selected types positioned to the right -->
+  <span id="selected-types-display" class="absolute left-1/2 translate-x-[60px] translate-y-[5px] text-sm sm:text-base font-semibold text-gray-600 mt-1 sm:mt-4 whitespace-nowrap" style="display: none;">
+  </span>
+</div>
+<div class="h-4"></div>
+
+                            </div>
+                            <!-- Mobile grid spacer -->
+
+
+                            <!-- Mobile grid -->
+                            <div class="bg-gray-300 py-2 mb-6 -mt-2 sm:hidden rounded-2xl ">
+  <div id="mobile-type-grid" class="grid grid-cols-3 gap-x-2 gap-y-3 justify-items-center px-2 max-w-sm mx-auto">
+    </div>
+</div>
+
+
+<!-- Desktop grid -->
+<div class="hidden sm:block bg-gray-300  sm:p-4 sm:rounded-xl sm:mb-6 sm:mt-6">
+  <div id="desktop-type-grid" class="sm:grid sm:grid-cols-3 sm:gap-x-1 sm:gap-y-2 sm:justify-items-center sm:mx-auto sm:max-w-md">
+    </div>
+</div>
+
+
+
+
+
+
+<div class="flex items-center justify-center">
+    <button
+      onclick="submitAnswer()"
+      ${selectedTypes.length === 0 ? 'disabled' : ''}
+      class="font-bold py-3 sm:py-3 px-32 sm:px-34 rounded-lg text-white text-base sm:text-lg ${
+        selectedTypes.length === 0
+          ? 'bg-gray-300 cursor-not-allowed'
+          : 'bg-blue-500 hover:bg-blue-600'
+      }"
+    >
+    ${currentIndex < quizPokemon.length - 1 ? translateText('next', 'Next') : translateText('submit', 'Submit')}
+    </button>
+  </div></div>
+
+                    </div> 
+                    </div>
+                </div>
+            `;
+            renderTypeButtons(); 
+        }
+
+        // Start the quiz when page loads
+        window.onload = function() {
+            try {
+                initQuiz();
+            } catch (error) {
+                console.error('Error on load:', error);
+                document.getElementById('app').innerHTML = `
+                    <div class="min-h-screen p-8 flex items-center justify-center">
+                        <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+                            <p class="text-xl text-red-600 mb-4">Error loading quiz</p>
+                            <p class="text-gray-600">${error.message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+    </script><p id="copyright">Pokémon © 1995 Nintendo. Used for commentary and informational purposes only.</p>
+</body>
+</html>

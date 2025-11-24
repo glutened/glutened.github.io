@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>David Taylor's Resume Chatbott</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        .chat-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .typing-dot {
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container bg-gradient-to-br from-indigo-50 to-purple-50">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200 px-4 py-4 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-gray-900">David Taylor's Chatbot Resume</h1>
+                    <p class="text-xs md:text-sm text-gray-500">Ask me anything about David's experience and skills</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="messagesContainer" class="messages-container">
+            <div id="messagesList" class="space-y-4 max-w-4xl mx-auto"></div>
+        </div>
+
+        <!-- Quick Prompts -->
+        <div class="px-4 py-2 bg-white border-t border-gray-200">
+            <div id="quickPrompts" class="flex flex-wrap gap-2 justify-center"></div>
+        </div>
+
+        <!-- Input -->
+        <div class="bg-white border-t border-gray-200 px-4 py-4">
+            <div class="flex gap-2 max-w-4xl mx-auto">
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Ask about David's experience, skills, achievements..."
+                    class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm md:text-base"
+                />
+                <button
+                    id="sendButton"
+                    class="px-4 md:px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const resumeFacts = [
+            { id: 1, action: "Compliance & Governance", context: "Deloitte (GDPR Workflows)", outcome: "Reduced Fines by $500K+", result: "Labeled personal data deletion workflows across global media websites, ensuring GDPR compliance and reducing potential fines by $500K–$1M+.", tags: ["profit", "fortune100", "consulting"], company: "Deloitte" },
+            { id: 2, action: "Cross-functional Collaboration", context: "Deloitte (OneTrust Automation)", outcome: "Saved Hundreds of Staff Hours", result: "Project-managed engineers and legal teams to implement automated OneTrust workflows, replacing manual email requests and saving hundreds of staff hours.", tags: ["time-savings", "managing-others", "fortune100", "consulting"], company: "Deloitte" },
+            { id: 3, action: "Stakeholder Communication", context: "Deloitte (Regulator Transparency)", outcome: "Enhanced Clarity/Transparency", result: "Edited privacy program documentation and client presentations, enhancing clarity and supporting regulator-facing transparency.", tags: ["fortune100", "consulting", "c-suite"], company: "Deloitte" },
+            { id: 11, action: "Management Consulting", context: "Deloitte (C-Suite Fortune 100)", outcome: "Advised Fortune 100 Executives", result: "Consulted with C-suite executives at Fortune 100 media companies on data privacy strategies, translating complex regulatory requirements into actionable business recommendations.", tags: ["consulting", "c-suite", "fortune100"], company: "Deloitte" },
+            { id: 12, action: "Global Team Coordination", context: "Deloitte (Multi-Timezone Projects)", outcome: "Seamless Cross-Continent Delivery", result: "Coordinated project deliverables across US, EU, and APAC time zones, ensuring 24/7 workflow continuity and meeting aggressive client deadlines for Fortune 100 media organizations.", tags: ["time-zone", "fortune100", "consulting"], company: "Deloitte" },
+            { id: 13, action: "Executive Presentation Design", context: "Deloitte (Client Deliverables)", outcome: "C-Suite-Ready Decks", result: "Designed polished PowerPoint presentations and visual reports for C-suite stakeholders, distilling complex data privacy concepts into executive-friendly narratives.", tags: ["c-suite", "consulting", "fortune100"], company: "Deloitte" },
+            { id: 4, action: "Cross-functional Collaboration", context: "Disney (Global Safety Comms)", outcome: "Reached 200,000+ Employees", result: "Developed multilingual safety, security, and crisis materials—including posters, blogs, emails, and graphics—for 200,000+ employees globally.", tags: ["fortune100", "time-zone"], company: "Disney" },
+            { id: 14, action: "Stakeholder Communication", context: "Disney (Global Internal Comms)", outcome: "Unified Crisis Messaging", result: "Crafted crisis communication materials for Disney's Global Security team, ensuring consistent messaging across 200,000+ employees in multiple languages and time zones.", tags: ["fortune100", "time-zone"], company: "Disney" },
+            { id: 5, action: "Data Structuring & Analysis", context: "Pokemon Semantic Data Tools (AI)", outcome: "Built 1,025 Pokémon Framework", result: "Built a semantic ontology and linked data framework for 1,025 Pokémon, using custom AI programs to query weighted attributes for filtering and analysis.", tags: ["technical"], company: "Personal Project" },
+            { id: 6, action: "Data Structuring & Analysis", context: "UW iSchool (Ontology Design)", outcome: "Structured Recommendations", result: "Developed a café menu ontology in PoolParty using SKOS for structured recommendations and improved discoverability.", tags: ["technical"], company: "University of Washington" },
+            { id: 7, action: "Process & Efficiency Optimization", context: "Microsoft (Power BI Adoption)", outcome: "Cut Report Creation Time 15–20%", result: "Conducted UX research and affinity mapping on Power BI adoption, generating insights that cut report creation time 15–20%.", tags: ["time-savings", "fortune100"], company: "Microsoft" },
+            { id: 8, action: "Stakeholder Communication", context: "Rutgers & WIAD (Guest Lecture)", outcome: "Empathy-Driven Design Talk", result: "Presented 'Designing for My Mom,' a talk on empathy-driven human-centered design using personal usability testing with non-technical users.", tags: [], company: "Speaking Engagement" },
+            { id: 9, action: "Education (M.S.)", context: "University of Washington (M.S.)", outcome: "M.S. Degree Completion (2022)", result: "Completed Master of Science in Information Management (2022).", tags: [], company: "University of Washington"},
+            { id: 10, action: "Education (B.A.)", context: "Brigham Young University (B.A.)", outcome: "B.A. Degree Completion (2016)", result: "Completed Bachelor of Arts in Advertising (2016).", tags: [], company: "Brigham Young University"},
+        ];
+
+        const quickPrompts = [
+            "Fortune 100 experience",
+            "Cost savings delivered",
+            "Management consulting",
+            "Technical skills",
+            "Multi-timezone work",
+            "C-suite experience"
+        ];
+
+        let messages = [];
+
+        function generateResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            
+            if (lowerMessage.includes('fortune 100') || lowerMessage.includes('fortune100')) {
+                const fortune100Facts = resumeFacts.filter(f => f.tags.includes('fortune100'));
+                const companies = [...new Set(fortune100Facts.map(f => f.company))].filter(c => !c.includes('University'));
+                return `David has extensive Fortune 100 experience with **${companies.join(', ')}**:\n\n${fortune100Facts.slice(0, 3).map(f => `• **${f.company}**: ${f.result}`).join('\n\n')}`;
+            }
+            
+            if (lowerMessage.includes('cost') || lowerMessage.includes('profit') || lowerMessage.includes('savings') || lowerMessage.includes('money')) {
+                const profitFacts = resumeFacts.filter(f => f.tags.includes('profit') || f.tags.includes('time-savings'));
+                return `David has delivered significant cost savings:\n\n${profitFacts.map(f => `• **${f.outcome}** at ${f.company}: ${f.result}`).join('\n\n')}`;
+            }
+            
+            if (lowerMessage.includes('consulting') || lowerMessage.includes('deloitte')) {
+                const consultingFacts = resumeFacts.filter(f => f.tags.includes('consulting'));
+                return `David's management consulting experience includes:\n\n${consultingFacts.map(f => `• **${f.action}**: ${f.result}`).join('\n\n')}`;
+            }
+            
+            if (lowerMessage.includes('c-suite') || lowerMessage.includes('executive')) {
+                const csuiteFacts = resumeFacts.filter(f => f.tags.includes('c-suite'));
+                return `David has worked directly with C-suite executives:\n\n${csuiteFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+            }
+            
+            if (lowerMessage.includes('technical') || lowerMessage.includes('tech') || lowerMessage.includes('data')) {
+                const techFacts = resumeFacts.filter(f => f.tags.includes('technical'));
+                return `David's technical skills include:\n\n${techFacts.map(f => `• **${f.action}**: ${f.result}`).join('\n\n')}`;
+            }
+            
+            if (lowerMessage.includes('disney')) {
+                const disneyFacts = resumeFacts.filter(f => f.company === 'Disney');
+                return `At Disney, David:\n\n${disneyFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+            }
+            
+            if (lowerMessage.includes('microsoft')) {
+                const msftFacts = resumeFacts.filter(f => f.company === 'Microsoft');
+                return `At Microsoft, David:\n\n${msftFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+            }
+            
+            if (lowerMessage.includes('education') || lowerMessage.includes('degree') || lowerMessage.includes('school')) {
+                return `**Education:**\n\n• Master of Science in Information Management from University of Washington (2022)\n• Bachelor of Arts in Advertising from Brigham Young University (2016)`;
+            }
+            
+            if (lowerMessage.includes('timezone') || lowerMessage.includes('global') || lowerMessage.includes('international')) {
+                const tzFacts = resumeFacts.filter(f => f.tags.includes('time-zone'));
+                return `David has experience with multi-timezone work:\n\n${tzFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+            }
+            
+            if (lowerMessage.includes('skill') || lowerMessage.includes('abilities')) {
+                const skills = [...new Set(resumeFacts.filter(f => !f.action.startsWith('Education')).map(f => f.action))];
+                return `David's key transferable skills include:\n\n${skills.map(s => `• ${s}`).join('\n')}`;
+            }
+            
+            if (lowerMessage.includes('company') || lowerMessage.includes('companies') || lowerMessage.includes('where')) {
+                const companies = [...new Set(resumeFacts.map(f => f.company).filter(c => !c.includes('University') && c !== 'Speaking Engagement' && c !== 'Personal Project'))];
+                return `David has worked with: **${companies.join(', ')}**\n\nHe also completed projects at University of Washington, delivered speaking engagements, and built personal technical projects.`;
+            }
+
+            if (lowerMessage.includes('manage') || lowerMessage.includes('leadership')) {
+                const manageFacts = resumeFacts.filter(f => f.tags.includes('managing-others'));
+                return `David has management and leadership experience:\n\n${manageFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+            }
+            
+            const randomFact = resumeFacts[Math.floor(Math.random() * resumeFacts.length)];
+            return `Here's an interesting achievement:\n\n**${randomFact.action}** at ${randomFact.company}: ${randomFact.result}\n\nWhat else would you like to know?`;
+        }
+
+        function formatContent(content) {
+            return content.split('**').map((part, i) => 
+                i % 2 === 0 ? part : `<strong>${part}</strong>`
+            ).join('');
+        }
+
+        function addMessage(role, content) {
+            messages.push({ role, content });
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const messagesList = document.getElementById('messagesList');
+            messagesList.innerHTML = messages.map(msg => {
+                if (msg.role === 'user') {
+                    return `
+                        <div class="flex gap-3 justify-end">
+                            <div class="max-w-2xl rounded-2xl px-4 py-3 bg-indigo-600 text-white">
+                                <div class="whitespace-pre-wrap text-sm leading-relaxed">${msg.content}</div>
+                            </div>
+                            <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex gap-3 justify-start">
+                            <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <div class="max-w-2xl rounded-2xl px-4 py-3 bg-white text-gray-800 shadow-sm border border-gray-100">
+                                <div class="whitespace-pre-wrap text-sm leading-relaxed">${formatContent(msg.content)}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTyping() {
+            const messagesList = document.getElementById('messagesList');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'flex gap-3 justify-start';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div class="bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesList.appendChild(typingDiv);
+            
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        async function handleSend() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            input.value = '';
+            addMessage('user', message);
+            
+            showTyping();
+            await new Promise(resolve => setTimeout(resolve, 800));
+            hideTyping();
+            
+            const response = generateResponse(message);
+            addMessage('assistant', response);
+        }
+
+        function renderQuickPrompts() {
+            const container = document.getElementById('quickPrompts');
+            container.innerHTML = quickPrompts.map(prompt => `
+                <button 
+                    onclick="document.getElementById('messageInput').value = '${prompt}'; document.getElementById('messageInput').focus();"
+                    class="px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-colors"
+                >
+                    ${prompt}
+                </button>
+            `).join('');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            addMessage('assistant', "Hi! I'm David Taylor's AI assistant. Ask me anything about David's experience, skills, or achievements. Try questions like:\n\n• What Fortune 100 companies has David worked with?\n• Tell me about his consulting experience\n• What cost savings has he delivered?\n• Show me his technical skills");
+            
+            renderQuickPrompts();
+            
+            const input = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            
+            sendButton.addEventListener('click', handleSend);
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleSend();
+            });
+        });
+    </script>
+</body>
+</html>

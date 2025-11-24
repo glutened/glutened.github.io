@@ -1,0 +1,2028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pocket Monster Taxonomy 2.0 - Text Only</title>
+  <style>
+    /* Minimalist, text-only CSS */
+    * {
+      box-sizing: border-box;
+      font-family: monospace;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+    body {
+      padding: 2px;
+      line-height: 1.2;
+      padding-bottom: 20px;
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+    .hidden {
+      display: none;
+    }
+    
+    /* Layout: Everything is stacked and compact */
+    h1, h3, .filter-group, .active-filters, .controls {
+      display: block;
+      margin: 2px 0;
+    }
+    .filter-options, .pokemon-container {
+      display: block;
+    }
+
+    /* Filters and Buttons */
+    button, .filter-chip {
+      display: inline-block;
+      padding: 0 1px;
+      margin: 0 1px 2px 0;
+      border: 1px solid #000;
+      background: white;
+      color: black;
+      cursor: pointer;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .selected {
+      font-weight: bold;
+      color: red;
+      border-color: red;
+    }
+    .active-filter-chip {
+        display: inline;
+        margin-right: 2px;
+        font-size: 10px;
+        color: red;
+        cursor: pointer;
+    }
+    
+    .active-filter-chip .remove {
+        color: red;
+    }
+    
+    .filter-separator {
+        color: black;
+    }
+    
+    .disabled-sort {
+        color: #999;
+    }
+
+    /* Pokemon Card */
+    .pokemon-card {
+      display: block;
+      border-top: 1px solid #000;
+      padding-top: 2px;
+      margin-bottom: 2px;
+    }
+    .pokemon-card h3 {
+      display: inline;
+    }
+    .pokemon-card .card-details, .pokemon-abilities, .pokemon-moves {
+      display: block;
+    }
+    .pokemon-stats {
+        display: block;
+    }
+    .pokemon-stats.hidden {
+      display: none;
+    }
+    .pokemon-card .clickable {
+        text-decoration: underline;
+    }
+    .quick-clear {
+      color: red;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 2px;
+    }
+    img, .attribute-icon {
+        /* Keep text icon hidden logic for the attribute icons */
+        display: none !important;
+    }
+    
+    .pokemon-sprite {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+    
+    /* NEW SVG ICON STYLES */
+    .icon-container {
+        display: inline-block;
+        margin-right: 4px;
+        vertical-align: middle;
+    }
+    .icon-container svg { 
+        width: 14px; 
+        height: 14px; 
+        vertical-align: middle; 
+        fill: #444; /* Default fill color */
+        cursor: pointer; 
+        transition: fill 0.2s; 
+    }
+    .icon-container svg.selected { 
+        fill: red; 
+    }
+    .svg-icon-set {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    /* Grid View Styles */
+    .grid-view .pokemon-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 5px;
+        padding: 5px;
+    }
+    
+    .grid-view .pokemon-card {
+        border: 1px solid #000;
+        padding: 2px;
+        text-align: center;
+        cursor: pointer;
+        background: white;
+        border-top: 1px solid #000;
+    }
+    
+    .grid-view .pokemon-card img {
+        display: block !important;
+        width: 100%;
+        height: auto;
+        max-width: 56px;
+        margin: 0 auto;
+    }
+    
+    .grid-view .pokemon-card h3,
+    .grid-view .pokemon-card .card-details,
+    .grid-view .pokemon-card .pokemon-abilities,
+    .grid-view .pokemon-card .pokemon-stats,
+    .grid-view .pokemon-card .pokemon-moves {
+        display: none;
+    }
+    
+    .grid-view .pokemon-card.expanded {
+        grid-column: 1 / -1;
+        text-align: left;
+        padding: 10px;
+    }
+    .grid-view .pokemon-card.expanded h3,
+.grid-view .pokemon-card.expanded .card-details,
+.grid-view .pokemon-card.expanded .pokemon-abilities {
+    display: block;
+}
+
+.grid-view .pokemon-card.expanded .pokemon-moves {
+    display: block;
+}
+
+.grid-view .pokemon-card.expanded .pokemon-stats.hidden {
+    display: none;
+}
+    
+    .grid-view .pokemon-card.expanded .pokemon-stats:not(.hidden) {
+        display: block;
+    }
+    
+    .grid-view .pokemon-card.expanded img {
+        float: left;
+        margin-right: 10px;
+        max-width: 96px;
+    }
+    
+    .clear-button, .toggle-stats {
+        margin-left: 0;
+    }
+
+    /* Collapsible Filter Bar */
+    #mainFilterContainer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+    #mainFilterContainer.expanded {
+        max-height: 2000px;
+    }
+
+    /* Collapsible filter sections */
+    .filter-section-header {
+        cursor: pointer;
+        background: #eee;
+        padding: 2px;
+        margin: 2px 0;
+        font-size: 11px;
+        font-weight: bold;
+    }
+    
+    .filter-group {
+        cursor: pointer;
+        padding: 4px 2px;
+        margin: 0;
+    }
+   
+    
+    .filter-options.expanded {
+        max-height: 300px;
+    }
+
+    /* Search Bar Suggestions */
+    #searchBar {
+        font-size: 16px !important;
+        padding: 5px !important;
+    }
+    
+  
+ 
+
+    
+    .pokemon-container {
+        padding-bottom: 20px;
+        overflow-x: hidden;
+        word-wrap: break-word;
+    }
+    
+    .pokemon-moves {
+        overflow-x: hidden;
+        word-wrap: break-word;
+        max-width: 100%;
+    }
+    
+    .selected-result {
+        color: red;
+    }
+    
+    /* Settings Modal */
+    #settingsIcon {
+        position: fixed;
+        top: 5px;
+        right: 5px;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 200;
+        background: white;
+        border: 1px solid #000;
+        padding: 5px 10px;
+        border-radius: 4px;
+        user-select: none;
+    }
+    
+    #settingsModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.8);
+        z-index: 300;
+        overflow-y: auto;
+    }
+    
+    #settingsContent {
+        background: white;
+        margin: 20px auto;
+        padding: 20px;
+        max-width: 500px;
+        border: 2px solid #000;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+   
+  </style>
+</head>
+<body>
+    
+    <svg style="display:none">
+      <symbol id="type-bug" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6v3h12V8c0-3.3-2.7-6-6-6zm-6 13c-2.2 0-4 1.8-4 4s1.8 4 4 4h12c2.2 0 4-1.8 4-4s-1.8-4-4-4H6z"/></symbol>
+      <symbol id="type-dragon" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></symbol>
+      <symbol id="type-fairy" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 10c-1.1 0-2 0.9-2 2v8l2 2 2-2v-8c0-1.1-0.9-2-2-2z"/></symbol>
+      <symbol id="type-fire" viewBox="0 0 24 24"><path d="M12 2c-1.1 0-2 0.9-2 2v18l2 2 2-2V4c0-1.1-0.9-2-2-2z"/></symbol>
+      <symbol id="type-ghost" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6v12h12V8c0-3.3-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6z"/></symbol>
+      <symbol id="type-ground" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/></symbol>
+      <symbol id="type-normal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+      <symbol id="type-psychic" viewBox="0 0 24 24"><path d="M12 2c-1.1 0-2 0.9-2 2v8h4V4c0-1.1-0.9-2-2-2zm-6 10c-1.1 0-2 0.9-2 2v6h16v-6c0-1.1-0.9-2-2-2H6z"/></symbol>
+      <symbol id="type-steel" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="4"/></symbol>
+      <symbol id="type-dark" viewBox="0 0 24 24"><path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 18c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8z"/></symbol>
+      <symbol id="type-electric" viewBox="0 0 24 24"><path d="M12 2c-1.1 0-2 0.9-2 2v6h4V4c0-1.1-0.9-2-2-2zm-6 10c-1.1 0-2 0.9-2 2v6h16v-6c0-1.1-0.9-2-2-2H6z"/></symbol>
+      <symbol id="type-fighting" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm-3 14L5 20h14l-4-4h-6z"/></symbol>
+      <symbol id="type-flying" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6z"/></symbol>
+      <symbol id="type-grass" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6z"/></symbol>
+      <symbol id="type-ice" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6z"/></symbol>
+      <symbol id="type-poison" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/></symbol>
+      <symbol id="type-rock" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/></symbol>
+      <symbol id="type-water" viewBox="0 0 24 24"><path d="M12 2c-1.1 0-2 0.9-2 2v18l2 2 2-2V4c0-1.1-0.9-2-2-2z"/></symbol>
+      
+      <symbol id="region-kanto" viewBox="0 0 24 24"><path d="M3 3h9v9H3z"/></symbol> <symbol id="region-johto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></symbol> <symbol id="region-hoenn" viewBox="0 0 24 24"><path d="M12 2l10 20H2z"/></symbol> <symbol id="region-sinnoh" viewBox="0 0 24 24"><path d="M2 12h20M12 2v20"/></symbol> <symbol id="region-unova" viewBox="0 0 24 24"><path d="M2 2h20v20H2z"/></symbol> <symbol id="region-kalos" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/></symbol> <symbol id="region-alola" viewBox="0 0 24 24"><path d="M2 22l20-20v20z"/></symbol> <symbol id="region-galar" viewBox="0 0 24 24"><path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 18c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8z"/></symbol> <symbol id="region-hisui" viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10z"/></symbol> <symbol id="region-paldea" viewBox="0 0 24 24"><path d="M12 2l12 10-12 10-12-10z"/></symbol> <symbol id="region-kitakami" viewBox="0 0 24 24"><path d="M12 2l8 8-8 12-8-12z"/></symbol> <symbol id="color-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol> 
+
+      <symbol id="shape-round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+      <symbol id="shape-serpent" viewBox="0 0 24 24"><path d="M2 12c4-8 16 8 20 0"/></symbol>
+      <symbol id="shape-fins" viewBox="0 0 24 24"><path d="M12 2c5.5 0 10 4.5 10 10S17.5 22 12 22 2 17.5 2 12 6.5 2 12 2zM12 12L20 12M4 12L12 12"/></symbol>
+      <symbol id="shape-arms" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6v12h12V8c0-3.3-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6z"/></symbol>
+      <symbol id="shape-upright" viewBox="0 0 24 24"><path d="M12 2L2 22h20z"/></symbol>
+      <symbol id="shape-tailed" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM12 12l10 10"/></symbol>
+      <symbol id="shape-legs" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6v12h12V8c0-3.3-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6zM12 15v7"/></symbol>
+      <symbol id="shape-4legs" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM5 12h14M12 5v14"/></symbol>
+      <symbol id="shape-wings" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6zM2 8h20"/></symbol>
+      <symbol id="shape-tentacle" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zM12 14v8M8 18l8 0"/></symbol>
+      <symbol id="shape-multi" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM12 5v14M5 12h14"/></symbol>
+      <symbol id="shape-bipedal" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6v12h12V8c0-3.3-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6zM12 15v7M8 18v4M16 18v4"/></symbol>
+      <symbol id="shape-4wings" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6zM2 8h20M5 12h14"/></symbol>
+      <symbol id="shape-crawling" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM5 15h14M12 10v7"/></symbol>
+      
+      <symbol id="egg-monster" viewBox="0 0 24 24"><path d="M12 2c-4.4 0-8 3.6-8 8 0 4.4 3.6 8 8 8 4.4 0 8-3.6 8-8 0-4.4-3.6-8-8-8zm0 16v4"/></symbol>
+      <symbol id="egg-water1" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM8 12h8"/></symbol>
+      <symbol id="egg-bug" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6v4h12V8c0-3.3-2.7-6-6-6zm-6 13c-2.2 0-4 1.8-4 4s1.8 4 4 4h12c2.2 0 4-1.8 4-4s-1.8-4-4-4H6z"/></symbol>
+      <symbol id="egg-flying" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6zM2 8h20"/></symbol>
+      <symbol id="egg-field" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM2 17h20"/></symbol>
+      <symbol id="egg-water3" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM12 5v14"/></symbol>
+      <symbol id="egg-fairy" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 10c-1.1 0-2 0.9-2 2v8l2 2 2-2v-8c0-1.1-0.9-2-2-2z"/></symbol>
+      <symbol id="egg-humanlike" viewBox="0 0 24 24"><path d="M12 2c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm-6 13c-1.1 0-2 0.9-2 2v3h16v-3c0-1.1-0.9-2-2-2H6zM12 14v8"/></symbol>
+      <symbol id="egg-grass" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM12 12l8 8"/></symbol>
+      <symbol id="egg-water2" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM8 8l8 8M8 16l8-8"/></symbol>
+      <symbol id="egg-mineral" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20"/></symbol>
+      <symbol id="egg-indeterminate" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM12 5v14M5 12h14"/></symbol>
+      <symbol id="egg-ditto" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM8 8c0 2.2 1.8 4 4 4s4-1.8 4-4"/></symbol>
+      <symbol id="egg-undiscovered" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zM12 12h.01"/></symbol>
+    </svg>
+    
+    <div id="settingsIcon">⚙</div>
+    
+    <div id="settingsModal">
+        <div id="settingsContent">
+            <span id="closeSettings">×</span>
+            <h3>Settings</h3>
+            
+            <div class="settings-section">
+                <h4>Text Size</h4>
+                <label>Base Font Size: <input type="number" id="baseFontSize" min="8" max="24" value="10" style="width: 50px;"> px</label>
+            </div>
+            
+            <div class="settings-section">
+                <h4>Attribute Display</h4>
+                <p>Toggle display style for attributes. Choose "Icon" to use SVG symbols instead of text.</p>
+                
+                <div>
+                    <label>Types: </label>
+                    <select id="typesDisplay">
+                        <option value="default">Text</option>
+                        <option value="icon" selected>Icon</option>
+                        <option value="color">Text (Color BG)</option>
+                        <option value="hide">Hide</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Region: </label>
+                    <select id="regionDisplay">
+                        <option value="default">Text</option>
+                        <option value="icon" selected>Icon</option>
+                        <option value="color">Text (Color BG)</option>
+                        <option value="hide">Hide</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Color: </label>
+                    <select id="colorDisplay">
+                        <option value="default">Text</option>
+                        <option value="icon" selected>Icon</option>
+                        <option value="color">Text (Color BG)</option>
+                        <option value="hide">Hide</option>
+                    </select>
+                </div>
+                 <div>
+                    <label>Shape: </label>
+                    <select id="shapeDisplay">
+                        <option value="default">Text</option>
+                        <option value="icon" selected>Icon</option>
+                        <option value="color">Text (Color BG)</option>
+                        <option value="hide">Hide</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Egg Group: </label>
+                    <select id="eggDisplay">
+                        <option value="default">Text</option>
+                        <option value="icon" selected>Icon</option>
+                        <option value="color">Text (Color BG)</option>
+                        <option value="hide">Hide</option>
+                    </select>
+                </div>
+            </div>
+            
+            </div>
+            
+        
+            
+            </div>
+            
+            
+            </div>
+            
+            <button onclick="applySettings()" style="margin-top: 10px; padding: 5px 10px;">Apply Settings</button>
+            <button onclick="closeSettings()" style="margin-top: 10px; padding: 5px 10px;">Close</button>
+        </div>
+    </div>
+    
+    <h1>Pokémon Taxonomy</h1>
+    
+    <div style="position: relative; margin-top: 4px;margin-bottom: 7px;">
+        <input type="text" id="searchBar" placeholder="Search (Name, Num, Type, Egg, Ability, Species, Move)" style="width: 100%; padding: 5px; font-size: 16px; border: 2px solid #000;">
+        <ul id="suggestions"></ul>
+    </div>
+    
+    <div class="main-action-buttons" style="display:flex; align-items:center; gap:6px;">
+
+        <button id="renderImagesButton" onclick="toggleGridView()">Render Images</button>
+        <button class="toggle-stats" onclick="toggleStats()">Show/Hide Stats</button>
+        <button id="loadMovesButton" onclick="loadLearnsetData()">Load Moves</button>
+        <div style="margin-left:auto;">
+          <button class="clear-button" onclick="clearAllFilters()" 
+            style="font-weight:bold; font-size:11px; padding:2px 4px;">
+            RESET FILTERS
+          </button>
+        </div>
+      
+      </div>
+      
+    
+    
+    <div class="active-filters" id="activeFilters">
+      <h3>Active Filters:</h3>
+      <div id="activeFiltersList">
+        <span class="no-filters">None</span>
+      </div>
+    </div>
+    
+    <div id="collapsibleFilterWrapper">
+      <h3 id="filterToggleHeader" style="cursor: pointer; background: #eee; padding: 2px; margin-bottom: 5px;">Filters: Click to Toggle [+]</h3>
+      <div class="filter-container" id="mainFilterContainer">
+        
+        <div class="filter-group" onclick="toggleFilterSection('typeFilters')">
+          <h3>Types (AND): [+]</h3>
+          <div class="filter-options" id="typeFilters"></div>
+        </div>
+        
+        <div class="filter-group" onclick="toggleFilterSection('regionFilters')">
+          <h3>Regions (OR): [+]</h3>
+          <div class="filter-options" id="regionFilters"></div>
+        </div>
+        
+        <div class="filter-group" onclick="toggleFilterSection('colorFilters')">
+          <h3>Colors (OR): [+]</h3>
+          <div class="filter-options" id="colorFilters"></div>
+        </div>
+       
+        <div class="filter-group" onclick="toggleFilterSection('shapeFilters')">
+          <h3>Shapes (OR): [+]</h3>
+          <div class="filter-options" id="shapeFilters"></div>
+        </div>
+        
+        <div class="filter-group" onclick="toggleFilterSection('eggGroupFilters')">
+          <h3>Egg Groups (AND): [+]</h3>
+          <div class="filter-options" id="eggGroupFilters"></div>
+        </div>
+  
+        <div class="filter-group variant-filter-group" onclick="toggleFilterSection('variantExcludeFilters')">
+          <h3 class="collapsible-header">Hide Forms: [+]</h3>
+          <div class="filter-options" id="variantExcludeFilters"></div>
+        </div>
+
+        <div class="filter-group" id="movesFilterGroup" style="display:none;" onclick="toggleFilterSection('moveMethodFilters')">
+          <h3>Move Method Filters: [+]</h3>
+          <div class="filter-options" id="moveMethodFilters">
+            <button id="toggle-EggButton" onclick="event.stopPropagation(); toggleLearnMethod('Egg')" class="selected">Egg</button>
+
+          </div>
+        </div>
+      
+      </div>
+    </div>
+
+    <div class="controls">
+        <h3 id="sortHeader">Sort:</h3>
+        <button data-sort="name" onclick="handleSort('name')">Name</button>
+        <button data-sort="number" onclick="handleSort('number')">Number</button>
+        <button data-sort="type" onclick="handleSort('type')">Type</button>
+        <button data-sort="color" onclick="handleSort('color')">Color</button>
+        <button data-sort="shape" onclick="handleSort('shape')">Shape</button>
+        <button data-sort="height" onclick="handleSort('height')">Size</button>
+        <button id="moveLevelSortButton" data-sort="movelevel" onclick="handleSort('movelevel')" style="display:none;">Move Level</button>
+    </div>
+
+  <div class="pokemon-container" id="pokemonContainer">
+    <div class="no-results">Loading Pokémon data...</div>
+  </div>
+  
+  <script src="pokemon-data.js"></script>
+  <script>
+   
+// Moveset global variables
+let learnsetLoaded = false;
+let pokemonMovesExpanded = {}; // Track which pokemon have moves expanded
+
+const pokemonGenerations = {
+  1: { start: 1, end: 151.999, region: "Kanto" },
+  2: { start: 152, end: 251.999, region: "Johto" },
+  3: { start: 252, end: 386.999, region: "Hoenn" },
+  4: { start: 387, end: 493.999, region: "Sinnoh" },
+  5: { start: 494, end: 649.999, region: "Unova" },
+  6: { start: 650, end: 721.999, region: "Kalos" },
+  7: { start: 722, end: 809.999, region: "Alola" },
+  8: { start: 810, end: 898.999, region: "Galar" },
+  10: { start: 899, end: 905.999, region: "Hisui" },
+  9: { start: 906, end: 1010.999, region: "Paldea" },
+  10.1: { start: 1011, end: 1019.999, region: "Kitakami" },
+  9.1: { start: 1020, end: 1025.099, region: "Paldea" },
+  10.2: { start: 1025.1, end: 9999, region: "Kitakami" }
+};
+
+const specialForms = {
+  "Alola": "Alola", "Galar": "Galar", "Hisuian": "Hisui", "Hisui": "Hisui",
+  "Paldean": "Paldea", "Kitakami": "Kitakami", "Bloodmoon": "Kitakami", "Mask": "Kitakami","Origin": "Hisui", "White-Striped": "Hisui"
+};
+
+let nameToKeyMap = {};
+
+// --- NEW SVG LOGIC ---
+
+/**
+ * Maps attribute values to SVG symbol IDs.
+ * Converts to lowercase and removes spaces/hyphens for ID compatibility.
+ */
+const svgIconMap = {
+    // Types (all types need to be lowercase)
+    'bug': 'type-bug', 'dragon': 'type-dragon', 'fairy': 'type-fairy', 'fire': 'type-fire',
+    'ghost': 'type-ghost', 'ground': 'type-ground', 'normal': 'type-normal', 'psychic': 'type-psychic',
+    'steel': 'type-steel', 'dark': 'type-dark', 'electric': 'type-electric', 'fighting': 'type-fighting',
+    'flying': 'type-flying', 'grass': 'type-grass', 'ice': 'type-ice', 'poison': 'type-poison',
+    'rock': 'type-rock', 'water': 'type-water',
+
+    // Regions
+    'kanto': 'region-kanto', 'johto': 'region-johto', 'hoenn': 'region-hoenn', 'sinnoh': 'region-sinnoh',
+    'unova': 'region-unova', 'kalos': 'region-kalos', 'alola': 'region-alola', 'galar': 'region-galar',
+    'hisui': 'region-hisui', 'paldea': 'region-paldea', 'kitakami': 'region-kitakami',
+
+    // Colors (using a generic color icon)
+    'black': 'color-icon', 'blue': 'color-icon', 'brown': 'color-icon', 'gray': 'color-icon',
+    'green': 'color-icon', 'pink': 'color-icon', 'purple': 'color-icon', 'red': 'color-icon',
+    'white': 'color-icon', 'yellow': 'color-icon',
+
+    // Shapes (removing non-alphanumeric and converting to lowercase)
+    'round': 'shape-round', 'serpent': 'shape-serpent', 'fins': 'shape-fins', 'arms': 'shape-arms',
+    'upright': 'shape-upright', 'tailed': 'shape-tailed', 'legs': 'shape-legs', '4-legs': 'shape-4legs',
+    'wings': 'shape-wings', 'tentacle': 'shape-tentacle', 'multi': 'shape-multi', 'bipedal': 'shape-bipedal',
+    '4-wings': 'shape-4wings', 'crawling': 'shape-crawling',
+
+    // Egg Groups (removing spaces and converting to lowercase)
+    'monster': 'egg-monster', 'water1': 'egg-water1', 'bug': 'egg-bug', 'flying': 'egg-flying', 
+    'field': 'egg-field', 'water3': 'egg-water3', 'fairy': 'egg-fairy', 'humanlike': 'egg-humanlike',
+    'grass': 'egg-grass', 'water2': 'egg-water2', 'mineral': 'egg-mineral', 'indeterminate': 'egg-indeterminate',
+    'ditto': 'egg-ditto', 'undiscovered': 'egg-undiscovered'
+};
+
+/**
+ * Generates the SVG markup for an attribute.
+ * @param {string} filterType - The filter type (e.g., 'types', 'regions').
+ * @param {string} value - The attribute value (e.g., 'Fire', 'Kanto').
+ * @param {boolean} isSelected - Whether the filter is active.
+ * @returns {string} The SVG markup.
+ */
+function getSvgIcon(filterType, value, isSelected) {
+    if (!value || value === 'N/A' || value === 'Unknown') return '';
+
+    const sanitizedValue = value.toLowerCase().replace(/[^a-z0-9]/g, '');
+    let iconId = svgIconMap[sanitizedValue] || svgIconMap[value.toLowerCase()] || 'type-normal'; // Default fallback
+
+    // Special handling for colors to set the fill color
+    let style = '';
+    if (filterType === 'colors') {
+        iconId = 'color-icon'; // Use the generic color circle icon
+        style = `fill: ${value.toLowerCase()};`;
+    }
+
+    const selectedClass = isSelected ? 'selected' : '';
+
+    return `
+        <span class="icon-container" 
+              data-filter-type="${filterType}" 
+              data-filter-value="${value}">
+            <svg class="clickable ${selectedClass}" style="${style}">
+                <use href="#${iconId}"/>
+            </svg>
+        </span>
+    `;
+}
+
+// --- END NEW SVG LOGIC ---
+
+function initializeNameKeyMap() {
+    nameToKeyMap = {};
+    const simpleNameKeys = new Set();
+
+    Object.keys(pokemonData).forEach(key => {
+        const pokemon = pokemonData[key];
+        const nameTrimmed = pokemon.name.trim();
+
+        nameToKeyMap[key] = key;
+
+        if (Math.floor(pokemon.num) === pokemon.num && !pokemon.baseSpecies) {
+             nameToKeyMap[nameTrimmed] = key;
+             nameToKeyMap[nameTrimmed.toLowerCase()] = key;
+             simpleNameKeys.add(nameTrimmed);
+        }
+    });
+
+    Object.keys(pokemonData).forEach(key => {
+        const pokemon = pokemonData[key];
+        const nameTrimmed = pokemon.name.trim();
+
+        if (!simpleNameKeys.has(nameTrimmed)) {
+            nameToKeyMap[nameTrimmed] = key;
+            nameToKeyMap[nameTrimmed.toLowerCase()] = key;
+        }
+
+        if (pokemon.baseSpecies) {
+            const baseNameTrimmed = pokemon.baseSpecies.trim();
+            nameToKeyMap[baseNameTrimmed] = nameToKeyMap[baseNameTrimmed] || key;
+            nameToKeyMap[baseNameTrimmed.toLowerCase()] = nameToKeyMap[baseNameTrimmed.toLowerCase()] || key;
+        }
+
+        if (pokemon.forme) {
+            const baseNameToUse = pokemon.baseSpecies ? pokemon.baseSpecies.trim() : nameTrimmed;
+            const formeLinkName = pokemon.forme.replace(/ian$/, '').trim();
+
+            nameToKeyMap[`${baseNameToUse}-${formeLinkName}`] = key;
+            nameToKeyMap[`${baseNameToUse}-${formeLinkName}`.toLowerCase()] = key;
+            
+            nameToKeyMap[`${baseNameToUse}-${pokemon.forme.trim()}`] = key;
+            nameToKeyMap[`${baseNameToUse}-${pokemon.forme.trim()}`.toLowerCase()] = key;
+        }
+    });
+}
+
+function getRegion(num) {
+  for (const gen in pokemonGenerations) {
+    const { start, end, region } = pokemonGenerations[gen];
+    if (num >= start && num <= end) return region;
+  }
+  return "Unknown";
+}
+
+function getSpecialRegion(name) {
+  for (const key in specialForms) {
+    if (name.includes(key)) return specialForms[key];
+  }
+  return null;
+}
+
+function assignRegions(pokemonData) {
+  for (const key in pokemonData) {
+    const pokemon = pokemonData[key];
+    const specialRegion = getSpecialRegion(pokemon.name);
+    pokemon.region = specialRegion || getRegion(pokemon.num);
+  }
+}
+
+function extractAbilities(abilitiesObj) {
+  if (!abilitiesObj) return [];
+  if (Array.isArray(abilitiesObj)) return abilitiesObj;
+  const abilities = [];
+  for (const key in abilitiesObj) {
+    abilities.push(abilitiesObj[key]);
+  }
+  return abilities;
+}
+
+function getShapeName(shapeNum) {
+  const shapeNames = {
+    1: "Round", 2: "Serpent", 3: "Fins", 4: "Arms", 5: "Upright", 6: "Tailed",
+    7: "Legs", 8: "4-Legs", 9: "Wings", 10: "Tentacle", 11: "Multi", 12: "Bipedal",
+    13: "4-Wings", 14: "Crawling"
+  };
+  return shapeNames[shapeNum] || `Shape ${shapeNum}`;
+}
+
+const allTypes = ["Bug", "Dragon", "Fairy", "Fire", "Ghost", "Ground", "Normal", "Psychic", "Steel", "Dark", "Electric", "Fighting", "Flying", "Grass", "Ice", "Poison", "Rock", "Water"];
+const allRegions = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Hisui", "Paldea" , "Kitakami"];
+
+function getAllColors() {
+  const colors = new Set();
+  Object.values(pokemonData).forEach(pokemon => { if (pokemon.color) colors.add(pokemon.color); });
+  return Array.from(colors).sort();
+}
+function getAllVariantTypes() {
+  return ["Minor", "Item", "Gmax", "Mega",  "Battle",  "Natural"];
+}
+function getAllShapes() {
+  const shapes = new Set();
+  Object.values(pokemonData).forEach(pokemon => {
+    if (pokemon.shape) {
+      const shapeName = typeof pokemon.shape === 'number' ? getShapeName(pokemon.shape) : pokemon.shape;
+      shapes.add(shapeName);
+    }
+  });
+  return Array.from(shapes).sort();
+}
+function getAllEggGroups() {
+  const eggGroups = new Set();
+  Object.values(pokemonData).forEach(pokemon => {
+    if (pokemon.eggGroups && Array.isArray(pokemon.eggGroups)) {
+      pokemon.eggGroups.forEach(group => eggGroups.add(group));
+    }
+  });
+  return Array.from(eggGroups).sort();
+}
+
+function getAllSpecies() {
+  const species = new Set();
+  Object.values(pokemonData).forEach(pokemon => {
+    if (pokemon.species) species.add(pokemon.species);
+  });
+  return Array.from(species).sort();
+}
+
+function getAllSpeciesSearchTerms() {
+  const words = new Set();
+  const allSpecies = getAllSpecies(); 
+  
+  allSpecies.forEach(species => {
+    if (species.includes(' ')) {
+      words.add(species);
+    }
+    species.split(' ').forEach(word => {
+        if (word.length > 2) { 
+             words.add(word);
+        }
+    });
+  });
+  
+  return Array.from(words).sort((a, b) => a.localeCompare(b)).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+}
+
+function getAllAbilities() {
+  const abilities = new Set();
+  Object.values(pokemonData).forEach(pokemon => {
+    extractAbilities(pokemon.abilities).forEach(ability => abilities.add(ability));
+  });
+  return Array.from(abilities).sort();
+}
+
+function extractMoves(learnset) {
+    if (!learnset) return [];
+    return Object.keys(learnset);
+}
+
+function getAllMoves() {
+    const moves = new Set();
+    if (learnsetLoaded) {
+        Object.values(pokemonData).forEach(pokemon => {
+            if (pokemon.learnset) {
+                const pokemonMoves = extractMoves(pokemon.learnset);
+                pokemonMoves.forEach(move => moves.add(move));
+            }
+        });
+    }
+    return Array.from(moves).sort();
+}
+
+function getGroupingKey(name) {
+    let baseName = name.trim(); 
+    if (baseName.includes('-')) {
+        baseName = baseName.split('-')[0];
+    } else if (baseName.includes(' ')) {
+        const parts = baseName.split(' ');
+        baseName = parts[parts.length - 1]; 
+      }
+      return baseName.toLowerCase();
+  }
+  
+  function getPokemonKey(pokemon) {
+      for (const key in pokemonData) {
+          if (pokemonData[key] === pokemon) {
+              return key;
+          }
+      }
+      return null; 
+  }
+  
+  function findFullEvolutionChainKeys(pokemonKey) {
+      const chainKeys = new Set();
+      const queue = [pokemonKey];
+      
+      while (queue.length > 0) {
+          const currentKey = queue.shift();
+          if (chainKeys.has(currentKey)) continue;
+          
+          const pokemon = pokemonData[currentKey];
+          if (!pokemon) continue;
+          
+          chainKeys.add(currentKey);
+  
+          let relativesToProcess = [];
+  
+          if (pokemon.prevo) relativesToProcess.push(pokemon.prevo);
+          if (pokemon.evos) relativesToProcess.push(...pokemon.evos);
+          if (pokemon.prevos) relativesToProcess.push(...pokemon.prevos);
+          
+          relativesToProcess
+              .filter(name => name)
+              .forEach(name => {
+                  const normalizedName = name.trim();
+                  const key = nameToKeyMap[normalizedName] || nameToKeyMap[normalizedName.toLowerCase()];
+                  
+                  if (key && !chainKeys.has(key)) {
+                      queue.push(key);
+                  }
+              });
+  
+          const baseName = (pokemon.baseSpecies || pokemon.name).trim();
+          const basePokemonKey = nameToKeyMap[baseName] || nameToKeyMap[baseName.toLowerCase()];
+  
+          if (basePokemonKey) {
+              if (!chainKeys.has(basePokemonKey)) queue.push(basePokemonKey);
+  
+              const basePokemon = pokemonData[basePokemonKey];
+              if (basePokemon) {
+                  const allFormeKeys = (basePokemon.formeOrder || basePokemon.otherFormes || []);
+                  allFormeKeys.filter(k => !chainKeys.has(k) && pokemonData[k]).forEach(k => queue.push(k));
+              }
+              
+              Object.keys(pokemonData).filter(k => {
+                  const p = pokemonData[k];
+                  return p.baseSpecies && p.baseSpecies.trim() === baseName && !chainKeys.has(k);
+              }).forEach(k => queue.push(k));
+          }
+      }
+      
+      return Array.from(chainKeys);
+  }
+  
+  let activeFilters = {
+    types: [], regions: [], colors: [], shapes: [], abilities: [], eggGroups: [], variantExclude: [], moves: []
+  };
+  
+  let secondaryFilter = {
+      type: null, 
+      value: null, 
+      displayValue: null, 
+      selectedKey: null 
+  };
+  
+  const filterConstraints = {
+    types: 2, regions: null, eggGroups: 2, abilities: 2, colors: null, shapes: null, variantExclude: 6, moves: 10
+  };
+  
+  let statsVisible = false;
+  let searchableTerms = [];
+  let currentSort = {
+      key: 'number',
+      direction: 1 
+  };
+  
+  // Settings state
+  let displaySettings = {
+      baseFontSize: 10,
+      showNumber: true,
+      showName: true,
+      showSpecies: true,
+      showImage: false,
+      gridView: false,
+      types: { desc: 'full', display: 'icon' }, // CHANGED TO ICON
+      region: { desc: 'short', display: 'icon' }, // CHANGED TO ICON
+      color: { desc: 'short', display: 'icon' }, // CHANGED TO ICON
+      shape: { desc: 'short', display: 'icon' }, // CHANGED TO ICON
+      egg: { desc: 'full', display: 'icon' }, // CHANGED TO ICON
+      abilities: { desc: 'full', display: 'default' }
+  };
+  
+  // Settings icon long press
+  let settingsPressTimer = null;
+  
+  // Track expanded cards in grid view
+  let expandedCards = new Set();
+  
+  // Moveset global variables - add egg move filter
+  let showEggMoves = true;
+  let showTMMoves = false;
+  let showTutorMoves = false;
+  let showVCMoves = false;
+
+  // Function to open settings modal and sync UI with state
+  function openSettings() {
+    const modal = document.getElementById('settingsModal');
+    modal.style.display = 'block';
+
+    // Sync settings UI with current state
+    document.getElementById('baseFontSize').value = displaySettings.baseFontSize;
+    document.getElementById('typesDisplay').value = displaySettings.types.display;
+    document.getElementById('regionDisplay').value = displaySettings.region.display;
+    document.getElementById('colorDisplay').value = displaySettings.color.display;
+    document.getElementById('shapeDisplay').value = displaySettings.shape.display;
+    document.getElementById('eggDisplay').value = displaySettings.egg.display;
+  }
+  
+  // Function to apply settings from modal
+  function applySettings() {
+    displaySettings.baseFontSize = parseInt(document.getElementById('baseFontSize').value, 10);
+    
+    // Update display settings
+    displaySettings.types.display = document.getElementById('typesDisplay').value;
+    displaySettings.region.display = document.getElementById('regionDisplay').value;
+    displaySettings.color.display = document.getElementById('colorDisplay').value;
+    displaySettings.shape.display = document.getElementById('shapeDisplay').value;
+    displaySettings.egg.display = document.getElementById('eggDisplay').value;
+
+    closeSettings();
+    renderPokemonList();
+  }
+
+  // Function to close settings modal
+  function closeSettings() {
+    const modal = document.getElementById('settingsModal');
+    modal.style.display = 'none';
+  }
+  
+  function clearSecondaryFilter() {
+      secondaryFilter.type = null;
+      secondaryFilter.value = null;
+      secondaryFilter.displayValue = null;
+      secondaryFilter.selectedKey = null;
+  
+      const searchBar = document.getElementById('searchBar');
+      if (searchBar) searchBar.value = '';
+      
+      const suggestionsList = document.getElementById('suggestions');
+      if (suggestionsList) suggestionsList.innerHTML = '';
+  
+      renderPokemonList();
+      updateActiveFilters();
+      updateSortButtons();
+  }
+  
+  function toggleFilter(filterType, value) {
+    if (secondaryFilter.type) {
+      clearSecondaryFilter();
+    }
+  
+    if (activeFilters[filterType].includes(value)) {
+      activeFilters[filterType] = activeFilters[filterType].filter(item => item !== value);
+    } else {
+      if (filterConstraints[filterType] !== null && 
+          activeFilters[filterType].length >= filterConstraints[filterType]) {
+        activeFilters[filterType].shift();
+      }
+      activeFilters[filterType].push(value);
+    }
+    updateFilterUI(filterType);
+    renderPokemonList();
+    updateActiveFilters();
+    updateSortButtons();
+    document.getElementById('searchBar').value = ''; 
+    document.getElementById('suggestions').innerHTML = '';
+    
+    // Show/hide Move Level sort button based on move filters
+    const moveLevelButton = document.getElementById('moveLevelSortButton');
+    if (moveLevelButton) {
+      moveLevelButton.style.display = activeFilters.moves.length > 0 ? 'inline-block' : 'none';
+    }
+  }
+  
+  function updateFilterUI(filterType) {
+    const selector = filterType === 'types' ? '[data-type]' :
+                     filterType === 'regions' ? '[data-region]' :
+                     filterType === 'colors' ? '[data-color]' :
+                     filterType === 'variantExclude' ? '[data-variant]' :
+                     filterType === 'shapes' ? '[data-shape]' :
+                     filterType === 'eggGroups' ? '[data-egggroup]' :
+                     filterType === 'moves' ? '[data-move]' : '';
+    
+    if (selector) {
+      document.querySelectorAll(`.filter-chip${selector}`).forEach(chip => {
+        const attr = selector.replace(/[\[\]]/g, '');
+        const value = chip.getAttribute(attr);
+        chip.classList.toggle('selected', activeFilters[filterType].includes(value));
+      });
+      // NEW: Also update SVG selection state
+      document.querySelectorAll(`.icon-container[data-filter-type="${filterType}"]`).forEach(container => {
+        const value = container.getAttribute('data-filter-value');
+        const svg = container.querySelector('svg');
+        if (svg) {
+            svg.classList.toggle('selected', activeFilters[filterType].includes(value));
+        }
+      });
+    }
+  }
+  
+  function updateActiveFilters() {
+    const activeFiltersList = document.getElementById('activeFiltersList');
+    activeFiltersList.innerHTML = '';
+    
+    let hasFilters = false;
+    
+    if (secondaryFilter.type) {
+        const filterLabel = secondaryFilter.type === 'secondary-name' ? 'name' :
+                            secondaryFilter.type === 'secondary-num' ? 'num' : 
+                            'species';
+        const chipHtml = `<span class="active-filter-chip" onclick="clearSecondaryFilter()">${filterLabel}_${secondaryFilter.displayValue} <span class="remove">x</span></span><span class="filter-separator">; </span>`;
+        activeFiltersList.innerHTML += chipHtml;
+        hasFilters = true;
+    }
+    
+    const filterTypeMap = {
+      'types': 'type',
+      'regions': 'region',
+      'colors': 'color',
+      'shapes': 'shape',
+      'eggGroups': 'egg',
+      'abilities': 'ability',
+      'moves': 'move',
+      'variantExclude': 'variantExcl'
+    };
+    
+    for (const [filterType, values] of Object.entries(activeFilters)) {
+      if (values.length > 0) {
+        hasFilters = true;
+        values.forEach(value => {
+          const displayType = filterTypeMap[filterType] || filterType.toLowerCase();
+          const displayValue = filterType === 'moves' ? formatMoveName(value) : value;
+          const chipHtml = `<span class="active-filter-chip" onclick="toggleFilter('${filterType}', '${value}')">${displayType}_${displayValue} <span class="remove">x</span></span><span class="filter-separator">; </span>`;
+          activeFiltersList.innerHTML += chipHtml;
+        });
+      }
+    }
+    
+    if (!hasFilters) {
+      activeFiltersList.innerHTML = '<span class="no-filters">None</span>';
+    }
+  }
+  
+  function clearAllFilters() {
+    for (const filterType in activeFilters) {
+      activeFilters[filterType] = [];
+    }
+    clearSecondaryFilter();
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.classList.remove('selected');
+    });
+    renderPokemonList();
+    updateActiveFilters();
+    updateSortButtons();
+  }
+  
+  function getTypesHTML(types) {
+    if (!types || types.length === 0) return 'Types: N/A';
+    
+    const settings = displaySettings.types;
+    if (settings.display === 'hide') return '';
+    
+    let prefix = '';
+    if (settings.desc === 'full') prefix = 'Types: ';
+    else if (settings.desc === 'short') prefix = 'T: ';
+    
+    const typesList = types.map(type => {
+      const isSelected = activeFilters.types.includes(type);
+      
+      if (settings.display === 'icon') {
+        return getSvgIcon('types', type, isSelected);
+      }
+      
+      const className = isSelected ? 'clickable selected-result' : 'clickable';
+      
+      if (settings.display === 'color') {
+        const typeColors = {
+          Bug: '#A8B820', 
+          Rock: '#B8A038', Water: '#6890F0'
+        };
+        const bgColor = typeColors[type] || '#ccc';
+        return `<span class="${className}" data-filter-type="types" data-filter-value="${type}" style="background-color: ${bgColor}; color: white; padding: 2px 4px;">${type}</span>`;
+      }
+      
+      return `<span class="${className}" data-filter-type="types" data-filter-value="${type}">${type}</span>`;
+    }).join(settings.display === 'icon' ? '' : ' / ');
+    
+    return prefix + (settings.display === 'icon' ? `<div class="svg-icon-set">${typesList}</div>` : typesList);
+  }
+  
+  function getAbilitiesHTML(abilitiesObj) {
+    const abilities = extractAbilities(abilitiesObj);
+    if (abilities.length === 0) return 'N/A';
+    
+    const settings = displaySettings.abilities;
+    if (settings.display === 'hide') return '';
+    
+    let prefix = '';
+    if (settings.desc === 'full') prefix = 'Abilities: ';
+    else if (settings.desc === 'short') prefix = 'A: ';
+    
+    let html = '';
+    abilities.forEach((ability, index) => {
+      const isSelected = activeFilters.abilities.includes(ability);
+      const className = isSelected ? 'clickable selected-result' : 'clickable';
+      
+      if (settings.display === 'color') {
+        html += `<span class="${className}" data-filter-type="abilities" data-filter-value="${ability}" style="background-color: #9C7EBF; color: white; padding: 2px 4px;">${ability}</span>${index < abilities.length - 1 ? ' / ' : ''}`;
+      } else {
+        html += `<span class="${className}" data-filter-type="abilities" data-filter-value="${ability}">${ability}</span>${index < abilities.length - 1 ? ' / ' : ''}`;
+      }
+    });
+    
+    return prefix + html;
+  }
+  
+  function getEggGroupsHTML(eggGroups) {
+    if (!eggGroups || eggGroups.length === 0) return 'Egg: N/A';
+    
+    const settings = displaySettings.egg;
+    if (settings.display === 'hide') return '';
+    
+    let prefix = '';
+    if (settings.desc === 'full') prefix = 'Egg: ';
+    else if (settings.desc === 'short') prefix = 'E: ';
+    
+    const groupsList = eggGroups.map(group => {
+      const isSelected = activeFilters.eggGroups.includes(group);
+
+      if (settings.display === 'icon') {
+          return getSvgIcon('eggGroups', group, isSelected);
+      }
+      
+      const className = isSelected ? 'clickable selected-result' : 'clickable';
+      
+      if (settings.display === 'color') {
+        return `<span class="${className}" data-filter-type="eggGroups" data-filter-value="${group}" style="background-color: #FFA07A; color: white; padding: 2px 4px;">${group.replace(' ', '')}</span>`;
+      }
+      
+      return `<span class="${className}" data-filter-type="eggGroups" data-filter-value="${group}">${group.replace(' ', '')}</span>`;
+    }).join(settings.display === 'icon' ? '' : ' / ');
+    
+    return prefix + (settings.display === 'icon' ? `<div class="svg-icon-set">${groupsList}</div>` : groupsList);
+  }
+  
+  // Dictionary of special cases for multi-word moves
+  const moveDisplayNames = {
+      "karatechop": "Karate Chop",
+      "zingzap": "Zing Zap"
+  };
+  
+  function formatMoveName(moveKey) {
+      if (moveDisplayNames[moveKey.toLowerCase()]) {
+          return moveDisplayNames[moveKey.toLowerCase()];
+      }
+      
+      return moveKey.split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+  }
+  
+  function getLearnMethodText(method) {
+      if (method.startsWith('L')) return `Lv.${method.substring(1)}`;
+  
+      const methodMap = {
+          'M': 'TM',
+          'T': 'Tu',
+          'E': 'Egg',
+          'S': 'Sp',
+          'V': 'VC'
+      };
+  
+      return methodMap[method[0]] || method;
+  }
+  
+  function getMovesHTML(learnset, pokemonKey, showFiltered = false) {
+      if (!learnsetLoaded) return '';
+      if (!learnset || Object.keys(learnset).length === 0) return '';
+  
+      const moveEntries = Object.entries(learnset).slice(0, 500);
+      const parts = [];
+  
+      moveEntries.forEach(([move, methods]) => {
+          const displayName = move.split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+  
+          const learnMethod = methods[0];
+          const methodType = learnMethod[0];
+          const methodText = getLearnMethodText(learnMethod);
+  
+          let shouldHide = false;
+          if (methodType === 'E' && !showEggMoves) shouldHide = true;
+          else if (methodType === 'M' && !showTMMoves) shouldHide = true;
+          else if (methodType === 'T' && !showTutorMoves) shouldHide = true;
+          else if (methodType === 'V' && !showVCMoves) shouldHide = true;
+  
+          const isFiltered = activeFilters.moves.includes(move);
+          
+          if (!shouldHide) {
+              if (showFiltered && !isFiltered) return;
+              
+              const className = isFiltered ? 'move-item clickable selected-result' : 'move-item clickable';
+              
+              parts.push(`<span class="${className}" 
+              data-filter-type="moves" data-filter-value="${move}">
+              ${displayName} <small class="learn-method">(${methodText})</small>
+              </span>`);
+          }
+      });
+  
+      return parts.length > 0 ? parts.join('; ') : '';
+  }
+  
+  function togglePokemonMoves(pokemonKey) {
+      pokemonMovesExpanded[pokemonKey] = !pokemonMovesExpanded[pokemonKey];
+      renderPokemonList();
+  }
+  
+  function toggleStats() {
+  statsVisible = !statsVisible;
+  document.querySelectorAll('.pokemon-stats').forEach(stats => {
+    stats.classList.toggle('hidden', !statsVisible);
+  });
+}
+
+function toggleGridView() {
+  displaySettings.gridView = !displaySettings.gridView;
+  
+  // Update button appearance
+  const button = document.getElementById('renderImagesButton');
+  if (displaySettings.gridView) {
+    button.style.fontWeight = 'bold';
+    button.style.color = 'green';
+  } else {
+    button.style.fontWeight = 'normal';
+    button.style.color = 'black';
+  }
+  
+  // Clear expanded cards when switching view modes
+  expandedCards.clear();
+  
+  renderPokemonList();
+}
+  
+  
+  function toggleFilterContainer() {
+      const container = document.getElementById('mainFilterContainer');
+      const header = document.getElementById('filterToggleHeader');
+      container.classList.toggle('expanded');
+      
+      if (container.classList.contains('expanded')) {
+          header.textContent = 'Filters: Click to Toggle [-]';
+      } else {
+          header.textContent = 'Filters: Click to Toggle [+]';
+      }
+  }
+  
+  function toggleFilterSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      const parentGroup = section.parentElement;
+      const header = parentGroup.querySelector('h3');
+      
+      section.classList.toggle('expanded');
+      
+      if (section.classList.contains('expanded')) {
+          header.textContent = header.textContent.replace('[+]', '[-]');
+      } else {
+          header.textContent = header.textContent.replace('[-]', '[+]');
+      }
+  }
+  
+  function populateSearchableTerms() {
+      const terms = [];
+      const filterables = {
+          'Type': { values: allTypes, filterType: 'types' },
+          'Region': { values: allRegions, filterType: 'regions' },
+          'Color': { values: getAllColors(), filterType: 'colors' },
+          'Shape': { values: getAllShapes(), filterType: 'shapes' },
+          'Egg Group': { values: getAllEggGroups(), filterType: 'eggGroups' },
+          'Ability': { values: getAllAbilities(), filterType: 'abilities' }
+      };
+  
+      for (const [typeLabel, data] of Object.entries(filterables)) {
+          data.values.forEach(value => {
+              const displayValue = value.charAt(0).toUpperCase() + value.slice(1);
+              terms.push({ 
+                  label: `${typeLabel}: ${displayValue}`, 
+                  filterType: data.filterType, 
+                  filterValue: value 
+              });
+          });
+      }
+      
+      getAllSpeciesSearchTerms().forEach(term => {
+          terms.push({
+              label: `Species: ${term}`, 
+              filterType: 'secondary-species',
+              filterValue: term 
+          });
+      });
+  
+      if (learnsetLoaded) {
+          const allMoves = getAllMoves();
+          allMoves.forEach(move => {
+              const displayName = formatMoveName(move);
+              
+              terms.push({
+                  label: `Move: ${displayName}`,
+                  filterType: 'moves',
+                  filterValue: move
+              });
+          });
+      }
+  
+      const nameMap = new Map(); 
+  
+      Object.keys(pokemonData).forEach(key => {
+          const pokemon = pokemonData[key];
+          
+          let displayFullName = pokemon.name.trim(); 
+          
+          if (pokemon.baseSpecies && pokemon.forme) {
+              const baseName = pokemon.baseSpecies.charAt(0).toUpperCase() + pokemon.baseSpecies.slice(1);
+              const formeName = pokemon.forme.charAt(0).toUpperCase() + pokemon.forme.slice(1);
+              displayFullName = `${formeName} ${baseName}`; 
+          } else {
+               displayFullName = displayFullName.charAt(0).toUpperCase() + displayFullName.slice(1);
+          }
+  
+          if (!nameMap.has(displayFullName)) {
+              nameMap.set(displayFullName, true);
+              
+              terms.push({
+                  label: `Name: ${displayFullName}`,
+                  filterType: 'secondary-name',
+                  filterValue: getGroupingKey(pokemon.name), 
+                  displayName: displayFullName, 
+                  pokemonKey: key 
+              });
+          }
+          
+          if (Math.floor(pokemon.num) === pokemon.num) {
+              terms.push({
+                  label: `Num: ${pokemon.num} (${displayFullName})`, 
+                  filterType: 'secondary-num',
+                  filterValue: pokemon.num.toString(),
+                  displayName: displayFullName, 
+                  pokemonKey: key 
+              });
+          }
+      });
+  
+      searchableTerms = terms;
+  }
+  
+  function handleSearchInput() {
+      const input = document.getElementById('searchBar');
+      const suggestionsList = document.getElementById('suggestions');
+      const query = input.value.toLowerCase().trim();
+      suggestionsList.innerHTML = '';
+      
+      if (query.length < 2) return;
+  
+      const matchedTerms = searchableTerms.filter(term => {
+          return term.label.toLowerCase().includes(query);
+      }).slice(0, 10); 
+  
+      matchedTerms.forEach(term => {
+          const li = document.createElement('li');
+          li.textContent = term.label;
+          li.addEventListener('click', () => {
+              if (term.filterType.startsWith('secondary')) {
+                  secondaryFilter.type = term.filterType;
+                  secondaryFilter.value = term.filterValue;
+                  secondaryFilter.displayValue = term.displayName || term.filterValue; 
+                  secondaryFilter.selectedKey = term.pokemonKey; 
+  
+                  input.value = secondaryFilter.displayValue; 
+                  
+                  renderPokemonList();
+                  updateActiveFilters();
+                  updateSortButtons();
+              } else {
+                  toggleFilter(term.filterType, term.filterValue);
+              }
+              suggestionsList.innerHTML = '';
+          });
+          suggestionsList.appendChild(li);
+      });
+  }
+  
+  function renderPokemonList() {
+    const container = document.getElementById('pokemonContainer');
+    container.innerHTML = '';
+    
+    // Toggle grid view class on body
+    if (displaySettings.gridView) {
+      document.body.classList.add('grid-view');
+    } else {
+      document.body.classList.remove('grid-view');
+    }
+    
+    let pokemonToDisplay = Object.values(pokemonData);
+    
+    if (secondaryFilter.type === 'secondary-name' || secondaryFilter.type === 'secondary-num') {
+        const selectedKey = secondaryFilter.selectedKey;
+        if (selectedKey) {
+            const chainKeys = findFullEvolutionChainKeys(selectedKey);
+            
+            pokemonToDisplay = chainKeys.map(key => pokemonData[key]).filter(p => p);
+            
+            pokemonToDisplay.sort((a, b) => {
+                const keyA = getPokemonKey(a);
+                const keyB = getPokemonKey(b);
+                
+                if (keyA === selectedKey) return -1;
+                if (keyB === selectedKey) return 1;
+                
+                return a.num - b.num;
+            });
+  
+        } else {
+            pokemonToDisplay = [];
+        }
+    } else if (secondaryFilter.type === 'secondary-species') {
+         const searchTerm = secondaryFilter.value.toLowerCase();
+         pokemonToDisplay = pokemonToDisplay.filter(pokemon => 
+            (pokemon.species || '').toLowerCase().includes(searchTerm)
+        );
+    }
+  
+    if (!secondaryFilter.type || secondaryFilter.type === 'secondary-species') {
+        if (activeFilters.types.length > 0) {
+          pokemonToDisplay = pokemonToDisplay.filter(pokemon => 
+            activeFilters.types.every(type => pokemon.types.includes(type))
+          );
+        }
+        if (activeFilters.regions.length > 0) {
+          pokemonToDisplay = pokemonToDisplay.filter(pokemon => 
+            activeFilters.regions.includes(pokemon.region)
+          );
+        }
+        if (activeFilters.abilities.length > 0) {
+          pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+            const pokemonAbilities = extractAbilities(pokemon.abilities);
+            return activeFilters.abilities.every(ability => pokemonAbilities.includes(ability));
+          });
+        }
+        if (activeFilters.colors.length > 0) {
+          pokemonToDisplay = pokemonToDisplay.filter(pokemon => 
+            activeFilters.colors.includes(pokemon.color)
+          );
+        }
+        if (activeFilters.variantExclude.length > 0) {
+          pokemonToDisplay = pokemonToDisplay.filter(pokemon => 
+            !pokemon.variant || !activeFilters.variantExclude.includes(pokemon.variant)
+          );
+        }
+        if (activeFilters.shapes.length > 0) {
+          pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+            const shapeName = typeof pokemon.shape === 'number' ? getShapeName(pokemon.shape) : pokemon.shape;
+            return activeFilters.shapes.includes(shapeName);
+          });
+        }
+        if (activeFilters.eggGroups.length > 0) {
+          pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+            return pokemon.eggGroups && activeFilters.eggGroups.every(group => pokemon.eggGroups.includes(group));
+          });
+        }
+        
+        if (activeFilters.moves.length > 0 && learnsetLoaded) {
+          pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+              if (!pokemon.learnset) return false;
+  
+              return activeFilters.moves.every(move => {
+                  if (!pokemon.learnset[move]) return false;
+  
+                  const learnMethods = pokemon.learnset[move];
+  
+                  return learnMethods.some(method => {
+                      const methodType = method[0];
+  
+                      if (methodType === 'L' || methodType === 'S') return true;
+                      if (methodType === 'E') return showEggMoves;
+             
+  
+                      return true;
+                  });
+              });
+          });
+        }
+        
+        if (!secondaryFilter.type) {
+           pokemonToDisplay = sortList(pokemonToDisplay, currentSort.key, currentSort.direction);
+        }
+    }
+  
+    if (pokemonToDisplay.length === 0) {
+      container.innerHTML = '<div class="no-results">No Pokémon match your filters</div>';
+      return;
+    }
+    
+    pokemonToDisplay.forEach(pokemon => {
+      const card = document.createElement('div');
+      card.className = 'pokemon-card';
+      const shapeName = typeof pokemon.shape === 'number' ? getShapeName(pokemon.shape) : pokemon.shape;
+      
+      const pokemonKey = getPokemonKey(pokemon);
+      
+      // Check if this card is expanded in grid view
+      const isCardExpanded = expandedCards.has(pokemonKey);
+      if (isCardExpanded) {
+        card.classList.add('expanded');
+      }
+      
+      // Get sprite path - use floor of num for the image
+      const spriteNum = Math.floor(pokemon.num);
+      const spritePath = `icons/poke/${spriteNum}.png`;
+      
+      // In grid view, show only images
+      if (displaySettings.gridView && !isCardExpanded) {
+        // Use the new SVG icon logic if applicable for card preview
+        const mainType = pokemon.types[0];
+        const mainTypeIcon = displaySettings.types.display === 'icon' ? getSvgIcon('types', mainType, activeFilters.types.includes(mainType)) : '';
+
+        card.innerHTML = `<img src="${spritePath}" alt="${pokemon.name}" onerror="this.style.display='none'">
+                          <div style="font-size: 8px;">${mainTypeIcon ? mainTypeIcon : pokemon.name}</div>`;
+        
+        card.addEventListener('click', () => {
+          expandedCards.add(pokemonKey);
+          renderPokemonList();
+        });
+        container.appendChild(card);
+        return;
+      }
+      
+      // If in grid view and expanded, or in normal view, show full details
+      const quickClearButton = secondaryFilter.type ? `<span class="quick-clear" onclick="clearSecondaryFilter()">[X]</span>` : '';
+  
+      let titleContent = '';
+      const isForm = pokemon.baseSpecies || Math.floor(pokemon.num) !== pokemon.num;
+      
+      // Add image if enabled
+      const imageHTML = displaySettings.showImage ? `<img src="${spritePath}" class="pokemon-sprite" alt="${pokemon.name}" onerror="this.style.display='none'">` : '';
+  
+      if (isForm) {
+          const baseName = (pokemon.baseSpecies || pokemon.name).trim();
+          let baseNameCapitalized = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+          
+          let formeName = (pokemon.forme || (pokemon.name.includes('-') ? pokemon.name.split('-').slice(1).join('-') : '')).trim();
+          let formeNameCapitalized = formeName.charAt(0).toUpperCase() + formeName.slice(1);
+          
+          if (pokemon.baseSpecies) {
+              if (formeNameCapitalized === 'Galar') formeNameCapitalized = 'Galarian';
+              else if (formeNameCapitalized === 'Alola') formeNameCapitalized = 'Alolan';
+              else if (formeNameCapitalized === 'Hisui') formeNameCapitalized = 'Hisuian';
+              else if (formeNameCapitalized === 'Paldea') formeNameCapitalized = 'Paldean';
+              
+              if (displaySettings.showName) {
+                  titleContent = `${formeNameCapitalized} ${baseNameCapitalized}`;
+              }
+          } else {
+              if (displaySettings.showName) {
+                  titleContent = pokemon.name.trim().split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('-');
+              }
+          }
+          
+      } else {
+          const nameTrimmed = pokemon.name.trim();
+          const numDisplay = displaySettings.showNumber ? `# ${Math.floor(pokemon.num)} ` : '';
+          
+          if (displaySettings.showName) {
+              const nameCapitalized = nameTrimmed.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('-');
+              titleContent = `${numDisplay}${nameCapitalized}`;
+          } else {
+              titleContent = numDisplay;
+          }
+      }
+      
+      const speciesDisplay = displaySettings.showSpecies && pokemon.species ? 
+          ` (Species: <span>${pokemon.species}</span>)` : '';
+  
+      const hasMovesFilter = activeFilters.moves.length > 0;
+      const isExpanded = pokemonMovesExpanded[pokemonKey];
+      
+      // Determine what to show for moves
+      let movesContent = '';
+      let showMovesToggle = false;
+      
+      if (learnsetLoaded && pokemon.learnset) {
+          if (hasMovesFilter) {
+              // Show filtered moves
+              const filteredMovesHTML = getMovesHTML(pokemon.learnset, pokemonKey, true);
+              if (filteredMovesHTML) {
+                  movesContent = 'Moves: ' + filteredMovesHTML;
+                  showMovesToggle = true;
+              }
+              
+              // If expanded, also show all moves below
+              if (isExpanded) {
+                  const allMovesHTML = getMovesHTML(pokemon.learnset, pokemonKey, false);
+                  if (allMovesHTML) {
+                      movesContent += '<div style="margin-top: 2px; padding-top: 2px; border-top: 1px solid #ccc;">All: ' + allMovesHTML + '</div>';
+                  }
+              }
+          } else if (isExpanded) {
+              // No filter, but expanded - show all moves
+              const allMovesHTML = getMovesHTML(pokemon.learnset, pokemonKey, false);
+              if (allMovesHTML) {
+                  movesContent = 'Moves: ' + allMovesHTML;
+              }
+          }
+          
+          // Show toggle button if there are moves to show and learnset loaded
+          if (Object.keys(pokemon.learnset).length > 0) {
+              showMovesToggle = true;
+          }
+      }
+      
+      // --- NEW SVG RENDERING FOR ATTRIBUTES ---
+      
+      let cardDetailsHTML = '<div class="card-details">' + getTypesHTML(pokemon.types);
+      
+      // Region
+      if (displaySettings.region.display !== 'hide') {
+        const regionPrefix = displaySettings.region.desc === 'full' ? 'Region: ' : 
+                            displaySettings.region.desc === 'short' ? '⛴ ' : '';
+        const regionSelected = activeFilters.regions.includes(pokemon.region);
+        
+        let regionHtml = '';
+        if (displaySettings.region.display === 'icon') {
+            regionHtml = getSvgIcon('regions', pokemon.region, regionSelected);
+            cardDetailsHTML = cardDetailsHTML.replace('</div>', ` ${regionHtml}</div>`);
+        } else {
+            const regionClass = regionSelected ? 'clickable selected-result' : 'clickable';
+            const regionStyle = displaySettings.region.display === 'color' ? 
+              'style="background-color: #87CEEB; color: white; padding: 2px 4px;"' : '';
+            
+            if (getTypesHTML(pokemon.types)) cardDetailsHTML += ' | ';
+            regionHtml = `${regionPrefix}<span class="${regionClass}" data-filter-type="regions" data-filter-value="${pokemon.region || ''}" ${regionStyle}>${pokemon.region || 'N/A'}</span>`;
+            cardDetailsHTML = cardDetailsHTML.replace('</div>', ` ${regionHtml}</div>`);
+        }
+      }
+      
+      // Color
+      if (displaySettings.color.display !== 'hide') {
+        const colorPrefix = displaySettings.color.desc === 'full' ? 'Color: ' : 
+                           displaySettings.color.desc === 'short' ? '⬔ ' : '';
+        const colorSelected = activeFilters.colors.includes(pokemon.color);
+        
+        let colorHtml = '';
+        if (displaySettings.color.display === 'icon') {
+            colorHtml = getSvgIcon('colors', pokemon.color, colorSelected);
+            cardDetailsHTML = cardDetailsHTML.replace('</div>', ` ${colorHtml}</div>`);
+        } else {
+            const colorClass = colorSelected ? 'clickable selected-result' : 'clickable';
+            const colorStyle = displaySettings.color.display === 'color' ? 
+              `style="background-color: ${pokemon.color || '#ccc'}; color: white; padding: 2px 4px;"` : '';
+            
+            if (displaySettings.region.display !== 'hide' || getTypesHTML(pokemon.types)) cardDetailsHTML += ' | ';
+            colorHtml = `${colorPrefix}<span class="${colorClass}" data-filter-type="colors" data-filter-value="${pokemon.color || ''}" ${colorStyle}>${pokemon.color || 'N/A'}</span>`;
+            cardDetailsHTML = cardDetailsHTML.replace('</div>', ` ${colorHtml}</div>`);
+        }
+      }
+      
+      // Shape
+      if (displaySettings.shape.display !== 'hide') {
+        const shapePrefix = displaySettings.shape.desc === 'full' ? 'Shape: ' : 
+                           displaySettings.shape.desc === 'short' ? '⭔ ' : '';
+        const shapeSelected = activeFilters.shapes.includes(shapeName);
+
+        let shapeHtml = '';
+        if (displaySettings.shape.display === 'icon') {
+            shapeHtml = getSvgIcon('shapes', shapeName, shapeSelected);
+            cardDetailsHTML = cardDetailsHTML.replace('</div>', ` ${shapeHtml}</div>`);
+        } else {
+            const shapeClass = shapeSelected ? 'clickable selected-result' : 'clickable';
+            const shapeStyle = displaySettings.shape.display === 'color' ? 
+              'style="background-color: #DDA0DD; color: white; padding: 2px 4px;"' : '';
+            
+            if (displaySettings.region.display !== 'hide' || displaySettings.color.display !== 'hide' || getTypesHTML(pokemon.types)) {
+              cardDetailsHTML += ' | ';
+            }
+            shapeHtml = `${shapePrefix}<span class="${shapeClass}" data-filter-type="shapes" data-filter-value="${shapeName || ''}" ${shapeStyle}>${shapeName || 'N/A'}</span>`;
+            cardDetailsHTML = cardDetailsHTML.replace('</div>', ` ${shapeHtml}</div>`);
+        }
+      }
+      // Re-add the closing div tag which was removed/manipulated
+      if (!cardDetailsHTML.endsWith('</div>')) {
+          cardDetailsHTML += '</div>';
+      }
+      
+      // --- END NEW SVG RENDERING ---
+      
+      const eggHTML = getEggGroupsHTML(pokemon.eggGroups);
+      const eggSection = eggHTML ? `<div class="card-details">${eggHTML}</div>` : '';
+      
+      const abilitiesHTML = getAbilitiesHTML(pokemon.abilities);
+      const abilitiesSection = abilitiesHTML ? `<div class="pokemon-abilities">${abilitiesHTML}</div>` : '';
+      
+      // In grid view expanded mode, add close button and image
+      const gridCloseButton = displaySettings.gridView && isCardExpanded ? 
+        `<button onclick="event.stopPropagation(); expandedCards.delete('${pokemonKey}'); renderPokemonList();" style="float: right;">Close [X]</button>` : '';
+      
+      const gridImageHTML = displaySettings.gridView && isCardExpanded ? 
+        `<img src="${spritePath}" alt="${pokemon.name}" onerror="this.style.display='none'">` : '';
+  
+      card.innerHTML = `
+        ${gridCloseButton}
+        ${gridImageHTML}
+        <h3>${quickClearButton} ${imageHTML}${titleContent}</h3>${speciesDisplay}
+        ${showMovesToggle ? `<button onclick="togglePokemonMoves('${pokemonKey}')" style="margin-left: 4px; font-size: 9px;">${isExpanded ? '[-]' : '[+]'} Moves</button>` : ''}
+        
+        ${cardDetailsHTML}
+        ${eggSection}
+        ${abilitiesSection}
+        
+        <div class="pokemon-stats ${statsVisible ? '' : 'hidden'}">
+            Stats: HP ${pokemon.baseStats.hp}/Atk ${pokemon.baseStats.atk}/Def ${pokemon.baseStats.def}/SpA ${pokemon.baseStats.spa}/SpD ${pokemon.baseStats.spd}/Spe ${pokemon.baseStats.spe}
+        </div>
+        
+        ${movesContent ? `<div class="pokemon-moves">${movesContent}</div>` : ''}
+      `;
+      
+      // Apply font size to card
+      card.style.fontSize = displaySettings.baseFontSize + 'px';
+      
+      // In grid view expanded, allow clicking moves button
+      if (displaySettings.gridView && isCardExpanded) {
+        // Prevent card click from collapsing when clicking inside
+        card.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+  
+      // Update event listener logic to capture clicks on icon-containers too
+      card.querySelectorAll('.clickable').forEach(element => {
+        element.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Check if click is on an SVG icon inside a container
+            let filterElement = this;
+            if (this.tagName.toLowerCase() === 'svg') {
+                filterElement = this.closest('.icon-container');
+            }
+            
+            const filterType = filterElement.getAttribute('data-filter-type');
+            const filterValue = filterElement.getAttribute('data-filter-value');
+            
+            if (filterType && filterValue && filterValue !== 'Unknown' && filterValue !== '' && filterValue !== 'N/A') {
+                if (secondaryFilter.type) {
+                    clearSecondaryFilter();
+                }
+                toggleFilter(filterType, filterValue);
+            }
+        });
+    });
+  
+      container.appendChild(card);
+    });
+  }
+  
+  function sortList(list, sortBy, direction) {
+      list.sort((a, b) => {
+          let valA, valB;
+  
+          if (sortBy === 'number') {
+              valA = a.num;
+              valB = b.num;
+          } else if (sortBy === 'height') { 
+              valA = a.heightm || 0;
+              valB = b.heightm || 0;
+          } else if (sortBy === 'color') {
+              valA = a.color || '';
+              valB = b.color || '';
+              if (valA.localeCompare(valB) === 0) return (a.name || '').localeCompare(b.name || '') * direction;
+          } else if (sortBy === 'shape') {
+              valA = a.shape || 0;
+              valB = b.shape || 0;
+          } else if (sortBy === 'name') {
+              valA = a.name || '';
+              valB = b.name || '';
+          } else if (sortBy === 'type') {
+              valA = a.types[0] || '';
+              valB = b.types[0] || '';
+              if (valA.localeCompare(valB) === 0) return (a.name || '').localeCompare(b.name || '') * direction;
+          } else if (sortBy === 'movelevel') {
+              // Sort by the minimum level of any filtered move
+              valA = 9999; // Default high value if no moves found
+              valB = 9999;
+              
+              if (activeFilters.moves.length > 0 && a.learnset) {
+                  activeFilters.moves.forEach(move => {
+                      if (a.learnset[move]) {
+                          const methods = a.learnset[move];
+                          methods.forEach(method => {
+                              if (method[0] === 'L') {
+                                  const level = method.length > 1 ? parseInt(method.substring(1)) : 0;
+                                  valA = Math.min(valA, level);
+                              } else if (method[0] === 'E' || method[0] === 'S') {
+                                  valA = Math.min(valA, 0); // Egg/Special moves are level 0
+                              }
+                          });
+                      }
+                  });
+              }
+              
+              if (activeFilters.moves.length > 0 && b.learnset) {
+                  activeFilters.moves.forEach(move => {
+                      if (b.learnset[move]) {
+                          const methods = b.learnset[move];
+                          methods.forEach(method => {
+                              if (method[0] === 'L') {
+                                  const level = method.length > 1 ? parseInt(method.substring(1)) : 0;
+                                  valB = Math.min(valB, level);
+                              } else if (method[0] === 'E' || method[0] === 'S') {
+                                  valB = Math.min(valB, 0);
+                              }
+                          });
+                      }
+                  });
+              }
+          }
+  
+          let comparison = 0;
+          if (typeof valA === 'string') {
+              comparison = valA.localeCompare(valB);
+          } else {
+              comparison = valA - valB;
+          }
+          
+          return comparison * direction;
+      });
+      return list;
+  }
+  
+  function handleSort(sortBy) {
+      if (currentSort.key === sortBy) {
+          currentSort.direction *= -1;
+      } else {
+          currentSort.key = sortBy;
+          currentSort.direction = 1; 
+      }
+      renderPokemonList();
+  }
+  
+  function updateSortButtons() {
+      const sortButtons = document.querySelectorAll('.controls button');
+      const sortHeader = document.getElementById('sortHeader');
+      const isNameSelected = secondaryFilter.type === 'secondary-name' || secondaryFilter.type === 'secondary-num';
+      
+      sortButtons.forEach(button => {
+          if (isNameSelected) {
+              button.classList.add('disabled-sort');
+          } else {
+              button.classList.remove('disabled-sort');
+          }
+      });
+      
+      if (sortHeader) {
+          if (isNameSelected) {
+              sortHeader.classList.add('disabled-sort');
+          } else {
+              sortHeader.classList.remove('disabled-sort');
+          }
+      }
+  }
+  
+  function populateFilterOptions() {
+    const populate = (id, items, type, attr, htmlFunc) => {
+      const container = document.getElementById(id);
+      container.innerHTML = '';
+      items.forEach(item => {
+        const chip = document.createElement('div');
+        chip.className = 'filter-chip';
+        chip.setAttribute(attr, item);
+        chip.innerHTML = htmlFunc ? htmlFunc(item) : item;
+        chip.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleFilter(type, item);
+        });
+        container.appendChild(chip);
+      });
+    };
+  
+    populate('typeFilters', allTypes, 'types', 'data-type');
+    populate('regionFilters', allRegions, 'regions', 'data-region');
+    populate('colorFilters', getAllColors(), 'colors', 'data-color');
+    populate('variantExcludeFilters', getAllVariantTypes(), 'variantExclude', 'data-variant');
+    populate('shapeFilters', getAllShapes(), 'shapes', 'data-shape');
+    populate('eggGroupFilters', getAllEggGroups(), 'eggGroups', 'data-egggroup');
+  }
+  
+  function loadLearnsetData() {
+      if (learnsetLoaded) return;
+  
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.id = 'loadingIndicator';
+      loadingIndicator.className = 'loading-indicator';
+      loadingIndicator.textContent = 'Loading move data...';
+      document.body.appendChild(loadingIndicator);
+  
+      const script = document.createElement('script');
+      script.src = 'moveset-data.js';
+      script.onload = function () {
+          if (typeof movesetData !== 'undefined') {
+              Object.keys(movesetData).forEach(pokemonId => {
+                  if (pokemonData[pokemonId]) {
+                      pokemonData[pokemonId].learnset = movesetData[pokemonId].learnset;
+                  }
+              });
+  
+              learnsetLoaded = true;
+              const loadButton = document.getElementById('loadMovesButton');
+              if (loadButton) {
+                  loadButton.disabled = true;
+                  loadButton.textContent = 'Moves Loaded';
+                  loadButton.style.color = 'green';
+              }
+  
+              document.body.removeChild(loadingIndicator);
+  
+              document.getElementById('movesFilterGroup').style.display = 'block';
+              
+              populateSearchableTerms();
+              renderPokemonList();
+          } else {
+              console.error('Move data not found');
+              if (document.body.contains(loadingIndicator)) {
+                  document.body.removeChild(loadingIndicator);
+              }
+          }
+      };
+  
+      script.onerror = function () {
+          console.error('Error loading move data');
+          if (document.body.contains(loadingIndicator)) {
+              document.body.removeChild(loadingIndicator);
+          }
+      };
+  
+      document.head.appendChild(script);
+  }
+  
+ 
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeNameKeyMap(); 
+    assignRegions(pokemonData); 
+    populateFilterOptions();
+    populateSearchableTerms();
+    renderPokemonList();
+    updateActiveFilters();
+    updateSortButtons();
+  
+    document.getElementById('filterToggleHeader').addEventListener('click', toggleFilterContainer);
+  
+    document.getElementById('searchBar').addEventListener('input', handleSearchInput);
+    document.getElementById('searchBar').addEventListener('focus', handleSearchInput); 
+    document.getElementById('searchBar').addEventListener('blur', () => {
+      setTimeout(() => {
+          document.getElementById('suggestions').innerHTML = '';
+      }, 200);
+    });
+    
+    // Settings icon click and long press
+    const settingsIcon = document.getElementById('settingsIcon');
+    
+    settingsIcon.addEventListener('click', () => {
+      openSettings();
+    });
+    
+    settingsIcon.addEventListener('touchstart', (e) => {
+      settingsPressTimer = setTimeout(() => {
+        openSettings();
+      }, 500);
+    });
+    
+    settingsIcon.addEventListener('touchend', () => {
+      clearTimeout(settingsPressTimer);
+    });
+    
+    settingsIcon.addEventListener('mousedown', (e) => {
+      if (e.button === 0) {
+        settingsPressTimer = setTimeout(() => {
+          openSettings();
+        }, 500);
+      }
+    });
+    
+    settingsIcon.addEventListener('mouseup', () => {
+      clearTimeout(settingsPressTimer);
+    });
+    
+    document.getElementById('closeSettings').addEventListener('click', closeSettings);
+    
+    // Close modal when clicking outside
+    document.getElementById('settingsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'settingsModal') {
+        closeSettings();
+      }
+    });
+  });
+  
+    </script>
+  
+  </body>
+  </html>

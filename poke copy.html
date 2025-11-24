@@ -1,0 +1,1907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Type Quiz - CSV Name Parsing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .type-icon {
+  font-family: 'EssentiarumVG';
+  font-size: 1.60rem;
+  line-height: 1;
+  display: inline-block;
+}
+
+.type-label {
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  margin-left: 0.24em;
+  margin-top: 0.45em;
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+   /* Custom Font for Type Icons (Placeholder based on Pokefont concept) */
+   @font-face {
+            font-family: 'EssentiarumVG'; /* FIXED: Changed from 'pokefont' */
+            src: url('fonts/EssentiarumVG.woff2') format('woff2'),
+       url('fonts/EssentiarumVG.woff') format('woff');
+            /* In a real environment, you would use a custom font file here */
+        }
+        .pokefont {
+            font-family: 'EssentiarumVG', monospace, sans-serif; /* FIXED: Changed from 'pokefont' */
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="min-h-screen p-8 flex items-center justify-center">
+             <p class="text-xl text-gray-700">Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        // 🔧 PASTE YOUR GOOGLE SHEETS WEBHOOK URL HERE:
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxya77jjiWfTLXcFJcwSV70ytLXcFJcwSV70ytLXfr4Ok9cOlkrKvBgfY5Mq2vMQ2CqjPooBQTg5ZNOVw/exec';
+
+        // 📝 POKÉMON CSV NAME DATA (Includes header row as requested)
+        const POKEMON_NAMES_CSV_RAW = `pokemonId,en,ja,fr,de,es,it,ko,zh_HK,zh
+1,Bulbasaur,フシギダネ,Bulbizarre,Bisasam,Bulbasaur,Bulbasaur,이상해씨,妙蛙種子,妙蛙种子
+2,Ivysaur,フシギソウ,Herbizarre,Bisaknosp,Ivysaur,Ivysaur,이상해풀,妙蛙草,妙蛙草
+3,Venusaur,フシギバナ,Florizarre,Bisaflor,Venusaur,Venusaur,이상해꽃,妙蛙花,妙蛙花
+4,Charmander,ヒトカゲ,Salamèche,Glumanda,Charmander,Charmander,파이리,小火龍,小火龙
+5,Charmeleon,リザード,Reptincel,Glutexo,Charmeleon,Charmeleon,리자드,火恐龍,火恐龙
+6,Charizard,リザードン,Dracaufeu,Glurak,Charizard,Charizard,리자몽,噴火龍,喷火龙
+7,Squirtle,ゼニガメ,Carapuce,Schiggy,Squirtle,Squirtle,꼬부기,傑尼龜,杰尼龟
+8,Wartortle,カメール,Carabaffe,Schillok,Wartortle,Wartortle,어니부기,卡咪龜,卡咪龟
+9,Blastoise,カメックス,Tortank,Turtok,Blastoise,Blastoise,거북왕,水箭龜,水箭龟
+10,Caterpie,キャタピー,Chenipan,Raupy,Caterpie,Caterpie,캐터피,綠毛蟲,绿毛虫
+11,Metapod,トランセル,Chrysacier,Safcon,Metapod,Metapod,단데기,鐵甲蛹,铁甲蛹
+12,Butterfree,バタフリー,Papilusion,Smettbo,Butterfree,Butterfree,버터플,巴大蝶,巴大蝶
+13,Weedle,ビードル,Aspicot,Hornliu,Weedle,Weedle,뿔충이,獨角蟲,独角虫
+14,Kakuna,コクーン,Coconfort,Kokuna,Kakuna,Kakuna,딱충이,獨角蟲,独角虫
+15,Beedrill,スピアー,Dardargnan,Bibor,Beedrill,Beedrill,독침붕,大针蜂,大针蜂
+16,Pidgey,ポッポ,Roucool,Taubsi,Pidgey,Pidgey,구구,波波,波波
+17,Pidgeotto,ピジョン,Roucoups,Tauboga,Pidgeotto,Pidgeotto,피죤,比比鳥,比比鸟
+18,Pidgeot,ピジョット,Roucarnage,Tauboss,Pidgeot,Pidgeot,피죤투,大比鳥,大比鸟
+19,Rattata,コラッタ,Rattata,Rattfratz,Rattata,Rattata,꼬렛,小拉達,小拉达
+20,Raticate,ラッタ,Rattatac,Rattikarl,Raticate,Raticate,레트라,拉達,拉达
+21,Spearow,オニスズメ,Piafabec,Habitak,Spearow,Spearow,깨비참,烈雀,烈雀
+22,Fearow,オニドリル,Rapasdepic,Ibitak,Fearow,Fearow,깨비드릴조,大嘴雀,大嘴雀
+23,Ekans,アーボ,Abo,Rettan,Ekans,Ekans,아보,阿柏蛇,阿柏蛇
+24,Arbok,アーボック,Arbok,Arbok,Arbok,Arbok,아보크,阿柏怪,阿柏怪
+25,Pikachu,ピカチュウ,Pikachu,Pikachu,Pikachu,Pikachu,피카츄,皮卡丘,皮卡丘
+26,Raichu,ライチュウ,Raichu,Raichu,Raichu,Raichu,라이츄,雷丘,雷丘
+27,Sandshrew,サンド,Sabelette,Sandan,Sandshrew,Sandshrew,모래두지,穿山鼠,穿山鼠
+28,Sandslash,サンドパン,Sablaireau,Sandamer,Sandslash,Sandslash,고지,穿山王,穿山王
+29,Nidoran♀,ニドラン♀,Nidoran♀,Nidoran♀,Nidoran♀,Nidoran♀,니드런♀,尼多蘭,尼多兰
+30,Nidorina,ニドリーナ,Nidorina,Nidorina,Nidorina,Nidorina,니드리나,尼多娜,尼多娜
+31,Nidoqueen,ニドクイン,Nidoqueen,Nidoqueen,Nidoqueen,Nidoqueen,니드퀸,尼多后,尼多后
+32,Nidoran♂,ニドラン♂,Nidoran♂,Nidoran♂,Nidoran♂,Nidoran♂,니드런♂,尼多朗,尼多朗
+33,Nidorino,ニドリーノ,Nidorino,Nidorino,Nidorino,Nidorino,니드리노,尼多力諾,尼多力诺
+34,Nidoking,ニドキング,Nidoking,Nidoking,Nidoking,Nidoking,니드킹,尼多王,尼多王
+35,Clefairy,ピッピ,Mélofée,Piepi,Clefairy,Clefairy,삐삐,皮皮,皮皮
+36,Clefable,ピクシー,Mélodelfe,Pixi,Clefable,Clefable,픽시,皮可西,皮可西
+37,Vulpix,ロコン,Goupix,Vulpix,Vulpix,Vulpix,식스테일,六尾,六尾
+38,Ninetales,キュウコン,Feunard,Vulnona,Ninetales,Ninetales,나인테일,九尾,九尾
+39,Jigglypuff,プリン,Rondoudou,Pummeluff,Jigglypuff,Jigglypuff,푸린,胖丁,胖丁
+40,Wigglytuff,プクリン,Grodoudou,Knuddeluff,Wigglytuff,Wigglytuff,푸크린,胖可丁,胖可丁
+41,Zubat,ズバット,Nosferapti,Zubat,Zubat,Zubat,주뱃,超音蝠,超音蝠
+42,Golbat,ゴルバット,Nosferalto,Golbat,Golbat,Golbat,골뱃,大嘴蝠,大嘴蝠
+43,Oddish,ナゾノクサ,Mystherbe,Myrapla,Oddish,Oddish,뚜벅쵸,走路草,走路草
+44,Gloom,クサイハナ,Ortide,Duflor,Gloom,Gloom,냄새꼬,臭臭花,臭臭花
+45,Vileplume,ラフレシア,Rafflesia,Giflor,Vileplume,Vileplume,라플레시아,霸王花,霸王花
+46,Paras,パラス,Paras,Paras,Paras,Paras,파라스,派拉斯,派拉斯
+47,Parasect,パラセクト,Parasect,Parasek,Parasect,Parasect,파라섹트,派拉斯特,派拉斯特
+48,Venonat,コンパン,Mimitoss,Bluzuk,Venonat,Venonat,콘팡,毛球,毛球
+49,Venomoth,モルフォン,Aéromite,Omot,Venomoth,Venomoth,도나리,摩魯蛾,摩鲁蛾
+50,Diglett,ヂィグダ,Taupiqueur,Digda,Diglett,Diglett,디그다,地鼠,地鼠
+51,Dugtrio,ダグトリオ,Triopikeur,Digdri,Dugtrio,Dugtrio,닥트리오,三地鼠,三地鼠
+52,Meowth,ニャース,Miaouss,Mauzi,Meowth,Meowth,나옹,喵喵,喵喵
+53,Persian,ペルシアン,Persian,Snobilikat,Persian,Persian,페르시온,貓老大,貓老大
+54,Psyduck,コダック,Psykokwak,Enton,Psyduck,Psyduck,고라파덕,可達鴨,可达鸭
+55,Golduck,ゴルダック,Akwakwak,Entoron,Golduck,Golduck,골덕,哥達鴨,哥达鸭
+56,Mankey,マンキー,Férosinge,Mankey,Mankey,Mankey,망키,猴怪,猴怪
+57,Primeape,オコリザル,Colosinge,Rasaff,Primeape,Primeape,성원숭,火爆猴,火爆猴
+58,Growlithe,ガーヂィ,Caninos,Fuakno,Growlithe,Growlithe,가디,卡蒂狗,卡蒂狗
+59,Arcanine,ウインヂィ,Arcanin,Arkani,Arcanine,Arcanine,윈디,風速狗,风速狗
+60,Poliwag,ニョロモ,Ptitard,Quapsel,Poliwag,Poliwag,발챙이,蚊香蝌蚪,蚊香蝌蚪
+61,Poliwhirl,ニョロゾ,Têtarte,Quaputzi,Poliwhirl,Poliwhirl,슈륙챙이,蚊香君,蚊香君
+62,Poliwrath,ニョロボン,Tartard,Quappo,Poliwrath,Poliwrath,강챙이,蚊香泳士,蚊香泳士
+63,Abra,ケーシィ,Abra,Abra,Abra,Abra,캐이시,凱西,凯西
+64,Kadabra,ユンゲラー,Kadabra,Kadabra,Kadabra,Kadabra,윤겔라,勇基拉,勇基拉
+65,Alakazam,フーヂィン,Alakazam,Simsala,Alakazam,Alakazam,후디,胡地,胡地
+66,Machop,ワンリキー,Machoc,Machollo,Machop,Machop,알통몬,腕力,腕力
+67,Machoke,ゴーリキー,Machopeur,Maschock,Machoke,Machoke,근육몬,豪力,豪力
+68,Machamp,カイリキー,Mackogneur,Machomei,Machamp,Machamp,괴력몬,怪力,怪力
+69,Bellsprout,マダツボミ,Chétiflor,Knofensa,Bellsprout,Bellsprout,모다피,喇叭芽,喇叭芽
+70,Weepinbell,ウツドン,Boustiflor,Ultrigaria,Weepinbell,Weepinbell,우츠동,口呆花,口呆花
+71,Victreebel,ウツボット,Empiflor,Sarzenia,Victreebel,Victreebel,우츠보트,大食花,大食花
+72,Tentacool,メノクラゲ,Tentacool,Tentacha,Tentacool,Tentacool,왕눈해,瑪瑙水母,玛瑙水母
+73,Tentacruel,ドククラゲ,Tentacruel,Tentoxa,Tentacruel,Tentacruel,독파리,毒刺水母,毒刺水母
+74,Geodude,イシツブテ,Racaillou,Kleinstein,Geodude,Geodude,꼬마돌,小拳石,小拳石
+75,Graveler,ゴローン,Gravalanch,Georok,Graveler,Graveler,데구리,隆隆石,隆隆石
+76,Golem,ゴローニャ,Grolem,Geowaz,Golem,Golem,딱구리,隆隆岩,隆隆岩
+77,Ponyta,ポニータ,Ponyta,Ponyta,Ponyta,Ponyta,포니타,小火馬,小火马
+78,Rapidash,ギャロップ,Galopa,Gallopa,Rapidash,Rapidash,날쌩마,烈焰馬,烈焰马
+79,Slowpoke,ヤドン,Ramoloss,Flegmon,Slowpoke,Slowpoke,야돈,呆呆獸,呆呆兽
+80,Slowbro,ヤドラン,Flagadoss,Lahmus,Slowbro,Slowbro,야도란,呆殼獸,呆壳兽
+81,Magnemite,コイル,Magnéti,Magnetilo,Magnemite,Magnemite,코일,小磁怪,小磁怪
+82,Magneton,レアコイル,Magnéton,Magneton,Magneton,Magneton,레어코일,三合一磁怪,三合一磁怪
+83,Farfetch'd,カモネギ,Canarticho,Porenta,Farfetch'd,Farfetch'd,파오리,大蔥鴨,大葱鸭
+84,Doduo,ドードー,Doduo,Dodu,Doduo,Doduo,두두,嘟嘟,嘟嘟
+85,Dodrio,ドードリオ,Dodrio,Dodri,Dodrio,Dodrio,두트리오,嘟嘟利,嘟嘟利
+86,Seel,パウワウ,Otaria,Jurob,Seel,Seel,쥬쥬,小海獅,小海狮
+87,Dewgong,ジュゴン,Lamantine,Jugong,Dewgong,Dewgong,쥬레곤,白海獅,白海狮
+88,Grimer,ベトベター,Tadmorv,Sleima,Grimer,Grimer,질퍽이,臭泥,臭泥
+89,Muk,ベトベトン,Grotadmorv,Sleimok,Muk,Muk,질뻐기,臭臭泥,臭臭泥
+90,Shellder,シェルダー,Kokiyas,Muschas,Shellder,Shellder,셀러,大舌貝,大舌贝
+91,Cloyster,パルシェン,Crustabri,Austos,Cloyster,Cloyster,파르셀,刺甲貝,刺甲贝
+92,Gastly,ゴース,Fantominus,Nebulak,Gastly,Gastly,고오스,鬼斯,鬼斯
+93,Haunter,ゴースト,Spectrum,Apollo,Haunter,Haunter,고우스트,鬼斯通,鬼斯通
+94,Gengar,ゲンガー,Ectoplasma,Gengar,Gengar,Gengar,팬텀,耿鬼,耿鬼
+95,Onix,イワーク,Onix,Onix,Onix,Onix,롱스톤,大岩蛇,大岩蛇
+96,Drowzee,スリープ,Soporifik,Traumato,Drowzee,Drowzee,슬리프,催眠貘,催眠貘
+97,Hypno,スリーパー,Hypnomade,Hypno,Hypno,Hypno,슬리퍼,引夢貘人,引梦貘人
+98,Krabby,クラブ,Krabby,Krabby,Krabby,Krabby,크랩,大鉗蟹,大钳蟹
+99,Kingler,キングラー,Krabboss,Kingler,Kingler,Kingler,킹크랩,巨鉗蟹,巨钳蟹
+100,Voltorb,ビリリダマ,Voltorbe,Voltobal,Voltorb,Voltorb,찌리리공,霹靂電球,霹雳电球
+101,Electrode,マルマリン,Électrode,Lektrobal,Electrode,Electrode,붐볼,頑皮雷彈,顽皮雷弹
+102,Exeggcute,タマタマ,Noeunoeuf,Owei,Exeggcute,Exeggcute,아라리,蛋蛋,蛋蛋
+103,Exeggutor,ナッシー,Noadkoko,Kokowei,Exeggutor,Exeggutor,나시,椰蛋樹,椰蛋树
+104,Cubone,カラカラ,Osselait,Tragosso,Cubone,Cubone,탕구리,卡拉卡拉,卡拉卡拉
+105,Marowak,ガラガラ,Ossatueur,Knogga,Marowak,Marowak,텅구리,嘎啦嘎啦,嘎啦嘎啦
+106,Hitmonlee,サワムラー,Kicklee,Kicklee,Hitmonlee,Hitmonlee,시라소몬,飛腿郎,飞腿郎
+107,Hitmonchan,エビワラー,Tygnon,Nokchan,Hitmonchan,Hitmonchan,홍수몬,快拳郎,快拳郎
+108,Lickitung,ベロリンガ,Excelangue,Schlurp,Lickitung,Lickitung,내루미,大舌頭,大舌头
+109,Koffing,ドガース,Smogo,Smogon,Koffing,Koffing,또가스,瓦斯彈,瓦斯弹
+110,Weezing,マタドカース,Smogogo,Smogmog,Weezing,Weezing,또도가스,雙彈瓦斯,双弹瓦斯
+111,Rhyhorn,サイホーン,Rhinocorne,Rihorn,Rhyhorn,Rhyhorn,뿔카노,獨角犀牛,独角犀牛
+112,Rhydon,サイドン,Rhinoféros,Rizeros,Rhydon,Rhydon,코뿌리,鑽角犀獸,钻角犀兽
+113,Chansey,ラッキ,Leveinard,Chaneira,Chansey,Chansey,럭키,吉利蛋,吉利蛋
+114,Tangela,モンジャラ,Saquedeneu,Tangela,Tangela,Tangela,덩구리,蔓藤怪,蔓藤怪
+115,Kangaskhan,ガルーラ,Kangourex,Kangama,Kangaskhan,Kangaskhan,캥카,袋獸,袋兽
+116,Horsea,タッツー,Hypotrempe,Seeper,Horsea,Horsea,쏘드라,墨海馬,墨海马
+117,Seadra,シードラ,Hypocéan,Seemon,Seadra,Seadra,시드라,海刺龍,海刺龙
+118,Goldeen,トサキント,Poissirène,Goldini,Goldeen,Goldeen,콘치,角金魚,角金鱼
+119,Seaking,アズマオウ,Poissoroy,Golking,Seaking,Seaking,왕콘치,金魚王,金鱼王
+120,Staryu,ヒトデマン,Stari,Sterndu,Staryu,Staryu,별가사리,海星星,海星星
+121,Starmie,スターミー,Staross,Starmie,Starmie,Starmie,아쿠스타,寶石海星,宝石海星
+122,Mr. Mime,バリヤード,M. Mime,Pantimos,Mr. Mime,Mr. Mime,마임맨,魔牆人偶,魔墙人偶
+123,Scyther,ストライク,Insécateur,Sichlor,Scyther,Scyther,스라크,飛天螳螂,飞天螳螂
+124,Jynx,ルージュラ,Lippoutou,Rossana,Jynx,Jynx,루주라,迷唇姐,迷唇姐
+125,Electabuzz,エレブー,Élektek,Elektek,Electabuzz,Electabuzz,에레브,電擊獸,电击兽
+126,Magmar,ブーバー,Magmar,Magmar,Magmar,Magmar,마그마,鴨嘴火獸,鸭嘴火兽
+127,Pinsir,カイロス,Scarabrute,Pinsir,Pinsir,Pinsir,쁘사이저,凱羅斯,凯罗斯
+128,Tauros,ケンタロス,Tauros,Tauros,Tauros,Tauros,켄타로스,肯泰羅,肯泰罗
+129,Magikarp,コイキング,Magicarpe,Magikarp,Magikarp,Magikarp,잉어킹,鯉魚王,鲤鱼王
+130,Gyarados,ギャラドス,Léviator,Garados,Gyarados,Gyarados,갸라도스,暴鯉龍,暴鲤龙
+131,Lapras,ラプラス,Lokhlass,Lapras,Lapras,Lapras,라프라스,拉普拉斯,拉普拉斯
+132,Ditto,メタモン,Métamorph,Ditto,Ditto,Ditto,메타몽,百變怪,百变怪
+133,Eevee,イーブイ,Évoli,Evoli,Eevee,Eevee,이브이,伊布,伊布
+134,Vaporeon,シャワーズ,Aquali,Aquana,Vaporeon,Vaporeon,샤미드,水伊布,水伊布
+135,Jolteon,サンダース,Voltali,Blitza,Jolteon,Jolteon,쥬피썬더,雷伊布,雷伊布
+136,Flareon,ブースター,Pyroli,Flamara,Flareon,Flareon,부스터,火伊布,火伊布
+137,Porygon,ポリゴン,Porygon,Porygon,Porygon,Porygon,폴리곤,多邊獸,多边兽
+138,Omanyte,オムナイト,Amonita,Amonitas,Omanyte,Omanyte,암나이트,菊石獸,菊石兽
+139,Omastar,オムスター,Amonistar,Amoroso,Omastar,Omastar,암스타,多刺菊石獸,多刺菊石兽
+140,Kabuto,カブト,Kabuto,Kabuto,Kabuto,Kabuto,투구,化石盔,化石盔
+141,Kabutops,カブトプス,Kabutops,Kabutops,Kabutops,Kabutops,투구푸스,鐮刀盔,镰刀盔
+142,Aerodactyl,プテラ,Ptéra,Aerodactyl,Aerodactyl,Aerodactyl,프테라,化石翼龍,化石翼龙
+143,Snorlax,カビゴン,Ronflex,Relaxo,Snorlax,Snorlax,잠만보,卡比獸,卡比兽
+144,Articuno,フリーザー,Artikodin,Arktos,Articuno,Articuno,프리져,急凍鳥,急冻鸟
+145,Zapdos,サンダー,Électhor,Zapdos,Zapdos,Zapdos,썬더,閃電鳥,闪电鸟
+146,Moltres,ファイヤー,Sulfura,Lavados,Moltres,Moltres,파이어,火焰鳥,火焰鸟
+147,Dratini,ミニリュウ,Minidraco,Dratini,Dratini,Dratini,미뇽,迷你龍,迷你龙
+148,Dragonair,ハクリュウ,Draco,Dragonir,Dragonair,Dragonair,신뇽,哈克龍,哈克龙
+149,Dragonite,カイリュウ,Dracolosse,Dragoran,Dragonite,Dragonite,망나뇽,快龍,快龙
+150,Mewtwo,ミュウツー,Mewtwo,Mewtu,Mewtwo,Mewtwo,뮤츠,超夢,超梦
+151,Mew,ミュウ,Mew,Mew,Mew,Mew,뮤,夢幻,梦幻
+152,Chikorita,チコリータ,Germinion,Endivie,Chikorita,Chikorita,치코리타,菊草葉,菊草叶
+153,Bayleef,ベイリーフ,Macronium,Lorblatt,Bayleef,Bayleef,베이리프,月桂葉,月桂叶
+154,Meganium,メガニウム,Méganium,Meganie,Meganium,Meganium,메가니움,大竺葵,大竺葵
+155,Cyndaquil,ヒノアラシ,Héricendre,Feuriegel,Cyndaquil,Cyndaquil,브케인,火球鼠,火球鼠
+156,Quilava,マグマラシ,Feurisson,Igelavar,Quilava,Quilava,마그케인,火岩鼠,火岩鼠
+157,Typhlosion,バクフーン,Typhlosion,Tornupto,Typhlosion,Typhlosion,블레이범,火爆獸,火爆兽
+158,Totodile,ワニノコ,Kaiminus,Karnimani,Totodile,Totodile,리아코,小鋸鱷,小锯鳄
+159,Croconaw,アリゲイツ,Crocrodil,Tyracroc,Croconaw,Croconaw,엘리게이,藍鱷,蓝鳄
+160,Feraligatr,オーダイル,Aligatueur,Impergator,Feraligatr,Feraligatr,장크로다일,大力鱷,大力鳄
+161,Sentret,オタチ,Fouinette,Wiesor,Sentret,Sentret,꼬리선,尾立,尾立
+162,Furret,オオタチ,Fouinar,Wiesenior,Furret,Furret,다꼬리,大尾立,大尾立
+163,Hoothoot,ホホーホー,Hoothoot,Hoothoot,Hoothoot,Hoothoot,부우부,咕咕,咕咕
+164,Noctowl,ヨルノズク,Noarfang,Noctuh,Noctowl,Noctowl,야부엉,貓頭夜鷹,猫头夜鹰
+165,Ledyba,レヂィバ,Coxy,Ledyba,Ledyba,Ledyba,레디바,芭瓢蟲,芭瓢虫
+166,Ledian,レヂィアン,Coxyclaque,Ledian,Ledian,Ledian,레디안,安瓢蟲,安瓢虫
+167,Spinarak,イトマル,Mimigal,Webarak,Spinarak,Spinarak,페이검,圓絲蛛,圆丝蛛
+168,Ariados,アリアドス,Migalos,Ariados,Ariados,Ariados,아리아도스,阿利多斯,阿利多斯
+169,Crobat,クロバット,Nostenfer,Iksbat,Crobat,Crobat,크로뱃,叉字蝠,叉字蝠
+170,Chinchou,チョンチー,Loupio,Lampi,Chinchou,Chinchou,초라기,燈籠魚,灯笼鱼
+171,Lanturn,ランターン,Lanturn,Lanturn,Lanturn,Lanturn,랜턴,電燈怪,电灯怪
+172,Pichu,ピチュウ,Pichu,Pichu,Pichu,Pichu,피츄,皮丘,皮丘
+173,Cleffa,ピィ,Mélo,Pii,Cleffa,Cleffa,삐,皮寶寶,皮宝宝
+174,Igglybuff,ププリン,Toudoudou,Fluffefeluff,Igglybuff,Igglybuff,푸푸린,寶寶丁,宝宝丁
+175,Togepi,トゲピー,Togepi,Togepi,Togepi,Togepi,토게피,波克比,波克比
+176,Togetic,トゲチック,Togetic,Togetic,Togetic,Togetic,토게틱,波克基古,波克基古
+177,Natu,ネイチィ,Natu,Natu,Natu,Natu,네이티,天然雀,天然雀
+178,Xatu,ネイチィオ,Xatu,Xatu,Xatu,Xatu,네이티오,天然鳥,天然鸟
+179,Mareep,メリープ,Wattouat,Voltilamm,Mareep,Mareep,메리프,咩利羊,咩利羊
+180,Flaaffy,モココ,Lainergie,Waaty,Flaaffy,Flaaffy,보송송,茸茸羊,茸茸羊
+181,Ampharos,デンリュウ,Pharamp,mpharos,Ampharos,Ampharos,전룡,電龍,电龙
+182,Bellossom,キレイハナ,Joliflor,Blubella,Bellossom,Bellossom,아르코,美麗花,美丽花
+183,Marill,マリル,Marill,Marill,Marill,Marill,마릴,瑪力露,玛力露
+184,Azumarill,マリルリ,Azumarill,Azumarill,Azumarill,Azumarill,마릴리,瑪力露麗,玛力露丽
+185,Sudowoodo,ウソッキー,Simularbre,Mogelbaum,Sudowoodo,Sudowoodo,꼬지모,樹才怪,树才怪
+186,Politoed,ニョロトノ,Tarpaud,Quaxo,Politoed,Politoed,왕구리,蚊香蛙皇,蚊香蛙皇
+187,Hoppip,ハネッコ,Granivol,Hoppspross,Hoppip,Hoppip,통통코,毽子草,毽子草
+188,Skiploom,ポポッコ,Floravol,Hubelupf,Skiploom,Skiploom,두코,毽子花,毽子花
+189,Jumpluff,ワタッコ,Cotovol,Papungha,Jumpluff,Jumpluff,솜솜코,毽子棉,毽子棉
+190,Aipom,エイパム,Capumain,Griffel,Aipom,Aipom,에이팜,長尾怪手,长尾怪手
+191,Sunkern,ヒマナッツ,Tournegrain,Sonnkern,Sunkern,Sunkern,해너츠,向日種子,向日种子
+192,Sunflora,キミワリ,Héliatronc,Sonflora,Sunflora,Sunflora,해루미,向日花怪,向日花怪
+193,Yanma,ヤンヤンマ,Yanma,Yanma,Yanma,Yanma,왕자리,蜻蜻蜓,蜻蜻蜓
+194,Wooper,ウパー,Axoloto,Felino,Wooper,Wooper,우파,烏波,乌波
+195,Quagsire,ヌオー,Maraiste,Morlord,Quagsire,Quagsire,누오,沼王,沼王
+196,Espeon,エーフィ,Mentali,Psiana,Espeon,Espeon,에브이,太陽伊布,太阳伊布
+197,Umbreon,ブラッキー,Noctali,Nachtara,Umbreon,Umbreon,블래키,月亮伊布,月亮伊布
+198,Murkrow,ヤミカラス,Cornèbre,Kramurx,Murkrow,Murkrow,니로우,黑暗鴉,黑暗鸦
+199,Slowking,ヤドキング,Roigada,Laschoking,Slowking,Slowking,야도킹,呆呆王,呆呆王
+200,Misdreavus,ムウマ,Feuforève,Traunmagil,Misdreavus,Misdreavus,무우마,夢妖,梦妖
+201,Unown,アンノーン,Zarbi,Icognito,Unown,Unown,안농,未知圖騰,未知图腾
+202,Wobbuffet,ソーナンス,Qulbutoké,Woingenau,Wobbuffet,Wobbuffet,마자용,果然翁,果然翁
+203,Girafarig,キリンリキ,Girafarig,Girafarig,Girafarig,Girafarig,키링키,麒麟奇,麒麟奇
+204,Pineco,クヌギダマ,Pomdepik,Tanza,Pineco,Pineco,피콘,榛果球,榛果球
+205,Forretress,フォレトス,Foretress,Forstellka,Forretress,Forretress,쏘콘,佛烈托斯,佛烈托斯
+206,Dunsparce,ノコッチ,Insolourdo,Dummisel,Dunsparce,Dunsparce,노고치,土龍弟弟,土龙弟弟
+207,Gligar,グライガー,Scorplane,Skorgla,Gligar,Gligar,글라이거,天蠍,天蝎
+208,Steelix,ハガネール,Steelix,Stahlos,Steelix,Steelix,강철톤,大鋼蛇,大钢蛇
+209,Snubbull,ブルー,Snubbull,Snubbull,Snubbull,Snubbull,블루,布魯,布鲁
+210,Granbull,グランブル,Granbull,Granbull,Granbull,Granbull,그랑블루,布魯皇,布鲁皇
+211,Qwilfish,ハリーセン,Qwilfish,Baldorfish,Qwilfish,Qwilfish,침바루,千針魚,千针鱼
+212,Scizor,ハッサム,Cizayox,Scherox,Scizor,Scizor,핫삼나,巨鉗螳螂,巨钳螳螂
+213,Shuckle,ツボツボ,Caratroc,Pottrott,Shuckle,Shuckle,단단지,壺壺,壶壶
+214,Heracross,ヘラクロス,Scarhino,Skarabon,Heracross,Heracross,헤라크로스,赫拉克羅斯,赫拉克罗斯
+215,Sneasel,ニューラ,Farfuret,Sniebel,Sneasel,Sneasel,포푸니,狃拉,狃拉
+216,Teddiursa,ヒメグマ,Teddiursa,Teddiursa,Teddiursa,Teddiursa,깜지곰,熊寶寶,熊宝宝
+217,Ursaring,リングマ,Ursaring,Ursaring,Ursaring,Ursaring,링곰,圈圈熊,圈圈熊
+218,Slugma,マグマッグ,Limagma,Schneckmag,Slugma,Slugma,마그마그,熔岩蟲,熔岩虫
+219,Magcargo,マグカルゴ,Volcaropod,Magcargo,Magcargo,Magcargo,마그카르고,熔岩蝸牛,熔岩蜗牛
+220,Swinub,ウリムー,Marcacrin,Quiekel,Swinub,Swinub,꾸꾸리,小山豬,小山猪
+221,Piloswine,イノムー,Cochignon,Keifel,Piloswine,Piloswine,메꾸리,長毛豬,长毛猪
+222,Corsola,サニーゴ,Corayon,Corasonn,Corsola,Corsola,코산호,太陽珊瑚,太阳珊瑚
+223,Remoraid,テッポウオ,Rémoraid,Remoraid,Remoraid,Remoraid,총어,鐵炮魚,铁炮鱼
+224,Octillery,オクタン,Octillery,Octillery,Octillery,Octillery,대포무노,章魚桶,章鱼桶
+225,Delibird,デリバード,Cadoizo,Botogel,Delibird,Delibird,딜리버드,信使鳥,信使鸟
+226,Mantine,マンタイン,Démanta,mantax,Mantine,Mantine,만타인,巨翅飛魚,巨翅飞鱼
+227,Skarmory,エアームド,Airmure,Panzaeron,Skarmory,Skarmory,무장조,盔甲鳥,盔甲鸟
+228,Houndoor,デルビル,Malosse,Hunduster,Houndoor,Houndoor,델빌,戴魯比,戴鲁比
+229,Houndoom,ヘルガー,Démolosse,Hundemon,Houndoom,Houndoom,헬가,黑魯加,黑鲁加
+230,Kingdra,キングドラ,Hyporoi,Seedraking,Kingdra,Kingdra,킹드라,刺龍王,刺龙王
+231,Phanpy,ゴマゾウ,Phanpy,Phanpy,Phanpy,Phanpy,코코리,小小象,小小象
+232,Donphan,ドンファン,Donphan,Donphan,Donphan,Donphan,코리갑,頓甲,顿甲
+233,Porygon2,ポリゴン２,Porygon2,Porygon2,Porygon2,Porygon2,폴리곤２,多邊獸Ⅱ,多边兽２型
+234,Stantler,オドシシ,Cerfrousse,Damhirplex,Stantler,Stantler,노라키,驚角鹿,惊角鹿
+235,Smeargle,ドーブル,Queulorior,Farbeagle,Smeargle,Smeargle,루브도,圖圖犬,图图犬
+236,Tyrogue,バルキー,Debugant,Rabauz,Tyrogue,Tyrogue,배루키,無畏小子,无畏小子
+237,Hitmontop,カポエラー,Kapoera,Kapoera,Hitmontop,Hitmontop,카포에라,戰舞郎,战舞郎
+238,Smoochum,ムチュール,Lippouti,Kussilla,Smoochum,Smoochum,뽀뽀라,迷唇娃,迷唇娃
+239,Elekid,エレキッド,Élékid,Elekid,Elekid,Elekid,에레키드,電擊怪,电击怪
+240,Magby,ブビィ,Magby,Magby,Magby,Magby,마그비,鴨嘴寶寶,鸭嘴宝宝
+241,Miltank,ミルタンク,Écrémeuh,Miltank,Miltank,Miltank,밀탱크,大奶罐,大奶罐
+242,Blissey,ハピナス,Leuphorie,Heiteira,Blissey,Blissey,해피너스,幸福蛋,幸福蛋
+243,Raikou,ライコウ,Raikou,Raikou,Raikou,Raikou,라이코,雷公,雷公
+244,Entei,エンテイ,Entei,Entei,Entei,Entei,앤테이,炎帝,炎帝
+245,Suicune,スイクン,Suicune,Suicune,Suicune,Suicune,앤테이,水君,水君
+246,Larvitar,ヨーギラス,Embrylex,Larvitar,Larvitar,Larvitar,애버라스,幼基拉斯,幼基拉斯
+247,Pupitar,サナギラス,Ymphect,Pupitar,Pupitar,Pupitar,데기라스,沙基拉斯,沙基拉斯
+248,Tyranitar,バンギラス,Tyranocif,Despotar,Tyranitar,Tyranitar,마기라스,班基拉斯,班基拉斯
+249,Lugia,ルギア,Lugia,Lugia,Lugia,Lugia,루기아,洛奇亞,洛奇亚
+250,Ho-Oh,ホウオウ,Ho-Oh,Ho-Oh,Ho-Oh,Ho-Oh,칠색조,鳳王,凤王
+251,Celebi,セリビィ,Celebi,Celebi,Celebi,Celebi,세레비,時拉比,时拉比
+252,Treecko,キモリ,Arcko,Geckabor,Treecko,Treecko,나무지기,木守宮,木守宫
+253,Grovyle,ジュプトル,Massko,Reptain,Grovyle,Grovyle,나무돌이,森林蜥蜴,森林蜥蜴
+254,Sceptile,ジュカイン,Jungko,Gewaldro,Sceptile,Sceptile,나무킹,蜥蜴王,蜥蜴王
+255,Torchic,アチャモ,Poussifeu,Flemmli,Torchic,Torchic,아차모,火稚雞,火稚鸡
+256,Combusken,ワカシャモ,Galifeu,Jungglut,Combusken,Combusken,영치코,力壯雞,力壮鸡
+257,Blaziken,バシャーモ,Braségali,Lohgock,Blaziken,Blaziken,번치코,火焰雞,火焰鸡
+258,Mudkip,ミズゴロウ,Gobou,Hydropi,Mudkip,Mudkip,물짱이,水躍魚,水跃鱼
+259,Marshtomp,ヌマクロー,Flobio,Moorabble,Marshtomp,Marshtomp,늪짱이,沼躍魚,沼跃鱼
+260,Swampert,ラグラージ,Laggron,Sumpex,Swampert,Swampert,대짱이,巨沼怪,巨沼怪
+261,Poochyena,ポチエナ,Medhyèna,Fiffyen,Poochyena,Poochyena,포챠나,土狼犬,土狼犬
+262,Mightyena,グラエナ,Grahyèna,Magnayen,Mightyena,Mightyena,그라에나,大狼犬,大狼犬
+263,Zigzagoon,ジグザグマ,Zigzaton,Zigzachs,Zigzagoon,Zigzagoon,지그제구리,蛇紋熊,蛇纹熊
+264,Linoone,マッスグマ,Linéon,Geradaks,Linoone,Linoone,직구리,直衝熊,直冲熊
+265,Wurmple,ケムッソ,Chenipotte,Waumpel,Wurmple,Wurmple,개무소,刺尾蟲,刺尾虫
+266,Silcoon,カラサリス,Armulys,Schaloko,Silcoon,Silcoon,실쿤,甲殼繭,甲壳茧
+267,Beautifly,アゲハント,Charmillon,Papinella,Beautifly,Beautifly,뷰티플라이,狩獵鳳蝶,狩猎凤蝶
+268,Cascoon,マユルド,Blindalys,Panekon,Cascoon,Cascoon,카스쿤,盾甲繭,盾甲茧
+269,Dustox,ドクケイル,Papinox,Pudox,Dustox,Dustox,독케일,毒粉蛾,毒粉蛾
+270,Lotad,ハスボー,Nénupiot,Loturzel,Lotad,Lotad,연꽃몬,蓮葉童子,莲叶童子
+271,Lombre,ハスブレロ,Lombre,Lombrero,Lombre,Lombre,로토스,蓮帽小童,莲帽小童
+272,Ludicolo,ルンパッパ,Ludicolo,Kappalores,Ludicolo,Ludicolo,로파파,樂天河童,乐天河童
+273,Seedot,タネボー,Grainipiot,Samurzel,Seedot,Seedot,도토링,橡實果,橡实果
+274,Nuzleaf,コノハナ,Pifeuil,Blanas,Nuzleaf,Nuzleaf,잎새코,長鼻葉,长鼻叶
+275,Shiftry,ダーテング,Tengalice,Tengulist,Shiftry,Shiftry,다탱구,狡猾天狗,狡猾天狗
+276,Tailow,スバメ,Nirondelle,Schwalbini,Tailow,Tailow,테일로,傲骨燕,傲骨燕
+277,Swellow,オオスバメ,Hélédelle,Schwalboss,Swellow,Swellow,스왈로,大王燕,大王燕
+278,Wingull,キャモメ,Goélise,Wingull,Wingull,Wingull,갈모매,長翅鷗,长翅鸥
+279,Pelipper,ペリッパー,Bekipan,Pelipper,Pelipper,Pelipper,패리퍼,大嘴鷗,大嘴鸥
+280,Ralts,ラルトス,Tarsal,Trasla,Ralts,Ralts,랄토스,拉魯拉絲,拉鲁拉丝
+281,Kirlia,キルリア,Kirlia,Kirlia,Kirlia,Kirlia,킬리아,奇魯莉安,奇鲁莉安
+282,Gardevoir,サーナイト,Gardevoir,Guardevoir,Gardevoir,Gardevoir,가디안,沙奈朵,沙奈朵
+283,Surskit,アメタマ,Arakdo,Gehweiher,Surskit,Surskit,비구술,溜溜糖球,溜溜糖球
+284,Masquerain,アメモース,Maskadra,Maskeregen,Masquerain,Masquerain,비나방,雨翅蛾,雨翅蛾
+285,Shroomish,キノココ,Balignon,Knilz,Shroomish,Shroomish,버섯꼬,蘑蘑菇,蘑蘑菇
+286,Breloom,キノガッサ,Chapignon,Kapilz,Breloom,Breloom,버섯모,斗笠菇,斗笠菇
+287,Slakoth,ナマケロ,Parecool,Bummelz,Slakoth,Slakoth,게을로,懶人獺,懒人獭
+288,Vigoroth,ヤルキモノ,Vigoroth,Muntier,Vigoroth,Vigoroth,발바로,過動猿,过动猿
+289,Slaking,ケッキング,Monaflèmit,Letarking,Slaking,Slaking,게을킹,請假王,请假王
+290,Nincada,ツチニン,Ningale,Nincada,Nincada,Nincada,토중몬,土居忍士,土居忍士
+291,Ninjask,テッカニン,Ninjask,Ninjask,Ninjask,Ninjask,아이스크,鐵面忍者,铁面忍者
+292,Shedinja,ヌケニン,Munja,Ninjatom,Shedinja,Shedinja,껍질몬,脫殼忍者,脱壳忍者
+293,Whismur,ゴニョニョ,Chuchmur,Flurmel,Whismur,Whismur,소곤룡,咕妞妞,咕妞妞
+294,Loudred,ドゴーム,Ramboum,Krakeelo,Loudred,Loudred,노공룡,吼爆彈,吼爆弹
+295,Exploud,バクオング,Brouhabam,Krawumms,Exploud,Exploud,폭음룡,爆音怪,爆音怪
+296,Makuhita,マクノシタ,Makuhita,Makuhita,Makuhita,Makuhita,마크탕,幕下力士,幕下力士
+297,Hariyama,ハリテヤマ,Hariyama,Hariyama,Hariyama,Hariyama,하리뭉,鐵掌力士,铁掌力士
+298,Azurill,ルリリ,Azurill,Azurill,Azurill,Azurill,루리리,露力麗,露力丽
+299,Nosepass,ノズパス,Tarinor,Nasgnet,Nosepass,Nosepass,코코파스,朝北鼻,朝北鼻
+300,Skitty,エネコ,Skitty,Eneco,Skitty,Skitty,에나비,向尾喵,向尾喵
+301,Delcatty,エネコロロ,Delcatty,Enekoro,Delcatty,Delcatty,델케티,優雅貓,优雅猫
+302,Sableye,ヤミラミ,Ténéfix,Zobiris,Sableye,Sableye,깜까미,勾魂眼,勾魂眼
+303,Mawile,クチート,Mysdibule,Flunkifer,Mawile,Mawile,입치트,大嘴娃,大嘴娃
+304,Aron,ココドラ,Galekid,Stollunior,Aron,Aron,가보리,可可多拉,可可多拉
+305,Lairon,コドラ,Galegon,Stollrak,Lairon,Lairon,갱도라,可多拉,可多拉
+306,Aggron,バスゴドラ,Galeking,Stolloss,Aggron,Aggron,보스로라,波士可多拉,波士可多拉
+307,Meditite,アサナン,Méditikka,Meditie,Meditite,Meditite,요가랑,瑪沙那,玛沙那
+308,Medicham,チャーレム,Charmina,Meditalis,Medicham,Medicham,요가램,恰雷姆,恰雷姆
+309,Electrike,ラクライ,Dynavolt,Frizelbliz,Electrike,Electrike,썬더라이,落雷獸,落雷兽
+310,Manectric,ライボルト,Élecsprint,Voltenso,Manectric,Manectric,썬더볼트,雷電獸,雷电兽
+311,Plusle,プラスル,Posipi,Plusle,Plusle,Plusle,플러시,正電拍拍,正电拍拍
+312,Minum,マイナン,Négapi,Minun,Minum,Minum,마이농,負電拍拍,负电拍拍
+313,Volbeat,バルビート,Muciole,Volbeat,Volbeat,Volbeat,볼비트,電螢蟲,电萤虫
+314,Illumise,イルミーゼ,Lumivole,Illumise,Illumise,Illumise,네오비트,甜甜螢,甜甜萤
+315,Roselia,ロゼリア,Rosélia,Roselia,Roselia,Roselia,로젤리아,毒薔薇,毒蔷薇
+316,Gulpin,ゴクリン,Gloupti,Schluppuck,Gulpin,Gulpin,꼴깍몬,溶食獸,溶食兽
+317,Swalot,マルノーム,Avaltout,Schluckwech,Swalot,Swalot,꿀꺽몬,吞食獸,吞食兽
+318,Carvanha,キバニア,Carvanha,kanivanha,Carvanha,Carvanha,샤프니아,吞食獸,吞食兽
+319,Sharpedo,サメハダー,Sharpedo,Tohaido,Sharpedo,Sharpedo,샤크니아,巨牙鯊,巨牙鲨
+320,Wailmer,ホエルコ,Wailmer,Wailmer,Wailmer,Wailmer,고래왕자,吼吼鯨,吼吼鲸
+321,Wailord,ホエルオー,Wailord,Wailord,Wailord,Wailord,고래왕자,吼鯨王,吼鲸王
+322,Numel,ドンメル,Chamallot,Camaub,Numel,Numel,둔타,呆火駝,呆火驼
+323,Camerupt,バクーダ,Camerupt,Camerupt,Camerupt,Camerupt,폭타,噴火駝,喷火驼
+324,Torkoal,コータス,Chartor,Qurtel,Torkoal,Torkoal,코터스,煤炭龜,煤炭龟
+325,Spoink,バネブー,Spoink,Spoink,Spoink,Spoink,피그점프,跳跳豬,跳跳猪
+326,Grumpig,ブーピッグ,Groret,Groink,Grumpig,Grumpig,피그킹,噗噗豬,噗噗猪
+327,Spinda,パッチール,Spinda,Pandir,Spinda,Spinda,얼루기,晃晃斑,晃晃斑
+328,Trapinch,ナックラー,Kraknoix,Knacklion,Trapinch,Trapinch,톱치,大顎蟻,大颚蚁
+329,Vibrava,ビブラーバ,Vibraninf,Vibrara,Vibrava,Vibrava,비브라바,超音波幼蟲,超音波幼虫
+330,Flygon,フライゴン,Libégon,Libelldra,Flygon,Flygon,플라이곤,沙漠蜻蜓,沙漠蜻蜓
+331,Cacnea,サボネア,Cacnéa,Tuska,Cacnea,Cacnea,선인왕,刺球仙人掌,刺球仙人掌
+332,Cacturne,ノクタス,Cacturne,Noktuska,Cacturne,Cacturne,밤선인,夢歌仙人掌,梦歌仙人掌
+333,Swablu,チルット,Tylton,Wablu,Swablu,Swablu,파비코,青綿鳥,青绵鸟
+334,Altaria,チルタリス,Altaria,Altaria,Altaria,Altaria,파비코리,七夕青鳥,七夕青鸟
+335,Zangoose,ザングース,Mangriff,Sengo,Zangoose,Zangoose,쟝고,貓鼬斬,猫鼬斩
+336,Seviper,ハブネーク,Séviper,Vipitis,Seviper,Seviper,세비퍼,飯匙蛇,飯匙蛇
+337,Lunatone,ルナトーン,Séléroc,Lunastein,Lunatone,Lunatone,루나톤,月石,月石
+338,Solrock,ソルロック,Solaroc,Sonnfel,Solrock,Solrock,솔록,太陽岩,太阳岩
+339,Barboach,ドジョッチ,Barloche,Schmerbe,Barboach,Barboach,미꾸리,泥泥鰍,泥泥鳅
+340,Whiscash,ナマズン,Barbicha,Welsar,Whiscash,Whiscash,메깅,鯰魚王,鲶鱼王
+341,Corphish,ヘイガニ,Écrapince,Krebscorps,Corphish,Corphish,가재군,龍蝦小兵,龙虾小兵
+342,Crawdaunt,シザリガー,Colhomard,Krebutack,Crawdaunt,Crawdaunt,가재장군,鐵螯龍蝦,铁螯龙虾
+343,Baltoy,ヤジロン,Balbuto,Puppance,Baltoy,Baltoy,오뚝군,天秤偶,天秤偶
+344,Claydol,ネンドール,Kaorine,Lepumentas,Claydol,Claydol,점토도리,念力土偶,念力土偶
+345,Lileep,リリーヤ,Lilia,Liliep,Lileep,Lileep,릴링,觸手百合,触手百合
+346,Cradily,ユレイドル,Vacilys,Wielie,Cradily,Cradily,릴리요,搖籃百合,摇篮百合
+347,Anorith,アノプス,Anorith,Anorith,Anorith,Anorith,아노딥스,太古羽蟲,太古羽虫
+348,Armaldo,アーマルド,Armaldo,Armaldo,Armaldo,Armaldo,아말도,太古盔甲,太古盔甲
+349,Feebas,ヒンバス,Barpau,Barschwa,Feebas,Feebas,빈티나,醜醜魚,丑丑鱼
+350,Milotic,ミロカロス,Milobellus,Milotic,Milotic,Milotic,밀로틱,美納斯,美纳斯
+351,Castform,ポワルン,Morphéo,Formeo,Castform,Castform,캐스퐁,飄浮泡泡,飘浮泡泡
+352,Kecleon,カクレオン,Kecleon,Kecleon,Kecleon,Kecleon,켈리몬,變隱龍,变隐龙
+353,Shuppet,カゲボオズ,Polichombr,Bannette,Shuppet,Shuppet,어둠대신,怨影娃娃,怨影娃娃
+354,Banette,ジュペッタ,Branette,Zwirllicht,Banette,Banette,다크펫,詛咒娃娃,诅咒娃娃
+355,Duskull,ヨマワル,Skelénox,Zwirrklop,Duskull,Duskull,해골몽,夜巡靈,夜巡灵
+356,Dusclops,サマヨール,Téraclope,Zwirrfinst,Dusclops,Dusclops,미라몽,彷徨夜靈,彷徨夜灵
+357,Tropius,トロピウス,Tropius,Tropius,Tropius,Tropius,트로피우스,熱帶龍,热带龙
+358,Chimecho,チリーン,Éoko,Palimpalim,Chimecho,Chimecho,치렁,風鈴鈴,风铃铃
+359,Absol,アブソル,Absol,Absol,Absol,Absol,앱솔,阿勃梭魯,阿勃梭鲁
+360,Wynaut,ソーナノ,Okéoké,Isso,Wynaut,Wynaut,마자,小果然,小果然
+361,Snorunt,ユキワラシ,Stalgamin,Schneppke,Snorunt,Snorunt,눈꼬마,雪童子,雪童子
+362,Glalie,オニゴーリ,Oniglali,Fimontor,Glalie,Glalie,얼음귀신,冰鬼護,冰鬼护
+363,Spheal,タマザラシ,Obalie,Seemops,Spheal,Spheal,대굴레오,海豹球,海豹球
+364,Sealeo,トドグラ,Phogleur,Seejong,Sealeo,Sealeo,씨레오,海魔獅,海魔狮
+365,Walrein,トドゼルガ,Kaimorse,Walraisa,Walrein,Walrein,씨카이저,帝牙海獅,帝牙海狮
+366,Clamperl,パールル,Coquiperl,Perlu,Clamperl,Clamperl,진주몽,珍珠貝,珍珠貝
+367,Huntail,ハンテール,Serpang,Aalabyss,Huntail,Huntail,헌테일,獵斑魚,猎斑鱼
+368,Gorebyss,サクラビス,Rosabyss,Saganbyss,Gorebyss,Gorebyss,분홍장이,櫻花魚,樱花鱼
+369,Relicanth,ジーランス,Relicanth,Relicanth,Relicanth,Relicanth,시라칸,古空棘魚,古空棘鱼
+370,Luvdisc,ラブカス,Lovdisc,Liebiskuss,Luvdisc,Luvdisc,사랑동이,愛心魚,爱心鱼
+371,Bagon,タツベイ,Draby,Kindwurm,Bagon,Bagon,아공이,寶貝龍,宝贝龙
+372,Shelgon,コモルー,Drackhaus,Draschel,Shelgon,Shelgon,쉘곤,甲殼龍,甲壳龙
+373,Salamence,ボーマンダ,Drattak,Brutalanda,Salamence,Salamence,보만다,暴飛龍,暴飞龙
+374,Beldum,ダンバル,Terhal,Tanhel,Beldum,Beldum,메탕,鐵啞鈴,铁哑铃
+375,Metang,メタング,Métang,Metang,Metang,Metang,메탕구,金屬怪,金属怪
+376,Metagross,メタグロス,Métalosse,Metagross,Metagross,Metagross,메타그로스,巨金怪,巨金怪
+377,Regirock,レジロック,Regirock,Regirock,Regirock,Regirock,레지락,雷吉洛克,雷吉洛克
+378,Regice,レジアイス,Regice,Regice,Regice,Regice,레지아이스,雷吉艾斯,雷吉艾斯
+379,Registeel,レジスチル,Registeel,Registeel,Registeel,Registeel,레지스틸,雷吉斯奇魯,雷吉斯奇鲁
+380,Latias,ラティアス,Latias,Latias,Latias,Latias,라티아스,拉帝亞斯,拉帝亚斯
+381,Latios,ラティオス,Latios,Latios,Latios,Latios,라티오스,拉帝歐斯,拉帝欧斯
+382,Kyogre,カイオーガ,Kyogre,Kyogre,Kyogre,Kyogre,가이오가,蓋歐卡,盖欧卡
+383,Groudon,グラードン,Groudon,Groudon,Groudon,Groudon,그란돈,固拉多,固拉多
+384,Rayquaza,レックウザ,Rayquaza,Rayquaza,Rayquaza,Rayquaza,레쿠쟈,烈空坐,烈空坐
+385,Jirachi,ジラーチ,Jirachi,Jirachi,Jirachi,Jirachi,지라치,基拉祈,基拉祈
+386,Deoxys,ヂオキシス,Deoxys,Deoxys,Deoxys,Deoxys,테오키스,代歐奇希斯,代欧奇希斯
+387,Turtwig,ナエトル,Tortipouss,Chelast,Turtwig,Turtwig,모부기,草苗龜,草苗龟
+388,Grotle,ハヤシガメ,Boskara,Chelcarain,Grotle,Grotle,수풀부기,樹林龜,树林龟
+389,Torterra,ドダイトス,Torterra,Chelterrar,Torterra,Torterra,토대부기,土台龜,土台龟
+390,Chimchar,ヒコザル,Ouisticram,Panflam,Chimchar,Chimchar,불꽃숭이,小火焰猴,小火焰猴
+391,Monferno,モウカザル,Chimpenfeu,Panpyro,Monferno,Monferno,파이숭이,猛火猴,猛火猴
+392,Infernape,ゴウカザル,Simiabraz,Panferno,Infernape,Infernape,초염몽,烈焰猴,烈焰猴
+393,Piplup,ポッチャマ,Tiplouf,Plinfa,Piplup,Piplup,팽도리,波加曼,波加曼
+394,Prinplup,ポッタイシ,Prinplouf,Pliprin,Prinplup,Prinplup,팽태자,波皇子,波皇子
+395,Empoleon,エンペルト,Pingoléon,Impoleon,Empoleon,Empoleon,엠페르트,帝王拿波,帝王拿波
+396,Starly,ムックル,Étourmi,Staralili,Starly,Starly,찌르꼬,姆克兒,姆克儿
+397,Staravia,ムクバード,Étourvol,Staravia,Staravia,Staravia,찌르버드,姆克鳥,姆克鸟
+398,Staraptor,ムクホーク,Étouraptor,Staraptor,Staraptor,Staraptor,찌르호크,姆克鷹,姆克鹰
+399,Bidoof,ビッパ,Keunotor,Bidiza,Bidoof,Bidoof,비버니,大牙狸,大牙狸
+400,Bibarel,ビーダル,Castorno,Bidifas,Bibarel,Bibarel,비버통,大尾狸,大尾狸
+401,Kricketot,コロボーシ,Crikzik,Zirpurze,Kricketot,Kricketot,귀뚤뚜기,圓法師,圆法师
+402,Kricketune,コロトック,Mélokrik,Zirpeise,Kricketune,Kricketune,귀뚤톡크,音箱蟀,音箱蟀
+403,Shinx,コリンク,Lixy,Sheinux,Shinx,Shinx,꼬링크,小貓怪,小猫怪
+404,Luxio,ルクシオ,Luxio,Luxio,Luxio,Luxio,럭시오,勒克貓,勒克猫
+405,Luxray,レントラー,Luxray,Luxtra,Luxray,Luxray,렌트라,倫琴貓,伦琴猫
+406,Budew,スボミー,Rozbouton,Knospi,Budew,Budew,꼬몽울,含羞苞,含羞苞
+407,Roserade,ロズレイド,Roserade,Roserade,Roserade,Roserade,로즈레이드,羅絲雷朵,罗丝雷朵
+408,Cranidos,ズガイドス,Kranidos,Koknodon,Cranidos,Cranidos,두개도스,頭蓋龍,头盖龙
+409,Rampardos,ラムパルド,Charkos,Rameidon,Rampardos,Rampardos,램펄드,戰槌龍,战槌龙
+410,Shieldon,タテトプス,Dinoclier,Schilterus,Shieldon,Shieldon,방패톱스,盾甲龍,盾甲龙
+411,Bastiodon,トリデプス,Bastiodon,Bollterus,Bastiodon,Bastiodon,바리톱스,護城龍,护城龙
+412,Burmy,ミノムッチ,Cheniti,Burmy,Burmy,Burmy,도롱충이,結草兒,结草儿
+413,Wormadam,ミノマダム,Cheniselle,Burmadame,Wormadam,Wormadam,도롱마담,結草貴婦,结草贵妇
+414,Mothim,ガーメイル,Papilord,Moterpel,Mothim,Mothim,나메일,紳士蛾,绅士蛾
+415,Combee,ミツハニー,Apitrini,Wadribie,Combee,Combee,세꿀버리,三蜜蜂,三蜜蜂
+416,Vespiquen,ビークイン,Apireine,Honweisel,Vespiquen,Vespiquen,비퀸,蜂女王,蜂女王
+417,Pachirisu,パチリス,Pachirisu,Pachirisu,Pachirisu,Pachirisu,파치리스,帕奇利茲,帕奇利茲
+418,Buizel,ブイゼル,Mustébouée,Bamelin,Buizel,Buizel,브이젤,泳圈鼬,泳圈鼬
+419,Floatzel,フローゼル,Mustéflott,Bojelin,Floatzel,Floatzel,플로젤,浮潛鼬,浮潜鼬
+420,Cherubi,チェリンボ,Ceribou,Kikugi,Cherubi,Cherubi,체리버,櫻花寶,樱花宝
+421,Cherrim,チェリム,Ceriflor,Kinoso,Cherrim,Cherrim,체리꼬,櫻花兒,樱花儿
+422,Shellos,カラナクシ,Sancoki,Schalellos,Shellos,Shellos,깝질무,無殼海兔,无壳海兔
+423,Gastrodon,トリトソン,Tritosor,Gastrodon,Gastrodon,Gastrodon,트리토돈,海兔獸,海兔兽
+424,Ambipom,エテボース,Capidextre,Ambidiffel,Ambipom,Ambipom,겟핸보숭,雙尾怪手,双尾怪手
+425,Drifloon,フワンテ,Baudrive,Driftlon,Drifloon,Drifloon,흔들풍손,飄飄球,飘飘球
+426,Drifblim,フワライド,Grodrive,Drifzepeli,Drifblim,Drifblim,둥실라이드,隨風球,随风球
+427,Buneary,ミミロル,Laporeille,Haspiror,Buneary,Buneary,이어롤,捲捲耳,卷卷耳
+428,Lopunny,ミミロップ,Lockpin,Schlapor,Lopunny,Lopunny,이어롭,長耳兔,长耳兔
+429,Mismagius,ムウマージ,Magirêve,Traunmagil,Mismagius,Mismagius,무우마직,夢妖魔,梦妖魔
+430,Honchkrow,ドンカラス,Corboss,Kramshef,Honchkrow,Honchkrow,돈크로우,烏鴉頭頭,乌鸦头头
+431,Glameow,ミャルマー,Chaglam,Charmian,Glameow,Glameow,나옹마,魅力喵,魅力喵
+432,Purugly,ブニャット,Chaffreux,Shnurgarst,Purugly,Purugly,몬냥이,東施喵,东施喵
+433,Chingling,リーシャン,Korillon,Klingplim,Chingling,Chingling,랑딸랑,鈴鐺響,铃铛响
+434,Stunky,スカンプー,Moufouette,Skunkapuh,Stunky,Stunky,스컹뿡,臭鼬噗,臭鼬噗
+435,Skuntank,スカタンク,Moufflair,Skuntank,Skuntank,Skuntank,스컹탱크,坦克臭鼬,坦克臭鼬
+436,Bronzor,ドーミラー,Archéomire,Bronzel,Bronzor,Bronzor,동미러,銅鏡怪,铜镜怪
+437,Bronzong,ドータクン,Archéodong,Bronzong,Bronzong,Bronzong,동탁군,青銅鐘,青铜钟
+438,Bonsly,ウソハチ,Manzaï,Mobai,Bonsly,Bonsly,꼬지지,盆才怪,盆才怪
+439,Mime Jr.,マネネ,Mime Jr.,Pantimimi,Mime Jr.,Mime Jr.,흉내내,魔尼尼,魔尼尼
+440,Happiny,ピンプク,Ptiravi,Wonneira,Happiny,Happiny,핑복,小福蛋,小福蛋
+441,Chatot,ペラップ,Pijako,Plaudagei,Chatot,Chatot,페라페,聒噪鳥,聒噪鸟
+442,Spiritomb,ミカルゲ,Spiritomb,Kryppuk,Spiritomb,Spiritomb,화강돌,花岩怪,花岩怪
+443,Gible,フカマル,Griknot,Kaumalat,Gible,Gible,딥상어동,圓陸鯊,圆陆鲨
+444,Gabite,ガバイト,Carmache,Knarksel,Gabite,Gabite,한바이트,尖牙陸鯊,尖牙陆鲨
+445,Garchomp,ガブリアス,Carchacrok,Knakrack,Garchomp,Garchomp,한카리아스,烈咬陸鯊,烈咬陆鲨
+446,Munchlax,ゴンベ,Goinfrex,Mampfaxo,Munchlax,Munchlax,먹고자,小卡比獸,小卡比兽
+447,Riolu,リオル,Riolu,Riolu,Riolu,Riolu,리오르,利歐路,利欧路
+448,Lucario,ルカリオ,Lucario,Lucario,Lucario,Lucario,루카리오,路卡利歐,路卡利欧
+449,Hippopotas,ヒポポタス,Hippopotas,Hippopotas,Hippopotas,Hippopotas,히포포타스,沙河馬,沙河马
+450,Hippowdon,カバルドン,Hippodocus,Hippoterus,Hippowdon,Hippowdon,하마돈,河馬獸,河马兽
+451,Skorupi,スコルピ,Rapion,Pionskora,Skorupi,Skorupi,스콜피,鉗尾蠍,钳尾蝎
+452,Drapion,ドラピオン,Drascore,Piondragi,Drapion,Drapion,드래피온,龍王蠍,龙王蝎
+453,Croagunk,グレッグル,Cradopaud,Glibunkel,Croagunk,Croagunk,삐딱구리,不良蛙,不良蛙
+454,Toxicroak,ドクロッグ,Coatox,Toxiquak,Toxicroak,Toxicroak,독개굴,毒骷蛙,毒骷蛙
+455,Carnivine,マスキッパ,Vortente,Venuflibis,Carnivine,Carnivine,무스틈니,尖牙籠,尖牙笼
+456,Finneon,ケイコウオ,Écayon,Finneon,Finneon,Finneon,형광어,螢光魚,萤光鱼
+457,Lumineon,ネオラント,Luminéon,Lumineon,Lumineon,Lumineon,네오라이트,霓虹魚,霓虹鱼
+458,Mantyke,タマンタ,Babimanta,Mantirps,Mantyke,Mantyke,타만타,小球飛魚,小球飞鱼
+459,Snover,ユキカブリ,Blizzi,Shnebedeck,Snover,Snover,눈쓰개,雪笠怪,雪笠怪
+460,Abomasnow,ユキノオー,Blizzaroi,Rexblisar,Abomasnow,Abomasnow,눈설왕,暴雪王,暴雪王
+461,Weavile,マニューラ,Dimoret,Snibunna,Weavile,Weavile,포푸니라,瑪狃拉,玛狃拉
+462,Magnezone,ジバコイル,Magnézone,Magnezone,Magnezone,Magnezone,자포코일,自爆磁怪,自爆磁怪
+463,Lickilicky,ベロベルト,Coudlangue,Schlurplek,Lickilicky,Lickilicky,내룸벨트,大舌舔,大舌舔
+464,Rhyperior,ドサイドン,Rhinastoc,Rihornior,Rhyperior,Rhyperior,거대코뿌리,超甲狂犀,超甲狂犀
+465,Tangrowth,モジャンボ,Bouldeneu,Tangoloss,Tangrowth,Tangrowth,덩쿠림보,巨蔓藤,巨蔓藤
+466,Electivire,エレキブル,Élékable,Elevoltek,Electivire,Electivire,에레키블,電擊魔獸,电击魔兽
+467,Magmortar,ブーバーン,Maganon,Magbrant,Magmortar,Magmortar,마그마번,鴨嘴炎獸,鸭嘴炎兽
+468,Togekiss,トゲキッス,Togekiss,Togekiss,Togekiss,Togekiss,토게키스,波克基斯,波克基斯
+469,Yanmega,メガヤンマ,Yanmega,Yanmega,Yanmega,Yanmega,메가자리,遠古巨蜓,远古巨蜓
+470,Leafeon,リーフィア,Phyllali,Folipurba,Leafeon,Leafeon,리피아,葉伊布,叶伊布
+471,Glaceon,グレイシア,Givrali,Glaziola,Glaceon,Glaceon,글레이시아,冰伊布,冰伊布
+472,Gliscor,グライオン,Scorvol,Skorgro,Gliscor,Gliscor,글라이온,天蠍王,天蝎王
+473,Mamoswine,マンムー,Mammochon,Mamutel,Mamoswine,Mamoswine,맘모꾸리,象牙豬,象牙猪
+474,Porygon-Z,ポリゴンＺ,Porygon-Z,Porygon-Z,Porygon-Z,Porygon-Z,폴리곤Ｚ,多邊獸Ｚ,多边兽乙型
+475,Gallade,エルレイド,Gallame,Galagladi,Gallade,Gallade,엘레이드,艾路雷朵,艾路雷朵
+476,Probopass,ダイノーズ,Tarinorme,Voluminas,Probopass,Probopass,대코파스,大朝北鼻,大朝北鼻
+477,Dusknoir,ヨノワール,Noctunoir,Zwirrfinst,Dusknoir,Dusknoir,야느와르몽,黑夜魔靈,黑夜魔灵
+478,Froslass,ユキメノコ,Momartik,Frosdedje,Froslass,Froslass,눈여아,雪妖女,雪妖女
+479,Rotom,ロトム,Motisma,Rotom,Rotom,Rotom,로토무,洛托姆,洛托姆
+480,Uxie,ユクシー,Créhelf,Selfe,Uxie,Uxie,유크시,由克希,由克希
+481,Mesprit,エムリット,Créfollet,Vesprit,Mesprit,Mesprit,엠라이트,艾姆利多,艾姆利多
+482,Azelf,アグノム,Créfadet,Tobutz,Azelf,Azelf,아그놈,亞克諾姆,亚克诺姆
+483,Dialga,ヂィアルガ,Dialga,Dialga,Dialga,Dialga,디아루가,帝牙盧卡,帝牙卢卡
+484,Palkia,パルキア,Palkia,Palkia,Palkia,Palkia,펄기아,帕路奇亞,帕路奇亚
+485,Heatran,ヒードラン,Heatran,Heatran,Heatran,Heatran,히드런,席多藍恩,席多蓝恩
+486,Regigigas,レジギガス,Regigigas,Regigigas,Regigigas,Regigigas,레지기가스,雷吉奇卡斯,雷吉奇卡斯
+487,Giratina,ギラティナ,Giratina,Giratina,Giratina,Giratina,기라티나,騎拉帝納,骑拉帝纳
+488,Cresselia,クレセリア,Cresselia,Cresselia,Cresselia,Cresselia,크레세리아,克雷色利亞,克雷色利亚
+489,Phione,フィオネ,Phione,Phione,Phione,Phione,피오네,霏歐納,霏欧纳
+490,Manaphy,マナフィ,Manaphy,Manaphy,Manaphy,Manaphy,마나피,瑪納霏,玛纳霏
+491,Darkrai,ダークライ,Darkrai,Darkrai,Darkrai,Darkrai,다크라이,達克萊伊,达克莱伊
+492,Shaymin,シェイミ,Shaymin,Shaymin,Shaymin,Shaymin,쉐이미,謝米,谢米
+493,Arceus,アルセウス,Arceus,Arceus,Arceus,Arceus,아르세우스,阿爾宙斯,阿尔宙斯
+494,Victini,ビクチイニ,Victini,Victini,Victini,Victini,아르세우스,比克提尼,比克提尼
+495,Snivy,ツタージャ,Vipélierre,Serpifeu,Snivy,Snivy,주리비얀,藤藤蛇,藤藤蛇
+496,Servine,ジャノビー,Lianaja,Efoserp,Servine,Servine,샤비,青藤蛇,青藤蛇
+497,Serperior,ジャローダ,Majaspic,Serpiroyal,Serperior,Serperior,샤로다,君主蛇,君主蛇
+498,Tepig,ポカブ,Gruikui,Floink,Tepig,Tepig,뚜꾸리,暖暖豬,暖暖猪
+499,Pignite,チャオブー,Grotichon,Ferkokel,Pignite,Pignite,챠오꿀,炒炒豬,炒炒猪
+500,Emboar,エンブオー,Roitiflam,Flambirex,Emboar,Emboar,염무왕,炎武王,炎武王
+501,Oshawott,ミジュマル,Moustillon,Ottaro,Oshawott,Oshawott,수댕이,水水獺,水水獺
+502,Dewott,フタチマル,Mateloutre,Zwottronin,Dewott,Dewott,쌍검자비,雙刃丸,双刃丸
+503,Samurott,ダイケンキ,Clamiral,Admurai,Samurott,Samurott,대검귀,大劍鬼,大剑鬼
+504,Patrat,ミネズミ,Ratentif,Nagelotz,Patrat,Patrat,보르쥐,探探鼠,探探鼠
+505,Watchog,ミルホッグ,Miradar,Kukmarda,Watchog,Watchog,보르그,步哨鼠,步哨鼠
+506,Lillipup,ヨーテリー,Ponchiot,Yorkleff,Lillipup,Lillipup,요테리,小約克,小约克
+507,Herdier,ハーヂリア,Ponchien,Terribark,Herdier,Herdier,하데리어,哈約克,哈约克
+508,Stoutland,ムーランド,Mastouffe,Bissbark,Stoutland,Stoutland,바랜드,長毛狗,长毛狗
+509,Purrloin,チョロネコ,Chacripan,Felilou,Purrloin,Purrloin,쌔비냥,扒手貓,扒手猫
+510,Liepard,レパルダス,Léopardus,Kleoparda,Liepard,Liepard,레파르다스,酷豹,酷豹
+511,Pansage,ヤナップ,Feuillajou,Vegimak,Pansage,Pansage,야나프,花椰猴,花椰猴
+512,Simisage,ヤナッキー,Feuiloutan,Vegichita,Simisage,Simisage,야나키,花椰猿,花椰猿
+513,Pansear,バオップ,Flamajou,Grillmak,Pansear,Pansear,바오프,爆香猴,爆香猴
+514,Simisear,バオッキー,Flamoutan,Grillchita,Simisear,Simisear,바오키,爆香猿,爆香猿
+515,Panpour,ヒヤップ,Flotajou,Sodamak,Panpour,Panpour,앗차프,冷水猴,冷水猴
+516,Simipour,ヒヤッキー,Flotoutan,Sodachita,Simipour,Simipour,앗차키,冷水猿,冷水猿
+517,Munna,ムンナ,Munna,Somniam,Munna,Munna,몽나,食夢夢,食梦梦
+518,Musharna,ムシャーナ,Mushana,Somnivora,Musharna,Musharna,몽얌나,夢夢蝕,梦梦蚀
+519,Pidove,マメパト,Poichigeon,Dusselgurr,Pidove,Pidove,콩둘기,豆豆鴿,豆豆鸽
+520,Tranquill,ハトーポー,Colombeau,Navitaub,Tranquill,Tranquill,유토브,咕咕鴿,咕咕鸽
+521,Unfezant,ケンホロウ,Déflaisan,Fasasnob,Unfezant,Unfezant,켄호로우,高傲雉雞,高傲雉鸡
+522,Blitzle,シママ,Zébibron,Elezeba,Blitzle,Blitzle,줄뮤마,斑斑馬,斑斑马
+523,Zebstrika,ゼブライカ,Zéblitz,Zebritz,Zebstrika,Zebstrika,제브라이카,雷電斑馬,雷电斑马
+524,Roggenrola,ダンゴロ,Nodulithe,Kiesling,Roggenrola,Roggenrola,단굴,石丸子,石丸子
+525,Boldore,ガントル,Géolithe,Sedimantur,Boldore,Boldore,암트르,地幔岩,地幔岩
+526,Gigalith,ギガイアス,Gigalithe,Brockoloss,Gigalith,Gigalith,기가이어스,龐岩怪,庞岩怪
+527,Woobat,コロモリ,Chovsourir,Fleknoil,Woobat,Woobat,또르박쥐,滾滾蝙蝠,滚滚蝙蝠
+528,Swoobat,ココロモリ,Rhinolove,Fletiano,Swoobat,Swoobat,맘박쥐,心蝙蝠,心蝙蝠
+529,Drilbur,モグリュー,Rototaupe,Rotomurf,Drilbur,Drilbur,두더류,螺釘地鼠,螺钉地鼠
+530,Excadrill,ドリュウズ,Minotaupe,Stalobor,Excadrill,Excadrill,몰드류,龍頭地鼠,龙头地鼠
+531,Audino,タブンネ,Nanméouïe,Ohrdoch,Audino,Audino,다부니,差不多娃娃,差不多娃娃
+532,Timburr,ドッコラー,Charpenti,Praktibalk,Timburr,Timburr,으랏차,搬運小匠,搬运小匠
+533,Gurdurr,ドテッコツ,Ouvrifier,Strepoli,Gurdurr,Gurdurr,토쇠골,鐵骨土人,铁骨土人
+534,Conkeldurr,ローブシン,Bétochef,Meistagrif,Conkeldurr,Conkeldurr,노보청,修建老匠,修建老匠
+535,Tympole,オタマロ,Tritonde,Schallquap,Tympole,Tympole,동챙이,圓蝌蚪,圆蝌蚪
+536,Palpitoad,ガマガル,Batracné,Mebrana,Palpitoad,Palpitoad,두까비,藍蟾蜍,蓝蟾蜍
+537,Seismitoad,ガマゲロゲ,Crapustule,Branawarz,Seismitoad,Seismitoad,두빅굴,蟾蜍王,蟾蜍王
+538,Throh,ナゲキ,Judokrak,Jiutesto,Throh,Throh,던지미,投摔鬼,投摔鬼
+539,Sawk,ダゲキ,Karaclée,Karadonis,Sawk,Sawk,타격귀,打擊鬼,打击鬼
+540,Sewaddle,クルミル,Larvayette,Strawickl,Sewaddle,Sewaddle,두르보,蟲寶包,虫宝包
+541,Swadloon,クルマユ,Couverdure,Folikon,Swadloon,Swadloon,두르쿤,寶包繭,宝包茧
+542,Leavanny,ハハコモリ,Manternel,Matrifol,Leavanny,Leavanny,모아머,保母蟲,保母虫
+543,Venipede,フシデ,Venipatte,Toxiped,Venipede,Venipede,마디네,百足蜈蚣,百足蜈蚣
+544,Whirlipede,ホイーガ,Scobolide,Rollum,Whirlipede,Whirlipede,휠구,車輪毬,车轮毬
+545,Scoliopede,ペンドラー,Brutapode,Cerapendra,Scoliopede,Scoliopede,펜드라,蜈蚣王,蜈蚣王
+546,Cottonee,モンメン,Doudouvet,Waumboll,Cottonee,Cottonee,소미안,木棉球,木棉球
+547,Whimsicott,エルフーン,Farfaduvet,Elfun,Whimsicott,Whimsicott,엘풍,風妖精,风妖精
+548,Petilil,チュリネ,Chlorobule,Lilminip,Petilil,Petilil,치릴리,百合根娃娃,百合根娃娃
+549,Lilligant,ドレヂィア,Fragilady,Dressella,Lilligant,Lilligant,드레디어,裙兒小姐,裙儿小姐
+550,Basculin,バスラオ,Bargantua,Barschuft,Basculin,Basculin,배쓰나이,野蠻鱸魚,野蛮鲈鱼
+551,Sandile,メグロコ,Mascaïman,Ganovil,Sandile,Sandile,깜눈크,黑眼鱷,黑眼鳄
+552,Krokorok,ワルビル,Escroco,Rokkaiman,Krokorok,Krokorok,악비르,混混鱷,混混鳄
+553,Krookodile,ワルビアル,Crocorible,Rabigator,Krookodile,Krookodile,악비아르,流氓鱷,流氓鳄
+554,Darumaka,ダルマッカ,Darumarond,Flampion,Darumaka,Darumaka,달막화,火紅不倒翁,火红不倒翁
+555,Darmanitan,ヒヒダルマ,Darumacho,Flampivian,Darmanitan,Darmanitan,불비달마,達摩狒狒,达摩狒狒
+556,Maractus,マラカッチ,Maracachi,Maracamba,Maractus,Maractus,마라카치,沙鈴仙人掌,沙铃仙人掌
+557,Dwebble,イシズマイ,Crabicoque,Lithomith,Dwebble,Dwebble,돌살이,石居蟹,石居蟹
+558,Crustle,イワパレス,Crabaraque,Castellith,Crustle,Crustle,암팰리스,岩殿居蟹,岩殿居蟹
+559,Scraggy,ズルッグ,Baggiguane,Zurrokex,Scraggy,Scraggy,곤율랭,滑滑小子,滑滑小子
+560,Scrafty,ズルズキン,Baggaïd,Irokex,Scrafty,Scrafty,곤율거니,頭巾混混,头巾混混
+561,Sigilyph,シンボラー,Cryptéro,Symvolara,Sigilyph,Sigilyph,심보러,象徵鳥,象征鸟
+562,Yamask,デスマス,Tutafeh,Makabaja,Yamask,Yamask,데스마스,哭哭面具,哭哭面具
+563,Cofagrigus,デスカーン,Tutankafer,Echnatoll,Cofagrigus,Cofagrigus,데스니칸,死神棺,迭失棺
+564,Tirtouga,プロトーガ,Carapagos,Galapaflos,Tirtouga,Tirtouga,프로토가,原蓋海龜,原盖海龟
+565,Carracosta,アバゴーラ,Mégapagos,Karippas,Carracosta,Carracosta,늑골라,肋骨海龜,肋骨海龟
+566,Archen,アーケン,Arkéapti,Flapteryx,Archen,Archen,아켄,始祖小鳥,始祖小鸟
+567,Archeops,アーケオス,Aéroptéryx,Aeropteryx,Archeops,Archeops,아케오스,始祖大鳥,始祖大鸟
+568,Trubbish,ヤブクロン,Miamiasme,Unratütox,Trubbish,Trubbish,깨봉이,破破袋,破破袋
+569,Garbodor,ダストダス,Miasmax,Deponitox,Garbodor,Garbodor,더스트나,灰塵山,灰尘山
+570,Zorua,ゾロア,Zorua,Zorua,Zorua,Zorua,조로아,索羅亞,索罗亚
+571,Zoroark,ゾロアーク,Zoroark,Zoroark,Zoroark,Zoroark,조로아크,索羅亞克,索罗亚克
+572,Minccino,チラーミィ,Chinchidou,Picochilla,Minccino,Minccino,치라미,泡沫栗鼠,泡沫栗鼠
+573,Cinccino,チラチーノ,Pashmilla,Chillabell,Cinccino,Cinccino,치라치노,奇諾栗鼠,奇诺栗鼠
+574,Gothita,ゴチム,Scrutella,Mollimorba,Gothita,Gothita,고디탱,哥德寶寶,哥德宝宝
+575,Gothorita,ゴチミル,Mesmérella,Hypnomorba,Gothorita,Gothorita,고디보미,哥德小童,哥德小童
+576,Gothitelle,ゴチルゼル,Sidérella,Morbitesse,Gothitelle,Gothitelle,고디모아젤,哥德小姐,哥德小姐
+577,Solosis,ユニラン,Nucléos,Monozyto,Solosis,Solosis,유니란,單卵細胞球,单卵细胞球
+578,Duosion,ダブラン,Méios,Mitodos,Duosion,Duosion,듀란,雙卵細胞球,双卵细胞球
+579,Reuniclus,ランクルス,Symbios,Zytomega,Reuniclus,Reuniclus,란쿨루스,人造細胞卵,人造细胞卵
+580,Ducklett,コアルヒー,Couaneton,Piccolente,Ducklett,Ducklett,꼬지보리,鴨寶寶,鸭宝宝
+581,Swanna,スワンナ,Lakmécygne,Swaroness,Swanna,Swanna,스완나,舞天鵝,舞天鹅
+582,Vanillite,バニプッチ,Sorbébé,Gelatini,Vanillite,Vanillite,바닐프티,迷你冰,迷你冰
+583,Vanillish,バニリッチ,Sorboul,Gelatroppo,Vanillish,Vanillish,바닐리치,多多冰,多多冰
+584,Vanilluxe,バイバニラ,Sorbouboul,Gelatwino,Vanilluxe,Vanilluxe,배바닐라,雙倍多多冰,双倍多多冰
+585,Deerling,シキジカ,Vivaldaim,Sesokitz,Deerling,Deerling,사철록,四季鹿,四季鹿
+586,Sawsbuck,メブキジカ,Haydaim,Kronjuwild,Sawsbuck,Sawsbuck,바라철록,萌芽鹿,萌芽鹿
+587,Emolga,エモンガ,Emolga,Emolga,Emolga,Emolga,에몽가,電飛鼠,电飞鼠
+588,Karrablast,カブルモ,Carabing,Laukaps,Karrablast,Karrablast,딱정곤,蓋蓋蟲,盖盖虫
+589,Escavalier,シュバルゴ,Lançargot,Cavalanzas,Escavalier,Escavalier,슈바르고,騎士蝸牛,骑士蜗牛
+590,Foongus,タマゲタケ,Trompignon,Tarnpignon,Foongus,Foongus,깜놀버슬,哎呀球菇,哎呀球菇
+591,Amoongus,モロバレル,Gaulet,Hutsassa,Amoongus,Amoongus,뽀록나,敗露球菇,败露球菇
+592,Frillish,プルリル,Viskuse,Quabbel,Frillish,Frillish,탱그릴,輕飄飄,轻飘飘
+593,Jellicent,ブルンゲル,Moyade,Apoquallyp,Jellicent,Jellicent,탱탱겔,胖嘟嘟,胖嘟嘟
+594,Alomomola,ママンボウ,Mamambo,Mamolida,Alomomola,Alomomola,맘복치,保母曼波,保母曼波
+595,Joltik,バチュル,Statitik,Wattzapf,Joltik,Joltik,피쪼옥,電電蟲,电电虫
+596,Galvantula,デンチュラ,Mygavolt,Voltula,Galvantula,Galvantula,전툴라,電蜘蛛,电蜘蛛
+597,Ferroseed,テッシード,Grindur,Kastadur,Ferroseed,Ferroseed,철시드,種子鐵球,种子铁球
+598,Ferrothorn,ナットレイ,Noacier,Tentantel,Ferrothorn,Ferrothorn,너트령,堅果啞鈴,坚果哑铃
+599,Klink,ギアル,Tic,Klikk,Klink,Klink,기어르,齒輪兒,齿轮儿
+600,Klang,ギギアル,Clic,Kliklak,Klang,Klang,기기어르,齒輪組,齿轮组
+601,Klinklang,ギギギアル,Cliticlic,Klikdiklak,Klinklang,Klinklang,기기기어르,齒輪怪,齿轮怪
+602,Tynamo,シビシラス,Anchwatt,Zapplardin,Tynamo,Tynamo,저리어,麻麻小魚,麻麻小鱼
+603,Eelektrik,シビビール,Lampéroie,Zapplalek,Eelektrik,Eelektrik,저리릴,麻麻鰻,麻麻鳗
+604,Eelektross,シビルドン,Ohmassacre,Zapplarang,Eelektross,Eelektross,저리더프,麻麻鰻魚王,麻麻鳗鱼王
+605,Elgyem,リグレー,Lewsor,Pygraulon,Elgyem,Elgyem,리그레,小灰怪,小灰怪
+606,Beheeyem,オーベム,Neitram,Megalon,Beheeyem,Beheeyem,벰크,大宇怪,大宇怪
+607,Litwick,ヒトモシ,Funécire,Lichtel,Litwick,Litwick,불켜미,燭光靈,烛光灵
+608,Lampent,ランプラー,Mélancolux,Laternecto,Lampent,Lampent,램프라,燈火幽靈,灯火幽灵
+609,Chandelure,シャンデラ,Lugulabre,Skelabra,Chandelure,Chandelure,샹델라,水晶燈火靈,水晶灯火灵
+610,Axew,キバゴ,Coupenotte,Milza,Axew,Axew,터검니,牙牙,牙牙
+611,Fraxure,オノンド,Incisache,Sharfax,Fraxure,Fraxure,액슨도,斧牙龍,斧牙龙
+612,Haxorus,オノノクス,Tranchodon,Maxax,Haxorus,Haxorus,액스라이즈,雙斧戰龍,双斧战龙
+613,Cubchoo,クマシュン,Polarhume,Petznief,Cubchoo,Cubchoo,코고미,噴嚏熊,喷嚏熊
+614,Beartic,ツンビアー,Polagriffe,Siberio,Beartic,Beartic,툰베어,凍原熊,冻原熊
+615,Cryogonal,フリージオ,Hexagel,Frigometri,Cryogonal,Cryogonal,프리지오,幾何雪花,几何雪花
+616,Shelmet,チョボマキ,Escargaume,Schnuthelm,Shelmet,Shelmet,쪼마리,小嘴蝸,小嘴蜗
+617,Accelgor,アギルダー,Limaspeed,Hydragil,Accelgor,Accelgor,어지리더,敏捷蟲,敏捷虫
+618,Stunfisk,マッギョ,Limonde,Flunschlik,Stunfisk,Stunfisk,메더,泥巴魚,泥巴鱼
+619,Mienfoo,コジョフー,Kungfouine,Lin-Fu,Mienfoo,Mienfoo,비조푸,功夫鼬,功夫鼬
+620,Mienshao,コジョンド,Shaofouine,Wie-Shu,Mienshao,Mienshao,비조도,師父鼬,师父鼬
+621,Druddigon,クリムガン,Drakkarmin,Shardrago,Druddigon,Druddigon,크리만,赤面龍,赤面龙
+622,Golett,ゴビット,Gringolem,Golbit,Golett,Golett,골비람,泥偶小人,泥偶小人
+623,Golurk,ゴルーグ,Golemastoc,Golgantes,Golurk,Golurk,골루그,泥偶巨人,泥偶巨人
+624,Pawniard,コマタナ,Scalpion,Gladiantri,Pawniard,Pawniard,자망칼,駒刀小兵,驹刀小兵
+625,Bisharp,キルキザン,Scalproie,Caesurio,Bisharp,Bisharp,절각참,劈斬司令,劈斩司令
+626,Bouffalant,バッフロン,Frison,Bisofank,Bouffalant,Bouffalant,버프론,爆炸頭水牛,爆炸头水牛
+627,Rufflet,ワシボン,Furaiglon,Geronimatz,Rufflet,Rufflet,수리둥보,毛頭小鷹,毛头小鹰
+628,Braviary,ウォーグル,Gueriaigle,Washakwil,Braviary,Braviary,워글,勇士雄鷹,勇士雄鹰
+629,Vullaby,バルチャイ,Vostourno,Skallyk,Vullaby,Vullaby,벌차이,禿鷹丫頭,秃鹰丫头
+630,Mandibuzz,バルジーナ,Vaututrice,Grypheldis,Mandibuzz,Mandibuzz,버랜지나,禿鷹娜,秃鹰娜
+631,Heatmor,クイタラン,Aflamanoir,Furnifraß,Heatmor,Heatmor,앤티골,熔蟻獸,熔蚁兽
+632,Durant,アイアント,Fermite,Fermicula,Durant,Durant,아이앤트,鐵蟻,铁蚁
+633,Deino,モノズ,Solochi,Kapuno,Deino,Deino,모노두,單首龍,单首龙
+634,Zweilous,ジヘッド,Diamat,Duodino,Zweilous,Zweilous,디헤드,雙首暴龍,双首暴龙
+635,Hydreigon,サザンドラ,Trioxhydre,Trikephalo,Hydreigon,Hydreigon,삼삼드래,三首惡龍,三首恶龙
+636,Larvesta,メラルバ,Pyronille,Ignivor,Larvesta,Larvesta,활화르바,燃燒蟲,燃烧虫
+637,Volcarona,ウルガモス,Pyrax,Ramoth,Volcarona,Volcarona,불카모스,火神蛾,火神蛾
+638,Cobalion,コバルオン,Cobaltium,Kobalium,Cobalion,Cobalion,코바르온,勾帕路翁,勾帕路翁
+639,Terrakion,テラキオン,Terrakium,Terrakium,Terrakion,Terrakion,테라키온,代拉基翁,代拉基翁
+640,Virizion,ビリジオン,Viridium,Viridium,Virizion,Virizion,비리디온,畢力吉翁,毕力吉翁
+641,Tornadus,トルネロス,Boréas,Boreos,Tornadus,Tornadus,토네로스,龍捲雲,龙卷云
+642,Thundurus,ボルトロス,Fulguris,Voltolos,Thundurus,Thundurus,볼트로스,雷電雲,雷电云
+643,Reshiram,レシラム,Reshiram,Reshiram,Reshiram,Reshiram,레시라무,萊希拉姆,萊希拉姆
+644,Zekrom,ゼクロム,Zekrom,Zekrom,Zekrom,Zekrom,제크로무,捷克羅姆,捷克罗姆
+645,Landorus,ランドロス,Démétéros,Demeteros,Landorus,Landorus,랜드로스,土地雲,土地云
+646,Kyurem,キュレム,Kyurem,Kyurem,Kyurem,Kyurem,큐레무,酋雷姆,酋雷姆
+647,Keldeo,ケルヂィオ,Keldeo,Keldeo,Keldeo,Keldeo,케르디오,凱路迪歐,凯路迪欧
+648,Meloetta,メロエッタ,Meloetta,Meloetta,Meloetta,Meloetta,메로엣타,美洛耶塔,美洛耶塔
+649,Genesect,ゲノセクト,Genesect,Genesect,Genesect,Genesect,게노세크트,蓋諾賽克特,盖诺赛克特
+650,Chespin,ハリマロン,Marisson,Igamaro,Chespin,Chespin,도치마론,哈力栗,哈力栗
+651,Quilladin,ハリボーグ,Boguérisse,Igastarnish,Quilladin,Quilladin,도치보구,胖胖哈力,胖胖哈力
+652,Chesnaught,ブリガロン,Blindépique,Brigaron,Chesnaught,Chesnaught,브리가론,布里卡隆,布里卡隆
+653,Fennekin,フォッコ,Feunnec,Fynx,Fennekin,Fennekin,푸호꼬,火狐狸,火狐狸
+654,Braixen,テールナー,Roussil,Rutena,Braixen,Braixen,테르나,長尾火狐,长尾火狐
+655,Delphox,マフォクシー,Goupelin,Fennexis,Delphox,Delphox,마폭시,妖火紅狐,妖火红狐
+656,Froakie,ケロマツ,Grenousse,Froxy,Froakie,Froakie,개구마르,呱呱泡蛙,呱呱泡蛙
+657,Frogadier,ゲコガシラ,Crôaporal,Amphizel,Frogadier,Frogadier,개굴반장,呱頭蛙,呱头蛙
+658,Greninja,ゲッコウガ,Amphinobi,Quajutsu,Greninja,Greninja,개굴닌자,甲賀忍蛙,甲贺忍蛙
+659,Bunnelby,ホルビー,Sapereau,Scoppel,Bunnelby,Bunnelby,파르빗,掘掘兔,掘掘兔
+660,Diggersby,ホルード,Excavarenne,Grebbit,Diggersby,Diggersby,파르토,掘地兔,掘地兔
+661,Fletchling,ヤヤコマ,Passerouge,Dartiri,Fletchling,Fletchling,화살꼬빈,小箭雀,小箭雀
+662,Fletchinder,ヒノヤコマ,Braisillon,Dartignis,Fletchinder,Fletchinder,불화살빈,火箭雀,火箭雀
+663,Talonflame,ファイアロー,Flambuzard,Fiaro,Talonflame,Talonflame,파이어로,烈箭鷹,烈箭鹰
+664,Scatterbug,コフキムシ,Lépidonille,Purmel,Scatterbug,Scatterbug,분이벌레,粉蝶蟲,粉蝶虫
+665,Spewpa,コフーライ,Pérégrain,Puponcho,Spewpa,Spewpa,분떠도리,粉蝶蛹,粉蝶蛹
+666,Vivillon,ビビヨン,Prismillon,Vivillon,Vivillon,Vivillon,비비용,彩粉蝶,彩粉蝶
+667,Litleo,シシコ,Hélionceau,Leufeo,Litleo,Litleo,레오꼬,小獅獅,小狮狮
+668,Pyroar,カエンジシ,Némélios,Pyroleo,Pyroar,Pyroar,화염레오,火炎獅,火炎狮
+669,Flabébé,フラベベ,Flabébé,Flabébé,Flabébé,Flabébé,플라베베,花蓓蓓,花蓓蓓
+670,Floette,フラエッテ,Floette,Floette,Floette,Floette,플라엣테,花葉蒂,花叶蒂
+671,Florges,フラージェス,Florges,Florges,Florges,Florges,플라제스,花潔夫人,花洁夫人
+672,Skiddo,メェークル,Cabriolaine,Mähikel,Skiddo,Skiddo,메이클,坐騎小羊,坐骑小羊
+673,Gogoat,ゴーゴート,Chevroum,Chevrumm,Gogoat,Gogoat,고고트,坐騎小羊,坐骑小羊
+674,Pancham,ヤンチャム,Pandespiègle,Pam-Pam,Pancham,Pancham,판짱,頑皮熊貓,顽皮熊猫
+675,Pangoro,ゴロンダ,Pandarbare,Pandagro,Pangoro,Pangoro,부란다,流氓熊貓,霸道熊猫
+676,Furfrou,トリミアン,Couafarel,Coiffwaff,Furfrou,Furfrou,트리미앙,多麗米亞,多丽米亚
+677,Espurr,ニャスパー,Psystigri,Psiau,Espurr,Espurr,냐스퍼,妙喵,妙喵
+678,Meowstic,ニャオニクス,Mistigrix,Psiaugon,Meowstic,Meowstic,냐오닉스,超能妙喵,超能妙喵
+679,Honedge,ヒトツキ,Monorpale,Gramokles,Honedge,Honedge,단칼빙,獨劍鞘,独剑鞘
+680,Doublade,ニダンギル,Dimoclès,Duokles,Doublade,Doublade,쌍검킬,雙劍鞘,双剑鞘
+681,Aegislash,ギルガルド,Exagide,Durengard,Aegislash,Aegislash,킬가르도,堅盾劍怪,坚盾剑怪
+682,Spritzee,シュシュプ,Fluvetin,Parfi,Spritzee,Spritzee,슈쁘,粉香香,粉香香
+683,Aromatisse,フレフワン,Cocotine,Parfinesse,Aromatisse,Aromatisse,프레프티르,芳香精,芳香精
+684,Swirlix,ペロッパフ,Sucroquin,Flauschling,Swirlix,Swirlix,나룸퍼프,綿綿泡芙,绵绵泡芙
+685,Slurpuff,ペロリーム,Cupcanaille,Sabbaione,Slurpuff,Slurpuff,나루림,胖甜妮,胖甜妮
+686,Inkay,マーイーカ,Sepiatop,Iscalar,Inkay,Inkay,오케이징,好啦魷,好啦鱿
+687,Malamar,カラマネロ,Sepiatroce,Calamanero,Malamar,Malamar,칼라마네로,烏賊王,乌贼王
+688,Binacle,カメテテ,Opermine,Bithora,Binacle,Binacle,거북손손,龜腳腳,龟脚脚
+689,Barbaracle,ガメノデス,Golgopathe,Thanathora,Barbaracle,Barbaracle,거북손데스,龜足巨鎧,龟足巨铠
+690,Skrelp,クズモー,Venalgue,Algitt,Skrelp,Skrelp,수레기,垃垃藻,垃垃藻
+691,Dragalge,ドラミドロ,Kravarech,Tandrak,Dragalge,Dragalge,드래캄,毒藻龍,毒藻龙
+692,Clauncher,ウデッポウ,Flingouste,Scampisto,Clauncher,Clauncher,완철포,鐵臂槍蝦,铁臂枪虾
+693,Clawitzer,ブロスター,Gamblast,Wummer,Clawitzer,Clawitzer,블로스터,鋼炮臂蝦,钢炮臂虾
+694,Helioptile,エリキテル,Galvaran,Eguana,Helioptile,Helioptile,목도리키텔,傘電蜥,伞电蜥
+695,Heliolisk,エレザード,Iguolta,Elezard,Heliolisk,Heliolisk,일레도리자드,光電傘蜥,光电伞蜥
+696,Tyrunt,チゴラス,Ptyranidur,Balgoras,Tyrunt,Tyrunt,티고라스,寶寶暴龍,宝宝暴龙
+697,Tyrantrum,ガチゴラス,Rexilius,Monargoras,Tyrantrum,Tyrantrum,견고라스,怪顎龍,怪颚龙
+698,Amaura,アマルス,Amagara,Amarino,Amaura,Amaura,아마루스,冰雪龍,冰雪龙
+699,Aurorus,アマルルガ,Dragmara,Amagarga,Aurorus,Aurorus,아마루르가,冰雪巨龍,冰雪巨龙
+700,Sylveon,ニンフィア,Nymphali,Feelinara,Sylveon,Sylveon,님피아,仙子伊布,仙子伊布
+701,Hawlucha,ルチャブル,Brutalibré,Resladero,Hawlucha,Hawlucha,루차불,摔角鷹人,摔角鹰人
+702,Dedenne,デデンネ,Dédenne,Dedenne,Dedenne,Dedenne,데덴네,咚咚鼠,咚咚鼠
+703,Carbink,メレシー,Strassie,Rocara,Carbink,Carbink,멜리시,小碎鑽,小碎钻
+704,Goomy,ヌメラ,Mucuscule,Viscora,Goomy,Goomy,미끄메라,黏黏寶,黏黏宝
+705,Sliggoo,ヌメイル,Colimucus,Viscargot,Sliggoo,Sliggoo,미끄네일,黏美兒,黏美儿
+706,Goodra,ヌメルゴン,Muplodocus,Viscogon,Goodra,Goodra,미끄래곤,黏美龍,黏美龙
+707,Klefki,クレッフィ,Trousselin,Clavion,Klefki,Klefki,클레피,鑰圈兒,钥圈儿
+708,Phantump,ボクレー,Brocélôme,Paragoni,Phantump,Phantump,나목령,小木靈,小木灵
+709,Trevenant,オーロット,Desséliandre,Trombork,Trevenant,Trevenant,대로트,朽木妖,朽木妖
+710,Pumpkaboo,バケッチャ,Pitrouille,Irrbis,Pumpkaboo,Pumpkaboo,호바귀,南瓜精,南瓜精
+711,Gourgeist,パンプジン,Banshitrouye,Pumpdjinn,Gourgeist,Gourgeist,펌킨인,南瓜怪人,南瓜怪人
+712,Bergmite,カチコール,Grelaçon,Arktip,Bergmite,Bergmite,꽁어름,冰寶,冰宝
+713,Avalugg,クレベース,Séracrawl,Arktilas,Avalugg,Avalugg,크레베이스,冰岩怪,冰岩怪
+714,Noibat,オンバット,Sonistrelle,eF-eM,Noibat,Noibat,음뱃,嗡蝠,嗡蝠
+715,Noivern,オンバーン,Bruyverne,UHaFnir,Noivern,Noivern,음번,音波龍,音波龙
+716,Xerneas,ゼルネアス,Xerneas,Xerneas,Xerneas,Xerneas,제르네아스,哲爾尼亞斯,哲尔尼亚斯
+717,Yveltal,イベルタル,Yveltal,Yveltal,Yveltal,Yveltal,이벨타르,伊裴爾塔爾,伊裴尔塔尔
+718,Zygarde,ジガルデ,Zygarde,Zygarde,Zygarde,Zygarde,지가르데,基格爾德,基格尔德
+719,Diancie,ヂィアンシー,Diancie,Diancie,Diancie,Diancie,디안시,蒂安希,蒂安希
+720,Hoopa,フーパ,Hoopa,Hoopa,Hoopa,Hoopa,후파,胡帕,胡帕
+721,Volcanion,ボルケニオン,Volcanion,Volcanion,Volcanion,Volcanion,볼케니온,波爾凱尼恩,波尔凯尼恩
+722,Rowlet,モクロー,Brindibou,Bauz,Rowlet,Rowlet,나몰빼미,木木梟,木木枭
+723,Dartrix,フクスロー,Efflèche,Arboretoss,Dartrix,Dartrix,빼미스로우,投羽梟,投羽枭
+724,Decidueye,ジュナイパー,Archéduc,Silvarro,Decidueye,Decidueye,모크나이퍼,狙射樹梟,狙射树枭
+725,Litten,ニャビー,Flamiaou,Flamiau,Litten,Litten,냐오불,火斑喵,火斑喵
+726,Torracat,ニャヒート,Matoufeu,Miezunder,Torracat,Torracat,냐오히트,炎熱喵,炎热喵
+727,Incineroar,ガオガエン,Félinferno,Fuegro,Incineroar,Incineroar,어흥염,熾焰咆哮虎,炽焰咆哮虎
+728,Popplio,アシマリ,Otaquin,Robball,Popplio,Popplio,누리공,球球海獅,球球海狮
+729,Brionne,オシャマリ,Otarlette,Marikeck,Brionne,Brionne,키요공,花漾海獅,花漾海狮
+730,Primarina,アシレーヌ,Oratoria,Primarene,Primarina,Primarina,누리레느,西獅海壬,西狮海壬
+731,Pikipek,ツツケラ,Picassaut,Peppeck,Pikipek,Pikipek,콕코구리,小篤兒,小笃儿
+732,Trumbeak,ケララッパ,Piclairon,Trompeck,Trumbeak,Trumbeak,크라파,喇叭啄鳥,喇叭啄鸟
+733,Toucannon,ドデカバシ,Bazoukan,Tukanon,Toucannon,Toucannon,왕큰부리,銃嘴大鳥,铳嘴大鸟
+734,Yungoos,ヤングース,Manglouton,Mangunior,Yungoos,Yungoos,영구스,貓鼬少,猫鼬少
+735,Gumchoos,デカグース,Argouste,Manguspektor,Gumchoos,Gumchoos,형사구스,貓鼬探長,猫鼬探长
+736,Grubbin,アゴジムシ,Larvibule,Mabula,Grubbin,Grubbin,턱지충이,強顎雞母蟲,强颚鸡母虫
+737,Charjabug,デンジムシ,Chrysapile,Akkup,Charjabug,Charjabug,전지충이,蟲電寶,虫电宝
+738,Vikavolt,クワガノン,Lucanon,Donarion,Vikavolt,Vikavolt,투구뿌논,鍬農炮蟲,锹农炮虫
+739,Crabrawler,マケンカニ,Crabagarre,Krabbox,Crabrawler,Crabrawler,오기지게,好勝蟹,好胜蟹
+740,Crabominable,ケケンカニ,Crabominable,Krawell,Crabominable,Crabominable,모단단게,好勝毛蟹,好胜毛蟹
+741,Oricorio,オドリドリ,Plumeline,Choreogel,Oricorio,Oricorio,춤추새,花舞鳥,花舞鸟
+742,Cutiefly,アブリー,Bombydou,Wommel,Cutiefly,Cutiefly,에블리,萌虻,萌虻
+743,Ribombee,アブリボン,Rubombelle,Bandelby,Ribombee,Ribombee,에리본,蝶結萌虻,蝶结萌虻
+744,Rockruff,イワンコ,Rocabot,Wufffels,Rockruff,Rockruff,암멍이,岩狗狗,岩狗狗
+745,Lycanroc,ルガルガン,Lougaroc,Wolwerock,Lycanroc,Lycanroc,루가루암,鬃岩狼人,鬃岩狼人
+746,Wishiwashi,ヨワシ,Froussardine,Lusardin,Wishiwashi,Wishiwashi,약어리,弱丁魚,弱丁鱼
+747,Mareanie,ヒドイデ,Vorastérie,Garstella,Mareanie,Mareanie,시마사리,好壞星,好坏星
+748,Toxapex,ドヒドイデ,Prédastérie,Aggrostella,Toxapex,Toxapex,더시마사리,超壞星,超坏星
+749,Mudbray,ドロバンコ,Tiboudet,Pampuli,Mudbray,Mudbray,머드나기,泥驢仔,泥驴仔
+750,Mudsdale,バンバドロ,Bourrinos,Pampross,Mudsdale,Mudsdale,만마드,重泥挽馬,重泥挽马
+751,Dewpider,シズクモ,Araqua,Araqua,Dewpider,Dewpider,물거미,滴蛛,滴蛛
+752,Araquanid,オニシズクモ,Tarembulle,Aranestro,Araquanid,Araquanid,깨비물거미,滴蛛霸,滴蛛霸
+753,Fomantis,カリキリ,Mimantis,Imantis,Fomantis,Fomantis,짜랑랑,偽螳草,伪螳草
+754,Lurantis,ラランテス,Floramantis,Mantidea,Lurantis,Lurantis,라란티스,蘭螳花,兰螳花
+755,Morelull,ネマシュ,Spododo,Bubungus,Morelull,Morelull,자마슈,睡睡菇,睡睡菇
+756,Shiinotic,マシェード,Lampignon,Lamellux,Shiinotic,Shiinotic,마셰이드,燈罩夜菇,灯罩夜菇
+757,Salandit,ヤトウモリ,Tritox,Molunk,Salandit,Salandit,야도뇽,夜盜火蜥,夜盜火蜥
+758,Salazzle,エンニュート,Malamandre,Amfira,Salazzle,Salazzle,염뉴트,焰后蜥,焰后蜥
+759,Stufful,ヌイコグマ,Nounourson,Velirsi,Stufful,Stufful,포곰곰,童偶熊,童偶熊
+760,Bewear,キテルグマ,Chelours,Kosturso,Bewear,Bewear,이븐곰,穿著熊,穿着熊
+761,Bounsweet,アマカジ,Croquine,Frubberl,Bounsweet,Bounsweet,달콤아,甜竹竹,甜竹竹
+762,Steenee,アママイコ,Candine,Frubaila,Steenee,Steenee,달무리나,甜舞妮,甜舞妮
+763,Tsareena,アマージョ,Sucreine,Fruyal,Tsareena,Tsareena,달코퀸,甜冷美后,甜冷美后
+764,Comfey,キュワワー,Guérilande,Curelei,Comfey,Comfey,큐아링,花療環環,花疗环环
+765,Oranguru,ヤレユータン,Gouroutan,Kommandutan,Oranguru,Oranguru,하랑우탄,智揮猩,智挥猩
+766,Passimian,ナゲツケサル,Quartermac,Quartermak,Passimian,Passimian,내던숭이,投擲猴,投掷猴
+767,Wimpod,コソクムシ,Sovkipou,Reißlaus,Wimpod,Wimpod,꼬시레,膽小蟲,胆小虫
+768,Golisopod,グソクムシャ,Sarmuraï,Tectass,Golisopod,Golisopod,갑주무사,具甲武者,具甲武者
+769,Sandygast,スナバァ,Bacabouh,Sankabuh,Sandygast,Sandygast,모래꿍,沙丘娃,沙丘娃
+770,Palosand,シロデスナ,Trépassable,Colossand,Palosand,Palosand,모래성이당,噬沙堡爺,噬沙堡爺
+771,Pyukumuku,ナマコブシ,Concombaffe,Gufa,Pyukumuku,Pyukumuku,해무기,拳海參,拳海参
+772,Type: Null,タイプ：ヌル,Type:0,Typ:Null,Código Cero,Tipo Zero,타입：널,屬性：空,属性：空
+773,Silvally,シルヴァヂィ,Silvallié,Amigento,Silvally,Silvally,실버디,銀伴戰獸,银伴战兽
+774,Minior,メテノ,Météno,Meteno,Minior,Minior,메테노,小隕星,小陨星
+775,Komala,ネッコアラ,Dodoala,Koaleul,Komala,Komala,자말라,樹枕尾熊,树枕尾熊
+776,Turtonator,バクガメス,Boumata,Turtonator,Turtonator,Turtonator,폭거북스,爆焰龜獸,爆焰龟兽
+777,Togedemaru,トゲデマル,Togedemaru,Togedemaru,Togedemaru,Togedemaru,토게데마루,托戈德瑪爾,托戈德玛尔
+778,Mimikyu,ミミッキュ,Mimiqui,Mimigma,Mimikyu,Mimikyu,따라큐,謎擬Ｑ,谜拟丘
+779,Bruxish,ハギギシリ,Denticrisse,Knirfish,Bruxish,Bruxish,치갈기,磨牙彩皮魚,磨牙彩皮鱼
+780,Drampa,ジジーロン,Draïeul,Sen-Long,Drampa,Drampa,할비롱,老翁龍,老翁龙
+781,Dhelmise,ダダリン,Sinistrail,Moruda,Dhelmise,Dhelmise,타타륜,破破舵輪,破破舵轮
+782,Jangmo-o,ジャラコ,Bébécaille,Miniras,Jangmo-o,Jangmo-o,짜랑꼬,心鱗寶,心鳞宝
+783,Hakamo-o,ジャランゴ,Ékaïd,Mediras,Hakamo-o,Hakamo-o,짜랑고우거,鱗甲龍,鳞甲龙
+784,Kommo-o,ジャラランガ,Ékaiser,Grandiras,Kommo-o,Kommo-o,짜랑고우거,杖尾鱗甲龍,杖尾鳞甲龙
+785,Tapu Koko,カプ・コケコ,Tokoriko,Kapu-Riki,Tapu Koko,Tapu Koko,카푸꼬꼬꼭,卡璞・鳴鳴,卡璞・鸣鸣
+786,Tapu Lele,カプ・テテフ,Tokopiyon,Kapu-Fala,Tapu Lele,Tapu Lele,카푸나비나,卡璞・蝶蝶,卡璞・蝶蝶
+787,Tapu Bulu,カプ・ブルル,Tokotoro,Kapu-Toro,Tapu Bulu,Tapu Bulu,카푸브루루,卡璞・哞哞,卡璞・哞哞
+788,Tapu Fini,カプ・レヒレ,Tokopisco,Kapu-Kime,Tapu Fini,Tapu Fini,카푸느지느,卡璞・鰭鰭,卡璞・鳍鳍
+789,Cosmog,コスモッグ,Cosmog,Cosmog,Cosmog,Cosmog,코스모그,科斯莫古,科斯莫古
+790,Cosmoem,コスモウム,Cosmovum,Cosmovum,Cosmoem,Cosmoem,코스모움,科斯莫姆,科斯莫姆
+791,Solgaleo,ソルガレオ,Solgaleo,Solgaleo,Solgaleo,Solgaleo,솔가레오,索爾迦雷歐,索尔迦雷欧
+792,Lunala,ルナアーラ,Lunala,Lunala,Lunala,Lunala,루나아라,露奈雅拉,露奈雅拉
+793,Nihilego,ウツロイド,Zeroïd,Anego,Nihilego,Nihilego,텅비드,虛吾伊德,虚吾伊德
+794,Buzzwole,マッシブーン,Mouscoto,Masskito,Buzzwole,Buzzwole,매시붕,爆肌蚊,爆肌蚊
+795,Pheromosa,フェローチェ,Cancrelove,Schabelle,Pheromosa,Pheromosa,페로코체,費洛美螂,费洛美螂
+796,Xurkitree,デンジュモク,Câblifère,Voltriant,Xurkitree,Xurkitree,전수목,電束木,电束木
+797,Celesteela,テッカグヤ,Bamboiselle,Kaguron,Celesteela,Celesteela,철화구야,鐵火輝夜,铁火辉夜
+798,Kartana,カミツルギ,Katagami,Katagami,Kartana,Kartana,종이신도,紙御劍,纸御剑
+799,Guzzlord,アクジキング,Engloutyran,Schlingking,Guzzlord,Guzzlord,악식킹,惡食大王,恶食大王
+800,Necrozma,ネクロスマ,Necrozma,Necrozma,Necrozma,Necrozma,네크로즈마,奈克洛茲瑪,奈克洛兹玛
+801,Magearna,マギアナ,Magearna,Magearna,Magearna,Magearna,마기아나,瑪機雅娜,玛机雅娜
+802,Marshadow,マーシャドー,Marshadow,Marshadow,Marshadow,Marshadow,마샤도,瑪夏多,玛夏多
+803,Poipole,ベベノム,Vémini,Venicro,Poipole,Poipole,베베놈,毒貝比,毒贝比
+804,Naganadel,アーゴヨン,Mandrillon,Agoyon,Naganadel,Naganadel,아고용,四顎針龍,四颚针龙
+805,Stakataka,ツンデツンデ,Ama-Ama,Muramura,Stakataka,Stakataka,차곡차곡,壘磊石,垒磊石
+806,Blacephalon,ズガドーン,Pierroteknik,Kopplosio,Blacephalon,Blacephalon,두파팡,砰頭小丑,砰头小丑
+807,Zeraora,ゼラオラ,Zeraora,Zeraora,Zeraora,Zeraora,제라오라,捷拉奧拉,捷拉奥拉
+808,Meltan,メルタン,Meltan,Meltan,Meltan,Meltan,멜탄,美錄坦,美录坦
+809,Melmetal,メルメタル,Melmetal,Melmetal,Melmetal,Melmetal,멜메탈,美錄梅塔,美录梅塔
+810,Grookey,サルノリ,Ouistempo,Chimpep,Grookey,Grookey,흥나숭,敲音猴,敲音猴
+811,Thwakey,バチンキー,Badabouin,Chimstix,Thwakey,Thwakey,채키몽,啪咚猴,啪咚猴
+812,Rillaboom,ゴリランダー,Gorythmic,Gortrom,Rillaboom,Rillaboom,고릴타,轟擂金剛猩,轰擂金刚猩
+813,Scorbunny,ヒバニー,Flambino,Hopplo,Scorbunny,Scorbunny,염버니,炎兔兒,炎兔儿
+814,Raboot,ラビフット,Lapyro,Kickerlo,Raboot,Raboot,래비풋,騰蹴小將,腾蹴小将
+815,Cinderace,エースバーン,Pyrobut,Liberlo,Cinderace,Cinderace,에이스번,閃焰王牌,闪焰王牌
+816,Sobble,メッソン,Larméléon,Memmeon,Sobble,Sobble,울머기,淚眼蜥,泪眼蜥
+817,Drizzile,ジメレオン,Arrozard,Phlegleon,Drizzile,Drizzile,누겔레온,變澀蜥,变涩蜥
+818,Inteleon,インテレオン,Lézargus,Intelleon,Inteleon,Inteleon,인텔리레온,千面避役,千面避役
+819,Skowvet,ホシガリス,Rongourmand,Raffel,Skowvet,Skowvet,탐리스,貪心栗鼠,贪心栗鼠
+820,Greedent,ヨクバリス,Rongrigou,Schlaraffel,Greedent,Greedent,요씽리스,藏飽栗鼠,藏饱栗鼠
+821,Rookidee,ココガラ,Minisange,Meikro,Rookidee,Rookidee,파라꼬,稚山雀,稚山雀
+822,Corvisquire,アオガラス,Bleuseille,Kranoviz,Corvisquire,Corvisquire,파크로우,藍鴉,蓝鸦
+823,Corviknight,アーマーガア,Corvaillus,Krarmor,Corviknight,Corviknight,아머까오,鋼鎧鴉,钢铠鸦
+824,Blipbug,サッチミシ,Larvadar,Sensect,Blipbug,Blipbug,두루지벌레,索偵蟲,索侦虫
+825,Dottler,レドームシ,Coléodôme,Keradar,Dottler,Dottler,레돔벌레,天罩蟲,天罩虫
+826,Orbeetle,イオルブ,Astronelle,Maritellit,Orbeetle,Orbeetle,이올브,以歐路普,以欧路普
+827,Nickit,クスネ,Goupilou,Kleptifux,Nickit,Nickit,훔처우,偷兒狐,狡小狐
+828,Thievul,フォクスライ,Roublenard,Gaunux,Thievul,Thievul,폭슬라이,狐大盜,猾大狐
+829,Gossifleur,ヒメンカ,Tournicoton,Cottini,Gossifleur,Gossifleur,꼬모카,幼棉棉,幼棉棉
+830,Eldegoss,ワタシラガ,Blancoton,Cottomi,Eldegoss,Eldegoss,백솜모카,白蓬蓬,白蓬蓬
+831,Wooloo,ウールー,Moumouton,Wolly,Wooloo,Wooloo,우르,毛辮羊,毛辫羊
+832,Dubwool,バイウールー,Moumouflon,Zwollock,Dubwool,Dubwool,배우르,毛毛角羊,毛毛角羊
+833,Chewtle,カムカメ,Khélocrok,Kamehaps,Chewtle,Chewtle,깨물부기,咬咬龜,咬咬龟
+834,Drednaw,カジリガメ,Torgamord,Kamalm,Drednaw,Drednaw,갈가부기,暴噬龜,暴噬龟
+835,Yamper,ワンパチ,Voltoutou,Voldi,Yamper,Yamper,멍파치,來電汪,来电汪
+836,Boltund,パルスワン,Fulgudog,Bellektro,Boltund,Boltund,펄스멍,逐電犬,逐电犬
+837,Rolycoly,タンドン,Charbi,Klonkette,Rolycoly,Rolycoly,탄동,小炭仔,小炭仔
+838,Carkol,トロッゴン,Wagomine,Wagong,Carkol,Carkol,탄차곤,大炭車,大炭车
+839,Coalossal,セキタンザン,Monthracite,Montecarbo,Coalossal,Coalossal,석탄산,巨炭山,巨炭山
+840,Applin,カジッチュ,Verpom,Knapfel,Applin,Applin,과사삭벌레,啃果蟲,啃果虫
+841,Flapple,アップリュー,Pomdrapi,Drapfel,Flapple,Flapple,애프룡,蘋裹龍,苹裹龙
+842,Appletun,タルップル,Dratatin,Schlapfel,Appletun,Appletun,단지래플,豐蜜龍,丰蜜龙
+843,Silicobra,スナヘビ,Dunaja,Salanga,Silicobra,Silicobra,모래뱀,沙包蛇,沙包蛇
+844,Sandaconda,サダイジャ,Dunaconda,Sanaconda,Sandaconda,Sandaconda,사다이사,沙螺蟒,沙螺蟒
+845,Cramorant,ウッウ,Nigosier,Urgl,Cramorant,Cramorant,윽우지,古月鳥,古月鸟
+846,Arrokuda,サシカマス,Embrochet,Pikuda,Arrokuda,Arrokuda,찌로꼬치,刺梭魚,刺梭鱼
+847,Barraskewda,カマスジョー,Hastacuda,Barrakiefa,Barraskewda,Barraskewda,꼬치조,戽斗尖梭,戽斗尖梭
+848,Toxel,エレゼン,Toxizap,Toxel,Toxel,Toxel,일레즌,毒電嬰,电音婴
+849,Toxtricity,ストリンダー,Salarsen,Riffex,Toxtricity,Toxtricity,스트린더,顫弦蠑螈,颤弦蝾螈
+850,Sizzlipede,ヤクデ,Grillepattes,Thermopod,Sizzlipede,Sizzlipede,태우지네,燒火蚣,烧火蚣
+851,Centiskorch,マルヤクデ,Scolocendre,Infernopod,Centiskorch,Centiskorch,다태우지네,焚焰蚣,焚焰蚣
+852,Clobbopus,タタッコ,Poulpaf,Klopptopus,Clobbopus,Clobbopus,때때무노,拳拳蛸,拳拳蛸
+853,Grapploct,オトスパス,Krakos,Kaocto,Grapploct,Grapploct,케오퍼스,八爪武師,八爪武师
+854,Sinistea,ヤバチャ,Théffroi,Fatalitee,Sinistea,Sinistea,데인차,來悲茶,來悲茶
+855,Polteageist,ポットデス,Polthégeist,Mortipot,Polteageist,Polteageist,포트데스,怖思壺,怖思壶
+856,Hatenna,ミブリム,Bibichut,Brimova,Hatenna,Hatenna,몸지브림,迷布莉姆,迷布莉姆
+857,Hattrem,テブリム,Chapotus,Brimano,Hattrem,Hattrem,손지브림,提布莉姆,提布莉姆
+858,Hatterene,ブリムオン,Sorcilence,Silembrim,Hatterene,Hatterene,브리무음,布莉姆溫,布莉姆温
+859,Impidimp,ベロバー,Grimalin,Bähmon,Impidimp,Impidimp,메롱꿍,搗蛋小妖,捣蛋小妖
+860,Morgrem,ギモー,Fourbelin,Pelzebub,Morgrem,Morgrem,쏘겨모,詐唬魔,诈唬魔
+861,Grimmsnarl,オーロンゲ,Angoliath,Olangaar,Grimmsnarl,Grimmsnarl,오롱털,長毛巨魔,长毛巨魔
+862,Obstagoon,タチフサグマ,Ixon,Barrikadax,Obstagoon,Obstagoon,가로막구리,堵攔熊,堵拦熊
+863,Perrserker,ニャイキング,Berserkatt,Mauzinger,Perrserker,Perrserker,나이킹,喵頭目,喵头目
+864,Cursola,サニゴーン,Corayôme,Gorgasonn,Cursola,Cursola,산호르곤,魔靈珊瑚,魔灵珊瑚
+865,Sirfetch'd,ネギガナイト,Palarticho,Lauchzelot,Sirfetch'd,Sirfetch'd,창파나이트,蔥遊兵,葱游兵
+866,Mr. Rime,バリコオル,M. Glaquette,Pantifrost,Mr. Rime,Mr. Rime,마임꽁꽁,踏冰人偶,踏冰人偶
+867,Runerigus,デスバーン,Tutétékri,Oghnatoll,Runerigus,Runerigus,데스판,死神板,迭失板
+868,Milcery,マホミル,Crèmy,Hokumil,Milcery,Milcery,마빌크,小仙奶,小仙奶
+869,Alcremie,マホイップ,Charmilly,Pokusan,Alcremie,Alcremie,마휘핑,霜奶仙,霜奶仙
+870,Falinks,タイレーツ,Hexadron,Legios,Falinks,Falinks,대여르,列陣兵,列阵兵
+871,Pincurchin,バチンウニ,Wattapik,Britzigel,Pincurchin,Pincurchin,찌르성게,啪嚓海膽,啪嚓海胆
+872,Snom,ユキハミ,Frissonille,Snomnom,Snom,Snom,누니머기,雪吞蟲,雪吞虫
+873,Frosmoth,モスノウ,Beldeneige,Mottineva,Frosmoth,Frosmoth,모스노우,雪絨蛾,雪绒蛾
+874,Stonjourner,イシヘンジン,Dolman,Humanolith,Stonjourner,Stonjourner,돌헨진,巨石丁,巨石丁
+875,Eiscue,コオリッポ,Bekaglaçon,Kubuin,Eiscue,Eiscue,빙큐보,冰砌鵝,冰砌鹅
+876,Indeedee,イエッサン,Wimessir,Servol,Indeedee,Indeedee,에써르,愛管侍,爱管侍
+877,Morpeko,モモルペコ,Morpeko,Morpeko,Morpeko,Morpeko,모르페코,莫魯貝可,莫鲁贝可
+878,Cufant,ゾウドウ,Charibari,Kupfanti,Cufant,Cufant,끼리동,銅象,铜象
+879,Copperajah,ダイオウドウ,Pachyradjah,Patinaraja,Copperajah,Copperajah,대왕끼리동,大王銅象,大王铜象
+880,Dracozolt,パッチラゴン,Galvagon,Lectragon,Dracozolt,Dracozolt,파치래곤,雷鳥龍,雷鸟龙
+881,Arctozolt,パッチルドン,Galvagla,Lecryodon,Arctozolt,Arctozolt,파치르돈,雷鳥海獸,雷鸟海兽
+882,Dracovish,ウオノラゴン,Hydragon,Pescragon,Dracovish,Dracovish,어래곤,鰓魚龍,鳃鱼龙
+883,Arctovish,ウオノルドン,Hydragla,Pescryodon,Arctovish,Arctovish,어치르돈,鰓魚海獸,鳃鱼海兽
+884,Duraludon,ジュラルドン,Duralugon,Duraludon,Duraludon,Duraludon,두랄루돈,鋁鋼龍,铝钢龙
+885,Dreepy,ドラメシヤ,Fantyrm,Grolldra,Dreepy,Dreepy,드라꼰,多龍梅西亞,多龙梅西亚
+886,Drakloak,ドロンチ,Dispareptil,Phandra,Drakloak,Drakloak,드래런치,多龍奇,多龙奇
+887,Dragapult,ドラパルト,Lanssorien,Katapuldra,Dragapult,Dragapult,드래펄트,多龍巴魯托,多龙巴鲁托
+888,Zacian,ザシアン,Zacian,Zacian,Zacian,Zacian,자시안,蒼響,苍响
+889,Zamazanta,ザマゼンタ,Zamazanta,Zamazanta,Zamazanta,Zamazanta,자마젠타,藏瑪然特,藏玛然特
+890,Eternatus,ムゲンダイナ,Éthernatos,Endynalos,Eternatus,Eternatus,무한다이노,無極汰那,无极汰那
+891,Kubfu,ダクマ,Wushours,Dakuma,Kubfu,Kubfu,치고마,熊徒弟,熊徒弟
+892,Urshifu,ウーラオス,Shifours,Wulaosu,Urshifu,Urshifu,우라오스,武道熊師,武道熊师
+893,Zarude,ザルード,Zarude,Zarude,Zarude,Zarude,자루도,薩戮德,萨戮德
+894,Regieleki,レジイレキ,Regieleki,Regieleki,Regieleki,Regieleki,레지에레키,雷吉艾勒奇,雷吉艾勒奇
+895,Regidrago,レジドラゴ,Regidrago,Regidrago,Regidrago,Regidrago,레지드래고,雷吉鐸拉戈,雷吉铎拉戈
+896,Glastrier,ブラザポス,Blizzeval,Polaross,Glastrier,Glastrier,블리자포스,雪暴馬,雪暴马
+897,Spectrier,ライスポス,Spectreval,Phantoross,Spectrier,Spectrier,레이스포스,靈幽馬,灵幽马
+898,Calyrex,バドレックス,Sylveroy,Coronospa,Calyrex,Calyrex,버드렉스,蕾冠王,蕾冠王
+899,Wyrdeer,アヤシシ,Cerbyllin,Damythir,Wyrdeer,Wyrdeer,신비록,詭角鹿,诡角鹿
+900,Kleavor,バサギリ,Hachécateur,Axantor,Kleavor,Kleavor,사마자르,劈斧螳螂,劈斧螳螂
+901,Ursaluna,ガチグマ,Ursaking,Ursaluna,Ursaluna,Ursaluna,다투곰,月月熊,月月熊
+902,Basculegion,イヤイトウ,Paragruel,Salmagnis,Basculegion,Basculegion,대쓰여너,幽尾玄魚,幽尾玄鱼
+903,Sneasler,オオニューラ,Farfurex,Snieboss,Sneasler,Sneasler,포푸니크,大狃拉,大狃拉
+904,Overqwil,ハリーマン,Qwilpik,Myriador,Overqwil,Overqwil,장침바루,萬針魚,万针鱼
+905,Enamorus,ラブトロス,Amovénus,Cupidos,Enamorus,Enamorus,러브로스,眷戀雲,眷恋云
+906,Sprigatito,ニャオハ,Poussacha,Felori,Sprigatito,Sprigatito,나오하,新葉喵,新叶喵
+907,Floragato,ニャローテ,Matourgeon,Feliospa,Floragato,Floragato,나로테,蒂蕾喵,蒂蕾喵
+908,Meowscarda,マスカーニャ,Miascarade,Maskagato,Meowscarda,Meowscarda,마스카나,魔幻假面喵,魔幻假面喵
+909,Fuecoco,ホゲータ,Chochodile,Krokel,Fuecoco,Fuecoco,뜨아거,呆火鱷,呆火鳄
+910,Crocalor,アチゲータ,Crocogril,Lokroko,Crocalor,Crocalor,악뜨거,炙燙鱷,炙烫鳄
+911,Skeledirge,ラウドボーン,Flâmigator,Skelokrok,Skeledirge,Skeledirge,라우드본,骨紋巨聲鱷,骨纹巨声鳄
+912,Quaxly,クワッス,Coiffeton,Kwaks,Quaxly,Quaxly,꾸왁스,潤水鴨,润水鸭
+913,Quaxwell,ウェルカモ,Canarbello,Fuentente,Quaxwell,Quaxwell,아꾸왁,湧躍鴨,涌跃鸭
+914,Quaquaval,ウェーニバル,Palmaval,Bailonda,Quaquaval,Quaquaval,웨이니발,狂歡浪舞鴨,狂欢浪舞鸭
+915,Lechonk,グルトン,Gourmelet,Ferkuli,Lechonk,Lechonk,맛보돈,愛吃豚,爱吃豚
+916,Oinkologne,パフュートン,Fragroin,Fragrunz,Oinkologne,Oinkologne,퍼퓨돈,飄香豚,飘香豚
+917,Tarountula,タマンチュラ,Tissenboule,Tarundel,Tarountula,Tarountula,타랜툴라,團珠蛛,团珠蛛
+918,Spidops,ワナイダー,Filentrappe,Spinsidias,Spidops,Spidops,트래피더,操陷蛛,操陷蛛
+919,Nymble,マメバッタ,Lilliterelle,Micrick,Nymble,Nymble,콩알뚜기,豆蟋蟀,豆蟋蟀
+920,Lokix,エクスレッグ,Gamblex,Lextremo,Lokix,Lokix,엑스레그,烈腿蝗,烈腿蝗
+921,Pawmi,パモ,Pohm,Pamo,Pawmi,Pawmi,빠모,布撥,布拨
+922,Pawmo,パモット,Pohmotte,Pamamo,Pawmo,Pawmo,빠모트,布土撥,布土拨
+923,Pawmot,パーモット,Pohmarmotte,Pamomamo,Pawmot,Pawmot,빠르모트,巴布土撥,巴布土拨
+924,Tandemaus,ワッカネズミ,Compagnol,Zwieps,Tandemaus,Tandemaus,두리쥐,一對鼠,一对鼠
+925,Maushold,イッカネズミ,Famignol,Famieps,Maushold,Maushold,파밀리쥐,一家鼠,一家鼠
+926,Fidough,パピモッチ,Pâtachiot,Hefel,Fidough,Fidough,쫀도기,狗仔包,狗仔包
+927,Dachsbun,バウッツエル,Briochien,Backel,Dachsbun,Dachsbun,바우첼,麻花犬,麻花犬
+928,Smoliv,ミニーブ,Olivini,Olini,Smoliv,Smoliv,미니브,迷你芙,迷你芙
+929,Dolliv,オリーニョ,Olivado,Olivinio,Dolliv,Dolliv,올리뇨,奧利紐,奥利纽
+930,Arboliva,オリーヴァ,Arboliva,Olithena,Arboliva,Arboliva,올리르바,奧利瓦,奥利瓦
+931,Squawkabilly,イキリンコ,Tapatoès,Krawalloro,Squawkabilly,Squawkabilly,시비꼬,怒鸚哥,怒鹦哥
+932,Nacli,コジオ,Selutin,Geosali,Nacli,Nacli,베베솔트,鹽石寶,盐石宝
+933,Naclstack,ジオヅム,Amassel,Sedisal,Naclstack,Naclstack,스태솔트,鹽石壘,盐石垒
+934,Garganacl,キョジオーン,Gigansel,Saltigant,Garganacl,Garganacl,콜로솔트,鹽石巨靈,盐石巨灵
+935,Charcadet,カルボウ,Charbambin,Knarbon,Charcadet,Charcadet,카르본,炭小侍,炭小侍
+936,Armarouge,グレンアルマ,Carmadura,Crimanzo,Armarouge,Armarouge,카디나르마,紅蓮鎧騎,红莲铠骑
+937,Ceruledge,ソウブレイズ,Malvalame,Azugladis,Ceruledge,Ceruledge,파라블레이즈,蒼炎刃鬼,苍炎刃鬼
+938,Tadbulb,ズピカ,Têtampoule,Blipp,Tadbulb,Tadbulb,빈나두,光蚪仔,光蚪仔
+939,Bellibolt,ハラバリー,Ampibidou,Wampitz,Bellibolt,Bellibolt,찌리배리,電肚蛙,电肚蛙
+940,Wattrel,カイデン,Zapétrel,Voltrel,Wattrel,Wattrel,찌리비,電海燕,电海燕
+941,Kilowattrel,タイカイデン,Fulgulairo,Voltrean,Kilowattrel,Kilowattrel,찌리비크,大電海燕,大电海燕
+942,Maschiff,オラチフ,Grondogue,Mobtiff,Maschiff,Maschiff,오라티프,偶叫獒,偶叫獒
+943,Mabosstiff,マフィティフ,Dogrino,Mastifioso,Mabosstiff,Mabosstiff,마피티프,獒教父,獒教父
+944,Shroodle,シルシュルー,Gribouraigne,Sproxi,Shroodle,Shroodle,땃쭈르,滋汁鼴,滋汁鼹
+945,Grafaiai,タギングル,Tag-Tag,Affiti,Grafaiai,Grafaiai,태깅구르,塗標客,涂标客
+946,Bramblin,アノクサ,Virovent,Weherba,Bramblin,Bramblin,그푸리,納噬草,纳噬草
+947,Brambleghast,アノホラグサ,Virevorreur,Horrerba,Brambleghast,Brambleghast,공푸리,麋納噬草,怖纳噬草
+948,Toedscool,ノノクラゲ,Terracool,Tentagra,Toedscool,Toedscool,들눈해,原野水母,原野水母
+949,Toadscruel,リククラゲ,Terracruel,Tenterra,Toadscruel,Toadscruel,육파리,陸地水母,陆地水母
+950,Klawf,ガケガニ,Craparoi,Klibbe,Klawf,Klawf,절벼게,毛崖蟹,毛崖蟹
+951,Capsakid,カプサイジ,Pimito,Chilingel,Capsakid,Capsakid,캡싸이,熱辣娃,热辣娃
+952,Scovillain,スコヴィラン,Scovilain,Halupenjo,Scovillain,Scovillain,스코빌런,狠辣椒,狠辣椒
+953,Rellor,シガロコ,Léboulérou,Relluk,Rellor,Rellor,구르데,蟲滾泥,虫滚泥
+954,Rabsca,ベラカス,Bérasca,Skarabaks,Rabsca,Rabsca,베라카스,蟲甲聖,虫甲圣
+955,Flittle,ヒラヒナ,Flotillon,Flattutu,Flittle,Flittle,하느라기,飄飄雛,飘飘雏
+956,Espathra,クエスパトラ,Cléopsytra,Psiopatra,Espathra,Espathra,클레스퍼트라,超能艷鴕,超能艳鸵
+957,Tinkatink,カヌチャン,Forgerette,Forgita,Tinkatink,Tinkatink,어리짱,小鍛匠,小锻匠
+958,Tinkatuff,ナカヌチャン,Forgella,Tafforgita,Tinkatuff,Tinkatuff,벼리짱,巧鍛匠,巧锻匠
+959,Tinkaton,デカヌチャン,Forgelina,Granforgita,Tinkaton,Tinkaton,두드리짱,大鍛匠,巨锻匠
+960,Wiglett,ウミヂィグダ,Taupikeau,Schligda,Wiglett,Wiglett,바다그다,海地鼠,海地鼠
+961,Wugtrio,ウミトリオ,Triopikeau,Schligdri,Wugtrio,Wugtrio,바닥트리오,三海地鼠,三海地鼠
+962,Bombirdier,オトシドリ,Lestombaile,Adebom,Bombirdier,Bombirdier,떨구새,下石鳥,下石鸟
+963,Finizen,ナミイルカ,Dofin,Normifin,Finizen,Finizen,맨돌핀,波普海豚,波普海豚
+964,Palafin,イルカマン,Superdofin,Delfinator,Palafin,Palafin,돌핀맨,海豚俠,海豚侠
+965,Varoom,ブロロン,Vrombi,Knattox,Varoom,Varoom,부르롱,噗隆隆,噗隆隆
+966,Revavroom,ブロロローム,Vrombotor,Knattatox,Revavroom,Revavroom,부르르룸,普隆隆姆,普隆隆姆
+967,Cyclizar,モトトカゲ,Motorizard,Mopex,Cyclizar,Cyclizar,모토마,摩托蜥,摩托蜥
+968,Orthworm,ミミズズ,Ferdeter,Schlurm,Orthworm,Orthworm,꿈트렁,拖拖蚓,拖拖蚓
+969,Glimmet,キラーメ,Germéclat,Lumispross,Glimmet,Glimmet,초롱순,晶光芽,晶光芽
+970,Glimmora,キラフロル,Floréclat,Lumiflora,Glimmora,Glimmora,킬라플로르,晶光花,晶光花
+971,Greavard,ボチ,Toutombe,Gruff,Greavard,Greavard,망망이,墓仔狗,墓仔狗
+972,Houndstone,ハカドッグ,Tomberro,Friedwuff,Houndstone,Houndstone,묘두기,墓揚犬,墓扬犬
+973,Flamigo,カラミンゴ,Flamenroule,Flaminkno,Flamigo,Flamigo,꼬이밍고,纏紅鶴,缠红鹤
+974,Cetoddle,アルクジラ,Piétacé,Flaniwal,Cetoddle,Cetoddle,터벅고래,走鯨,走鲸
+975,Cetitan,ハルクジラ,Balbalèze,Kolowal,Cetitan,Cetitan,우락고래,浩大鯨,浩大鲸
+976,Veluza,ミミガルーサ,Délestin,Agiluza,Veluza,Veluza,가비루사,輕身鱈,轻身鳕
+977,Dondozo,ヘイラッシャ,Oyacata,Heerashai,Dondozo,Dondozo,어써러셔,吃吼霸,吃吼霸
+978,Tatsugiri,シャリタツ,Nigirigon,Nigiragi,Tatsugiri,Tatsugiri,싸리용,米立龍,米立龙
+979,Annihilape,コノヨザル,Courrousinge,Epitaff,Annihilape,Annihilape,저승갓숭,棄世猴,弃世猴
+980,Clodsire,ドオー,Terraiste,Suelord,Clodsire,Clodsire,토오,土王,土王
+981,Farigiraf,リキキリン,Farigiraf,Farigiraf,Farigiraf,Farigiraf,키키링,奇麒麟,奇麒麟
+982,Dudunsparce,ノココッチ,Deusolourdo,Dummimisel,Dudunsparce,Dudunsparce,노고고치,土龍節節,土龙节节
+983,Kingambit,ドドゲザン,Courrousinge,Gladimperio,Kingambit,Kingambit,대도각참,僕刀將軍,仆刀将军
+984,Great Tusk,イダイナキバ,Fort-Ivoire,Riesenzahn,Colmilargo,Grandizanne,위대한엄니,雄偉牙,雄伟牙
+985,Scream Tail,サケブシッポ,Hurle-Queue,Brüllschweif,Colagrito,Crinealato,우렁찬꼬리,吼叫尾,吼叫尾
+986,Brute Bonnet,アラブルタケ,Fongus-Furie,Wutpilz,Furioseta,Fungofurioso,사나운버섯,猛惡菇,猛恶菇
+987,Flutter Mane,ハバタクカミ,Flotte-Mèche,Flatterhaar,Melenaleto,Codaurlante,날개치는머리,振翼發,振翼发
+988,Slither Wing,チヲハウハネ,Rampe-Ailes,Kriechflügel,Reptalada,Alirasenti,땅을기는날개,爬地翅,爬地翅
+989,Sandy Shocks,スナノケガワ,Pelage-Sablé,Sandfell,Sandy Shocks,Peldisabbia,모래털가죽,沙鐵皮,沙铁皮
+990,Iron Treads,テツノワダチ,Roue-de-Fer,Eisenrad,Ferrodada,Solcoferreo,무쇠바퀴,鐵轍跡,铁辙迹
+991,Iron Bundle,テツノツツミ,Hotte-de-Fer,Eisenbündel,Ferrosaco,Saccoferreo,무쇠보따리,鐵包袱,铁包袱
+992,Iron Hands,テツノカイナ,Paume-de-Fer,Eisenhand,Ferropalmas,Manoferrea,무쇠손,鐵臂膀,铁臂膀
+993,Iron Jugulis,テツノコウベ,Têtes-de-Fer,Eisenhals,Ferrocuello,Colloferreo,무쇠머리,鐵脖頸,铁脖颈
+994,Iron Moth,テツノドクガ,Mite-de-Fer,Eisenfalter,Ferropolilla,Falenaferrea,무쇠독나방,鐵毒蛾,铁毒蛾
+995,Iron Thorns,テツノイバラ,Épine-de-Fer,Eisendorn,Ferropúas,Spineferree,무쇠가시,鐵荊棘,铁荆棘
+996,Frigibax,セビエ,Frigodo,Frospino,Frigibax,Frigibax,드니차,涼脊龍,凉脊龙
+997,Arctibax,セゴール,Cryodo,Cryospino,Arctibax,Arctibax,드니꽁,凍脊龍,冻脊龙
+998,Baxcalibur,セグレイブ,Glaivodo,Espinodon,Baxcalibur,Baxcalibur,드닐레이브,戟脊龍,戟脊龙
+999,Gimmighoul,コレクレー,Mordudor,Gierspenst,Gimmighoul,Gimmighoul,모으령,索財靈,索财灵
+1000,Gholdengo,サーフゴー,Gromago,Monetigo,Gholdengo,Gholdengo,타부자고,褰富豪,褰富豪
+1001,Wo-Chien,チオンジェン,Chongjian,Chongjian,Wo-Chien,Wo-Chien,총지엔,古簡蝸,古简蜗
+1002,Chien-Pao,パオジアン,Baojian,Baojian,Chien-Pao,Chien-Pao,파오젠,古劍豹,古剑豹
+1003,Ting-Lu,ディンルー,Dinglu,Dinglu,Ting-Lu,Ting-Lu,딩루,古鼎鹿,古鼎鹿
+1004,Chi-Yu,イーユイ,Yuyu,Yuyu,Chi-Yu,Chi-Yu,위유이,古玉魚,古玉鱼
+1005,Roaring Moon,トドロクツキ,Rugit-Lune,Donnersichel,Bramaluna,Lunaruggente,고동치는달,轟鳴月,轰鸣月
+1006,Iron Valiant,テツノブジン,Garde-de-Fer,Eisenkrieger,Ferropaladin,Eroeferreo,무쇠무인,鐵武者,铁武者
+1007,Koraidon,コライドン,Koraidon,Koraidon,Koraidon,Koraidon,코라이돈,故勒頓,故勒顿
+1008,Miraidon,ミライドン,Miraidon,Miraidon,Miraidon,Miraidon,미라이돈,密勒頓,密勒顿
+1009,Walking Wake,ウネルミナモ,Serpente-Eau,Windewoge,Ondulagua,Acquecrespe,굽이치는물결,波蕩水,波荡水
+1010,Iron Leaves,テツノイサハ,Vert-de-Fer,Eisenblatt,Bramaluna,Lunaruggente,무쇠잎새,鐵斑葉,铁斑叶
+1011,Dipplin,カミッチュ,Pomdramour,Sirapfel,Ferropaladin,Eroeferreo,과미르,裹蜜蟲,裹蜜虫
+1012,Poltchageist,チャデス,Poltchageist,Mortcha,Poltchageist,Poltchageist,차데스,斯魔茶,斯魔茶
+1013,Sinistcha,ヤバソチャ,Théffroyable,Fatalitcha,Sinistcha,Sinistcha,그우린차,來悲粗茶,来悲粗茶
+1014,Okidogi,イイネイヌ,Félicanis,Boninu,Ondulagua,Acquecrespe,조타구,夠贊狗,够赞狗
+1015,Munkidori,マシマシラ,Fortusimia,Benesaru,Bramaluna,Lunaruggente,이야후,願增猿,愿增猿
+1016,Fezandipiti,キチキギス,Favianos,Beatori,Ferropaladin,Eroeferreo,기로치,吉雉雞,吉雉鸡
+1017,Ogerpon,オーガポン,Ogerpon,Ogerpon,Ogerpon,Ogerpon,오거폰,厄詭椪,厄诡椪
+1018,Archaludon,ブリジュラス,Pondraclugon,Briduradon,Archaludon,Archaludon,브리두라스,鋁鋼橋龍,铝钢桥龙
+1019,Hydrapple,カミツオロチ,Pomdorochi,Hydrapfel,Hydrapple,Hydrapple,과미드라,蜜集大蛇,蜜集大蛇
+1020,Gouging Fire,ウガツホムラ,Feu-Perçant,Keilflamme,Flamariete,Vampeaguzze,꿰뚫는화염,破空焰,破空焰
+1021,Raging Bolt,タケルライコ,Ire-Foudre,Furienblitz,Electrofuria,Furiatonante,날뛰는우레,猛雷鼓,猛雷鼓
+1022,Iron Boulder,テツノイワオ,Roc-de-Fer,Eisenfels,Ferromole,Massoferreo,무쇠암석,鐵磐岩,铁磐岩
+1023,Iron Crown,テツノカシラ,Chef-de-Fer,Eisenhaupt,Ferrotesta,Capoferreo,무쇠감투,鐵頭殼,铁头壳
+1024,Terapagos,テラパゴス,Terapagos,Terapagos,Terapagos,Terapagos,테라파고스,太樂巴戈斯,太乐巴戈斯
+1025,Pecharunt,モモワロウ,Pêchaminus,Infamomo,Pecharunt,Pecharunt,복숭악동,桃歹郎,桃歹郎`;
+
+        // 🔧 PASTE YOUR POKEMON DATA CSV HERE (no header row):
+        const POKEMON_CSV = `
+1,Bulbasaur,Grass,Poison,1
+4,Charmander,Fire,,1
+7,Squirtle,Water,,1
+16,Pidgey,Normal,Flying,1
+151,Mew,Psychic,,1`;
+
+        // 🌍 LANGUAGE TRANSLATIONS
+        const TRANSLATIONS = {
+            en: {
+                types: {
+                    bug: 'Bug', flying: 'Flying', ground: 'Ground', poison: 'Poison',
+                    electric: 'Electric', rock: 'Rock', fighting: 'Fighting', steel: 'Steel',
+                    fire: 'Fire', dragon: 'Dragon', psychic: 'Psychic', ice: 'Ice',
+                    fairy: 'Fairy', dark: 'Dark', water: 'Water', normal: 'Normal',
+                    grass: 'Grass', ghost: 'Ghost'
+                },
+                text: {
+                    selectLanguage: '🌍 Language', quizTitle: 'Pokémon Type Quiz',
+                    filterByGen: 'Filter by Generation:', all: 'ALL', selectYourTypes: 'Select the Pokémon\'s Type(s):',
+                    submit: 'Submit', next: 'Next', loading: 'Loading...', errorLoading: 'Error loading quiz',
+                    submitting: 'Submitting...', evaluationComplete: 'Evaluation Complete', trainerRankRecorded: 'Your Trainer Rank has been recorded.',
+                    yourScore: 'Your Score:', resultsBreakdown: 'Results Breakdown:', correct: 'Correct:', yourAnswer: 'Your answer:',
+                    takeQuizAgain: 'Take Quiz Again', about: 'About'
+                }
+            },
+            ja: {
+                types: {
+                    bug: 'むし', flying: 'ひこう', ground: 'じめん', poison: 'どく',
+                    electric: 'でんき', rock: 'いわ', fighting: 'かくとう', steel: 'はがね',
+                    fire: 'ほのお', dragon: 'ドラゴン', psychic: 'エスパー', ice: 'こおり',
+                    fairy: 'フェアリー', dark: 'あく', water: 'みず', normal: 'ノーマル',
+                    grass: 'くさ', ghost: 'ゴースト'
+                },
+                text: {
+                    selectLanguage: '🌍 言語', quizTitle: 'ポケモン タイプ クイズ',
+                    filterByGen: '世代で絞り込み:', all: 'すべて', selectYourTypes: 'ポケモンのタイプを選択してください:',
+                    submit: '送信', next: '次へ', loading: '読み込み中...', errorLoading: 'クイズの読み込みエラー',
+                    submitting: '送信中...', evaluationComplete: '評価完了', trainerRankRecorded: 'トレーナーランクが記録されました。',
+                    yourScore: 'あなたのスコア:', resultsBreakdown: '結果の内訳:', correct: '正解:', yourAnswer: 'あなたの答え:',
+                    takeQuizAgain: 'もう一度クイズをする', about: '概要'
+                }
+            },
+            es: {
+                types: {
+                    bug: 'Bicho', flying: 'Volador', ground: 'Tierra', poison: 'Veneno',
+                    electric: 'Eléctrico', rock: 'Roca', fighting: 'Lucha', steel: 'Acero',
+                    fire: 'Fuego', dragon: 'Dragón', psychic: 'Psíquico', ice: 'Hielo',
+                    fairy: 'Hada', dark: 'Siniestro', water: 'Agua', normal: 'Normal',
+                    grass: 'Planta', ghost: 'Fantasma'
+                },
+                text: {
+                    selectLanguage: '🌍 Idioma', quizTitle: 'Cuestionario de Tipos Pokémon',
+                    filterByGen: 'Filtrar por Generación:', all: 'TODAS', selectYourTypes: 'Selecciona el(los) Tipo(s) del Pokémon:',
+                    submit: 'Enviar', next: 'Siguiente', loading: 'Cargando...', errorLoading: 'Error al cargar el cuestionario',
+                    submitting: 'Enviando...', evaluationComplete: 'Evaluación Completa', trainerRankRecorded: 'Tu Rango de Entrenador ha sido registrado.',
+                    yourScore: 'Tu Puntuación:', resultsBreakdown: 'Desglose de Resultados:', correct: 'Correcto:', yourAnswer: 'Tu respuesta:',
+                    takeQuizAgain: 'Tomar el Cuestionario de Nuevo', about: 'Acerca de'
+                }
+            },
+            'zh-Hans': { // Simplified Chinese
+                types: {
+                    bug: '虫', flying: '飞行', ground: '地面', poison: '毒',
+                    electric: '电', rock: '岩石', fighting: '格斗', steel: '钢',
+                    fire: '火', dragon: '龙', psychic: '超能力', ice: '冰',
+                    fairy: '妖精', dark: '恶', water: '水', normal: '一般',
+                    grass: '草', ghost: '幽灵'
+                },
+                text: {
+                    selectLanguage: '🌍 语言', quizTitle: '宝可梦属性测验',
+                    filterByGen: '按世代筛选:', all: '全部', selectYourTypes: '选择宝可梦的属性:',
+                    submit: '提交', next: '下一题', loading: '加载中...', errorLoading: '加载测验失败',
+                    submitting: '提交中...', evaluationComplete: '评估完成', trainerRankRecorded: '您的训练家等级已记录。',
+                    yourScore: '您的分数:', resultsBreakdown: '结果明细:', correct: '正确答案:', yourAnswer: '您的答案:',
+                    takeQuizAgain: '再做一次测验', about: '关于'
+                }
+            },
+            'zh-Hant': { // Traditional Chinese
+                types: {
+                    bug: '蟲', flying: '飛行', ground: '地面', poison: '毒',
+                    electric: '電', rock: '岩石', fighting: '格鬥', steel: '鋼',
+                    fire: '火', dragon: '龍', psychic: '超能力', ice: '冰',
+                    fairy: '妖精', dark: '惡', water: '水', normal: '一般',
+                    grass: '草', ghost: '幽靈'
+                },
+                text: {
+                    selectLanguage: '🌍 語言 (傳統)', quizTitle: '寶可夢屬性測驗',
+                    filterByGen: '按世代篩選:', all: '全部', selectYourTypes: '選擇寶可夢的屬性:',
+                    submit: '提交', next: '下一題', loading: '加載中...', errorLoading: '加載測驗失敗',
+                    submitting: '提交中...', evaluationComplete: '評估完成', trainerRankRecorded: '您的訓練家等級已記錄。',
+                    yourScore: '您的分數:', resultsBreakdown: '結果明細:', correct: '正確答案:', yourAnswer: '您的答案:',
+                    takeQuizAgain: '再做一次測驗', about: '關於'
+                }
+            },
+            fr: {
+                types: {
+                    bug: 'Insecte', flying: 'Vol', ground: 'Sol', poison: 'Poison',
+                    electric: 'Électrik', rock: 'Roche', fighting: 'Combat', steel: 'Acier',
+                    fire: 'Feu', dragon: 'Dragon', psychic: 'Psy', ice: 'Glace',
+                    fairy: 'Fée', dark: 'Ténèbres', water: 'Eau', normal: 'Normal',
+                    grass: 'Plante', ghost: 'Spectre'
+                },
+                text: {
+                    selectLanguage: '🌍 Langue', quizTitle: 'Quiz Type Pokémon',
+                    filterByGen: 'Filtrer par Génération:', all: 'TOUTES', selectYourTypes: 'Sélectionnez le(s) Type(s) du Pokémon:',
+                    submit: 'Soumettre', next: 'Suivant', loading: 'Chargement...', errorLoading: 'Erreur de chargement du quiz',
+                    submitting: 'Soumission...', evaluationComplete: 'Évaluation Terminée', trainerRankRecorded: 'Votre rang de Dresseur a été enregistré.',
+                    yourScore: 'Votre Score:', resultsBreakdown: 'Détail des résultats:', correct: 'Correct:', yourAnswer: 'Votre réponse:',
+                    takeQuizAgain: 'Refaire le Quiz', about: 'À propos'
+                }
+            },
+            de: {
+                types: {
+                    bug: 'Käfer', flying: 'Flug', ground: 'Boden', poison: 'Gift',
+                    electric: 'Elektro', rock: 'Gestein', fighting: 'Kampf', steel: 'Stahl',
+                    fire: 'Feuer', dragon: 'Drache', psychic: 'Psycho', ice: 'Eis',
+                    fairy: 'Fee', dark: 'Unlicht', water: 'Wasser', normal: 'Normal',
+                    grass: 'Pflanze', ghost: 'Geist'
+                },
+                text: {
+                    selectLanguage: '🌍 Sprache', quizTitle: 'Pokémon-Typ-Quiz',
+                    filterByGen: 'Nach Generation filtern:', all: 'ALLE', selectYourTypes: 'Wählen Sie den/die Typ(en) des Pokémon:',
+                    submit: 'Senden', next: 'Weiter', loading: 'Lädt...', errorLoading: 'Fehler beim Laden des Quiz',
+                    submitting: 'Sendet...', evaluationComplete: 'Bewertung abgeschlossen', trainerRankRecorded: 'Ihr Trainer-Rang wurde aufgezeichnet.',
+                    yourScore: 'Ihre Punktzahl:', resultsBreakdown: 'Ergebnisaufschlüsselung:', correct: 'Korrekt:', yourAnswer: 'Ihre Antwort:',
+                    takeQuizAgain: 'Quiz wiederholen', about: 'Über'
+                }
+            },
+            ko: {
+                types: {
+                    bug: '벌레', flying: '비행', ground: '땅', poison: '독',
+                    electric: '전기', rock: '바위', fighting: '격투', steel: '강철',
+                    fire: '불꽃', dragon: '드래곤', psychic: '에스퍼', ice: '얼음',
+                    fairy: '페어리', dark: '악', water: '물', normal: '노말',
+                    grass: '풀', ghost: '고스트'
+                },
+                text: {
+                    selectLanguage: '🌍 언어', quizTitle: '포켓몬 타입 퀴즈',
+                    filterByGen: '세대로 필터링:', all: '전체', selectYourTypes: '포켓몬의 타입을 선택하세요:',
+                    submit: '제출', next: '다음', loading: '로딩 중...', errorLoading: '퀴즈 로딩 오류',
+                    submitting: '제출 중...', evaluationComplete: '평가 완료', trainerRankRecorded: '트레이너 순위가 기록되었습니다.',
+                    yourScore: '당신의 점수:', resultsBreakdown: '결과 분석:', correct: '정답:', yourAnswer: '당신의 답변:',
+                    takeQuizAgain: '퀴즈 다시 풀기', about: '정보'
+                }
+            },
+            it: {
+                types: {
+                    bug: 'Coleottero', flying: 'Volante', ground: 'Terra', poison: 'Veleno',
+                    electric: 'Elettro', rock: 'Roccia', fighting: 'Lotta', steel: 'Acciaio',
+                    fire: 'Fuoco', dragon: 'Drago', psychic: 'Psico', ice: 'Ghiaccio',
+                    fairy: 'Folletto', dark: 'Buio', water: 'Acqua', normal: 'Normale',
+                    grass: 'Erba', ghost: 'Spettro'
+                },
+                text: {
+                    selectLanguage: '🌍 Lingua', quizTitle: 'Quiz Tipo Pokémon',
+                    filterByGen: 'Filtra per Generazione:', all: 'TUTTE', selectYourTypes: 'Seleziona il/i Tipo/i del Pokémon:',
+                    submit: 'Invia', next: 'Avanti', loading: 'Caricamento...', errorLoading: 'Errore nel caricamento del quiz',
+                    submitting: 'Invio...', evaluationComplete: 'Valutazione Completata', trainerRankRecorded: 'Il tuo Rango Allenatore è stato registrato.',
+                    yourScore: 'Il tuo Punteggio:', resultsBreakdown: 'Ripartizione dei risultati:', correct: 'Corretto:', yourAnswer: 'La tua risposta:',
+                    takeQuizAgain: 'Rifai il Quiz', about: 'Informazioni'
+                }
+            }
+        };
+        
+        // This will be populated by the CSV parser
+        let POKEMON_NAMES = {};
+
+        // --- Core CSV Parsing Function ---
+        /**
+         * Parses the raw CSV string into an object optimized for lookup.
+         * CSV Header expected: pokemonId,en,ja,fr,de,es,it,ko,zh_HK,zh...
+         * Output format: { "1": { en: "Bulbasaur", ja: "フシギダネ", ... } }
+         */
+        function parsePokemonNamesFromCSV(csvText) {
+            const data = {};
+            const lines = csvText.trim().split('\n').filter(line => line.trim() !== '');
+
+            if (lines.length === 0) return data;
+
+            // 1. Get Headers from the first line
+            const headers = lines[0].split(',').map(h => h.trim());
+
+            // 2. Iterate over data lines (starting from index 1)
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                
+                // Ensure the number of values matches the number of headers
+                if (values.length !== headers.length) {
+                    console.warn(`Skipping malformed CSV line ${i}: ${lines[i]}`);
+                    continue;
+                }
+
+                const pokemonId = values[0];
+                const nameTranslations = {};
+
+                // Map values to language headers (starting from index 1)
+                for (let j = 1; j < headers.length; j++) {
+                    let langCode = headers[j];
+                    const translation = values[j];
+                    
+                    // Normalize non-standard Chinese codes provided in the CSV
+                    if (langCode === 'zh_HK' || langCode === 'zh_TW') {
+                        langCode = 'zh-Hant'; // Traditional Chinese
+                    } else if (langCode === 'zh') {
+                        langCode = 'zh-Hans'; // Simplified Chinese
+                    }
+                    
+                    nameTranslations[langCode] = translation;
+                }
+                
+                if (pokemonId) {
+                    data[pokemonId] = nameTranslations;
+                }
+            }
+
+            return data;
+        }
+        // --- End Core CSV Parsing Function ---
+
+
+        // --- Translation Variables and Functions ---
+        // Get preferred language from browser or default to 'en'
+        function getBrowserLanguage() {
+    const browserLang = navigator.language || navigator.userLanguage;
+    // Map browser language codes to our supported languages
+    if (browserLang.startsWith('ja')) return 'ja';
+    if (browserLang.startsWith('es')) return 'es';
+    if (browserLang.startsWith('zh-HK') || browserLang.startsWith('zh-TW')) return 'zh-Hant';
+    if (browserLang.startsWith('zh')) return 'zh-Hans';
+    if (browserLang.startsWith('fr')) return 'fr';
+    if (browserLang.startsWith('de')) return 'de';
+    if (browserLang.startsWith('ko')) return 'ko';
+    if (browserLang.startsWith('it')) return 'it';
+    return 'en';
+}
+
+let currentLang = localStorage.getItem('currentLang') || getBrowserLanguage();
+
+        // Translation functions
+        function translateType(typeKey) {
+            if (!typeKey) return '';
+            return TRANSLATIONS[currentLang]?.types[typeKey.toLowerCase()] || typeKey;
+        }
+
+        function translatePokemonName(pokemonId, defaultName) {
+            // Convert to string key if necessary
+            const idKey = String(pokemonId);
+            if (currentLang === 'en') return defaultName;
+            
+            // Check for explicit translation
+            const translatedName = POKEMON_NAMES[idKey]?.[currentLang];
+            if (translatedName) return translatedName;
+            
+            // Fallback for Chinese (e.g., if zh-Hant requested but only zh-Hans exists)
+            if (currentLang.startsWith('zh')) {
+                const zhName = POKEMON_NAMES[idKey]?.['zh-Hans'] || POKEMON_NAMES[idKey]?.['zh-Hant'];
+                if (zhName) return zhName;
+            }
+            
+            return defaultName;
+        }
+
+        function translateText(key, defaultValue) {
+            return TRANSLATIONS[currentLang]?.text?.[key] || defaultValue;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('currentLang', lang); // Store preference
+            render(); // Re-render to apply new language
+        }
+        // --- End Translation Functions ---
+
+
+        // 🔧 SPRITE MODE: 'default' (webp with svg fallback), 'gbc', 'gb', '3d', 'card', or 'moves'
+        let spriteMode = 'default';
+        let selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // All generations selected by default
+
+        const TYPE_COLORS = {
+            bug: '#91A119', dark: '#50413f', dragon: '#5060E1', electric: '#FAC000', fairy: '#EF70EF',
+            fighting: '#FF8000', fire: '#E62829', flying: '#81B9EF', ghost: '#704170', grass: '#3FA129',
+            ground: '#915121', ice: '#3fd8ff', normal: '#9FA19F', poison: '#9141CB', psychic: '#EF4179',
+            rock: '#AFA981', steel: '#60A1B8', water: '#2980EF',
+        };
+
+        const types = ['bug', 'flying', 'ground', 'poison', 'electric', 'rock', 'fighting','steel', 'fire',  'dragon', 'psychic', 'ice',  'fairy','dark', 'water',  'normal','grass','ghost' ];
+        
+        const GEN_YEARS = {
+            1: 1996, 2: 1999, 3: 2002, 4: 2006, 5: 2010, 6: 2013, 7: 2016, 8: 2019, 9: 2022
+        };
+
+        let quizPokemon = [];
+        let currentIndex = 0;
+        let selectedTypes = [];
+        let results = [];
+        let screen = 'quiz';
+
+        // Get file extension based on sprite mode
+        function getSpriteExtension(mode) {
+            if (mode === '3d') return 'webm';
+            if (mode === 'card' || mode === 'moves') return 'webp';
+            if (mode === 'default') return 'webp';
+            return 'png';
+        }
+
+        function getIconChar(type) {
+            const map = {
+                ground: 'a', bug: 'b', normal: 'c', dark: 'd', fighting: 'f',
+                grass: 'g', ghost: 'h', ice: 'i', rock: 'k', electric: 'l',
+                steel: 'm', dragon: 'n', poison: 'o', psychic: 'p',
+                fire: 'r', flying: 'v', water: 'w', fairy: 'y'
+            };
+            return map[type] || '?';
+        }
+
+        // Parse Pokemon data from the no-header CSV
+        function parsePokemonData(csv) {
+            const lines = csv.trim().split('\n').filter(line => line.trim() !== '');
+            return lines.map(line => {
+                const parts = line.split(',');
+                const id = parts[0].trim();
+                const name = parts[1].trim();
+                const type1 = parts[2].trim();
+                const type2 = parts[3] ? parts[3].trim() : '';
+                const gen = parts[4] ? parts[4].trim() : '1';
+                
+                const types = [type1.toLowerCase()];
+                if (type2) {
+                    types.push(type2.toLowerCase());
+                }
+                const pokemonId = parseInt(id);
+                const ext = getSpriteExtension(spriteMode);
+                
+                const spritePath = spriteMode === 'default' 
+                    ? `images/${pokemonId}.${ext}`
+                    : `images/${spriteMode}/${pokemonId}.${ext}`;
+                
+                return {
+                    id: pokemonId,
+                    name: name,
+                    types: types,
+                    gen: parseInt(gen),
+                    sprite: spritePath,
+                    spriteBackup: spriteMode === 'default' ? `images/${pokemonId}.svg` : null
+                };
+            }).filter(p => !isNaN(p.id) && p.id > 0);
+        }
+
+        function calculateScore(correctTypes, userTypes) {
+            let points = 0;
+            const hasOneType = correctTypes.length === 1;
+            const hasTwoTypes = correctTypes.length === 2;
+
+            const correctGuesses = userTypes.filter(ut => correctTypes.includes(ut)).length;
+            const wrongGuesses = userTypes.filter(ut => !correctTypes.includes(ut)).length;
+            
+            points = correctGuesses - wrongGuesses;
+
+            if (correctGuesses > 0 && points < 1) {
+                points = 1;
+            }
+
+            if (hasOneType && correctGuesses === 1 && wrongGuesses === 0) {
+                points += 1;
+            } else if (hasTwoTypes && correctGuesses === 2 && wrongGuesses === 0) {
+                points += 1;
+            }
+
+            return Math.max(0, points);
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function toggleGen(gen) {
+            if (selectedGens.includes(gen)) {
+                selectedGens = selectedGens.filter(g => g !== gen);
+            } else {
+                selectedGens.push(gen);
+                selectedGens.sort((a, b) => a - b);
+            }
+            
+            if (selectedGens.length === 0) {
+                // If the last one is toggled off, reset to all
+                selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9]; 
+            }
+            
+            initQuiz();
+        }
+
+        function toggleAllGens() {
+            if (selectedGens.length === 9) {
+                selectedGens = [];
+            } else {
+                selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            }
+            initQuiz();
+        }
+
+        function initQuiz() {
+            try {
+                // Parse Pokémon name translations from CSV before starting
+                if (Object.keys(POKEMON_NAMES).length === 0) {
+                     POKEMON_NAMES = parsePokemonNamesFromCSV(POKEMON_NAMES_CSV_RAW);
+                }
+
+                const allPokemon = parsePokemonData(POKEMON_CSV);
+                const filteredPokemon = allPokemon.filter(p => selectedGens.includes(p.gen));
+                
+                if (filteredPokemon.length === 0 && allPokemon.length > 0) {
+                    selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                    return initQuiz();
+                } else if (filteredPokemon.length === 0) {
+                     // Handle case where POKEMON_CSV is empty or invalid
+                     document.getElementById('app').innerHTML = `
+                        <div class="min-h-screen p-8 flex items-center justify-center">
+                            <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+                                <p class="text-xl text-red-600 mb-4">${translateText('errorLoading', 'Error loading quiz')}</p>
+                                <p class="text-gray-600">Please check your POKEMON_CSV data.</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const shuffled = shuffleArray(filteredPokemon);
+                quizPokemon = shuffled.slice(0, Math.min(5, filteredPokemon.length));
+                currentIndex = 0;
+                selectedTypes = [];
+                results = [];
+                screen = 'quiz';
+                render();
+            } catch (error) {
+                console.error('Error initializing quiz:', error);
+                document.getElementById('app').innerHTML = `
+                    <div class="min-h-screen p-8 flex items-center justify-center">
+                        <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+                            <p class="text-xl text-red-600 mb-4">${translateText('errorLoading', 'Error loading quiz')}</p>
+                            <p class="text-gray-600">${error.message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function setSpriteMode(mode) {
+            spriteMode = mode;
+            initQuiz();
+        }
+
+        function toggleType(type) {
+            if (selectedTypes.includes(type)) {
+                selectedTypes = selectedTypes.filter(t => t !== type);
+            } else if (selectedTypes.length < 2) {
+                selectedTypes.push(type);
+            }
+            render();
+        }
+
+        // Submit individual answer in background
+        async function submitAnswerBackground(result) {
+            const data = {
+                timestamp: new Date().toISOString(),
+                spriteMode: spriteMode,
+                pokemonId: result.pokemonId,
+                pokemonName: result.pokemon,
+                correctTypes: result.correctTypes,
+                userTypes: result.userTypes,
+                points: result.points
+            };
+
+            try {
+                await fetch(GOOGLE_SHEET_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+            }
+        }
+
+        function submitAnswer() {
+            if (selectedTypes.length === 0) return;
+
+            const currentPokemon = quizPokemon[currentIndex];
+            const correctTypes = currentPokemon.types.sort();
+            const userTypes = [...selectedTypes].sort();
+            const points = calculateScore(correctTypes, userTypes);
+
+            const result = {
+                pokemonId: currentPokemon.id,
+                pokemon: currentPokemon.name, // Use default name for CSV submission
+                correctTypes: correctTypes.join(', '),
+                userTypes: userTypes.join(', '),
+                points: points
+            };
+
+            results.push(result);
+
+            // Submit in background for all questions
+            submitAnswerBackground(result);
+
+            selectedTypes = [];
+
+            if (currentIndex < quizPokemon.length - 1) {
+                // Not the last question - move to next immediately
+                currentIndex++;
+                render();
+            } else {
+                // Last question - show submitting briefly then results
+                screen = 'submitting';
+                render();
+                
+                // Show results after brief moment
+                setTimeout(() => {
+                    screen = 'complete';
+                    render();
+                }, 300);
+            }
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+
+            if (screen === 'submitting') {
+                app.innerHTML = `
+                    <div class="min-h-screen p-8 flex items-center justify-center">
+                        <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+                            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-4"></div>
+                            <p class="text-xl text-gray-700">${translateText('submitting', 'Submitting...')}</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (screen === 'complete') {
+                const totalPoints = results.reduce((sum, r) => sum + r.points, 0);
+                // Max points calculation assumes 2 pts for 1-type, 3 pts for 2-types (1+2 for correct + perfect)
+                const maxPoints = quizPokemon.reduce((sum, p) => sum + (p.types.length === 1 ? 2 : 3), 0);
+
+                const resultsHTML = results.map((result, idx) => {
+                    const currentPokemonData = quizPokemon.find(p => p.id === result.pokemonId) || {name: result.pokemon, types: []};
+                    const translatedName = translatePokemonName(currentPokemonData.id, currentPokemonData.name);
+                    const isCorrect = result.correctTypes === result.userTypes;
+                    const maxPossible = result.correctTypes.split(', ').length === 1 ? 2 : 3;
+                    
+                    const correctTypesTranslated = result.correctTypes.split(', ').map(t => translateType(t)).join(', ');
+                    const userTypesTranslated = result.userTypes.split(', ').map(t => translateType(t)).join(', ');
+                    
+                    const pokeId = result.pokemonId;
+                    const imgPath = `icons/poke/${pokeId}.png`;
+                
+                    return `
+                        <div class="border rounded-lg p-4 mb-3 ${isCorrect ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-lg">${translatedName}</span>
+                                    <img src="${imgPath}" alt="${translatedName}" style="width: 85px; height: 70px; image-rendering: pixelated;" onerror="this.onerror=null; this.style.display='none';" />
+                                </div>
+                                <span class="text-sm font-semibold ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                                    ${result.points}/${maxPossible} ${translateText('pointsShort', 'pts')}
+                                </span>
+                            </div>
+                            <div class="text-sm">
+                                <div class="mb-1">
+                                    <span class="text-gray-600">${translateText('correct', 'Correct:')} </span>
+                                    <span class="font-semibold text-green-700">${correctTypesTranslated}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">${translateText('yourAnswer', 'Your answer:')} </span>
+                                    <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">${userTypesTranslated}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                app.innerHTML = `
+                    <div class="min-h-screen p-8 flex items-center justify-center">
+                        <div class="max-w-2xl w-full bg-white rounded-lg shadow-xl p-8">
+                            <div class="text-center mb-6">
+                                <div class="text-6xl mb-4">✓</div>
+                                <h1 class="text-3xl font-bold text-green-600 mb-4">${translateText('evaluationComplete', 'Evaluation Complete')}</h1>
+                                <p class="text-gray-600 mb-6">${translateText('trainerRankRecorded', 'Your Trainer Rank has been recorded.')}</p>
+                                <div class="bg-blue-50 p-6 rounded-lg mb-6">
+                                    <p class="text-lg text-gray-700 mb-2">${translateText('yourScore', 'Your Score:')}</p>
+                                    <p class="text-4xl font-bold text-blue-600">${totalPoints}/${maxPoints}</p>
+                                    <p class="text-gray-600 mt-2">${Math.round((totalPoints/maxPoints) * 100)}%</p>
+                                </div>
+                            </div>
+                            <div class="mb-6">
+                                <h2 class="text-xl font-bold mb-4 text-gray-800">${translateText('resultsBreakdown', 'Results Breakdown:')}</h2>
+                                ${resultsHTML}
+                            </div>
+                            <button onclick="initQuiz()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg">
+                                ${translateText('takeQuizAgain', 'Take Quiz Again')}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // --- Quiz/Settings Screen Rendering ---
+            const currentPokemon = quizPokemon[currentIndex];
+            const translatedName = currentPokemon ? translatePokemonName(currentPokemon.id, currentPokemon.name) : translateText('loading', 'Loading...');
+
+            const quizContentHTML = currentPokemon ? `
+                <div class="mb-6">
+                    <p class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                        ${translatedName}
+                    </p>
+                    <div class="h-40 sm:h-56 flex items-center justify-center p-4 mb-4">
+                        <picture>
+                            <source srcset="${currentPokemon.sprite}" type="image/${getSpriteExtension(spriteMode)}">
+                            ${currentPokemon.spriteBackup ? `<img src="${currentPokemon.spriteBackup}" alt="${currentPokemon.name}" class="max-h-full max-w-full object-contain" />` : ''}
+                            <img src="${currentPokemon.sprite}" alt="${currentPokemon.name}" class="max-h-full max-w-full object-contain" onerror="this.src='images/${currentPokemon.id}.svg'; this.onerror=null;" />
+                        </picture>
+                    </div>
+                </div>
+
+                <p class="text-md text-gray-600 mb-4 sm:mb-6">
+                    ${translateText('selectYourTypes', "Select the Pokémon's Type(s):")}
+                </p>
+
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-6">
+                    ${types.map(type => {
+                        const isSelected = selectedTypes.includes(type);
+                        const translatedType = translateType(type);
+                        return `
+                            <button 
+                                onclick="toggleType('${type}')"
+                                style="background-color: ${TYPE_COLORS[type]};"
+                                class="${isSelected ? 'ring-4 ring-offset-2 ring-opacity-75 ring-blue-500' : ''} text-white font-bold py-2 px-3 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center text-sm sm:text-base whitespace-nowrap min-w-[70px]"
+                            >
+                                <span class="pokefont text-xl sm:text-2xl mr-1">${getIconChar(type)}</span>
+                                ${translatedType}
+                            </button>
+                        `; // <--- This now correctly uses ${translatedType}
+                    }).join('')}
+                </div>
+
+                <button 
+                    onclick="submitAnswer()"
+                    class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg ${selectedTypes.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}"
+                    ${selectedTypes.length === 0 ? 'disabled' : ''}
+                >
+                    ${translateText(currentIndex === quizPokemon.length - 1 ? 'submit' : 'next', 'Submit')}
+                </button>
+                <p class="text-sm text-gray-500 mt-3">${currentIndex + 1} / ${quizPokemon.length}</p>
+            ` : `<p class="text-xl text-gray-700">${translateText('loading', 'Loading...')}</p>`;
+
+
+            // About Modal HTML (reused across all views)
+            const aboutModalHTML = `
+                <div id="aboutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target === this) this.classList.add('hidden')">
+                    <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+                        <h2 class="text-xl font-bold mb-3 text-blue-900">${translateText('about', 'About')}</h2>
+                        <p class="text-gray-700 mb-4">
+                            Since 1996, over 1000 Pokémon species have been discovered, each assigned up to 2 elemental attributes called <strong>types</strong>. This quiz gathers data to survey which visual designs are most intuitive for identifying these types.
+                            <br><br>
+                            Custom font by Philippe Van Lieu. Fan sprites by mbcmechachu and National Pokédex Version Delta. Pokémon © 1995 Nintendo. Used for commentary and informational purposes only.
+                        </p>
+                        <button 
+                            onclick="document.getElementById('aboutModal').classList.add('hidden')"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            app.innerHTML = `
+                ${aboutModalHTML}
+                <div class="sm:min-h-screen sm:p-8 sm:flex sm:items-center sm:justify-center">
+                    <div class="w-full sm:max-w-4xl mx-auto">
+                        <div class="bg-white rounded-lg shadow-xl p-2 sm:p-8">
+                            <div class="controls">
+                                <div class="control-group">
+                                    <label for="langSelector" class="text-sm font-semibold text-gray-700">${translateText('selectLanguage', '🌍 Language')}</label>
+                                    <select id="langSelector" onchange="setLanguage(this.value)" class="lang-selector bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                                        <option value="en">English</option>
+                                        <option value="ja">日本語 (Japanese)</option>
+                                        <option value="es">Español (Spanish)</option>
+                                        <option value="zh-Hans">简体中文 (Simplified Chinese)</option>
+                                        <option value="zh-Hant">繁體中文 (Traditional Chinese)</option>
+                                        <option value="fr">Français (French)</option>
+                                        <option value="de">Deutsch (German)</option>
+                                        <option value="ko">한국어 (Korean)</option>
+                                        <option value="it">Italiano (Italian)</option>
+                                    </select>
+                                </div>
+                                <h1 class="text-3xl font-bold text-center mb-4 text-blue-900">${translateText('quizTitle', 'Pokémon Type Quiz')} <button 
+                                    onclick="document.getElementById('aboutModal').classList.remove('hidden')"
+                                    class="inline-flex items-center justify-center w-6 h-6 text-xs bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full ml-1 align-middle -translate-y-1"
+                                    aria-label="About"
+                                >
+                                    ?
+                                </button></h1>
+                                
+                                <div class="flex justify-center gap-2 mb-6 flex-wrap hidden"> <!-- Sprite Modes Hidden --> </div>
+                                
+                                <div class="mb-4 sm:mb-6">
+                                <p class="text-center text-sm font-semibold text-gray-700 mb-3">${translateText('filterByGen', 'Filter by Generation:')}</p>
+                                <div class="max-w-5xl mx-auto px-2">
+                                    <!-- ALL Toggle Switch -->
+                                    <div class="flex justify-center items-center mb-4">
+                                        <button 
+                                            onclick="toggleAllGens()"
+                                            class="relative inline-flex items-center h-8 rounded-full w-16 transition-colors ${selectedGens.length === 9 ? 'bg-green-500' : 'bg-gray-300'}"
+                                        >
+                                            <span class="sr-only">Toggle All Generations</span>
+                                            <span class="${selectedGens.length === 9 ? 'translate-x-9' : 'translate-x-1'} inline-block w-6 h-6 transform bg-white rounded-full transition-transform shadow-lg"></span>
+                                        </button>
+                                        <span class="ml-3 text-sm font-semibold ${selectedGens.length === 9 ? 'text-green-600' : 'text-gray-500'}">${translateText('all', 'ALL')}</span>
+                                    </div>
+                                    
+                                    <!-- Generation Timeline - Desktop (single row) -->
+                                    <div class="hidden sm:block">
+                                        <div class="relative pb-8">
+                                            <!-- Timeline line -->
+                                            <div class="absolute top-6 left-12 right-12 h-1 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300"></div>
+                                            
+                                            <div class="relative flex justify-center items-start gap-3">
+                                                ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(gen => `
+                                                    <div class="flex flex-col items-center flex-shrink-0">
+                                                        <button 
+                                                            onclick="toggleGen(${gen})"
+                                                            class="${selectedGens.includes(gen) ? 'bg-blue-600 text-white ring-4 ring-blue-300' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-110 font-bold rounded-full w-12 h-12 transition-all shadow-lg z-10 flex items-center justify-center text-base"
+                                                        >
+                                                            ${gen}
+                                                        </button>
+                                                        <span class="text-xs ${selectedGens.includes(gen) ? 'text-blue-600 font-bold' : 'text-gray-400'} mt-2 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Generation Timeline - Mobile (two rows) -->
+                                    <div class="sm:hidden space-y-6">
+                                        <div class="relative pb-6">
+                                            <div class="absolute top-5 left-8 right-8 h-1 bg-gradient-to-r from-blue-300 to-purple-300"></div>
+                                            <div class="relative flex justify-center items-start gap-2">
+                                                ${[1, 2, 3, 4, 5].map(gen => `
+                                                    <div class="flex flex-col items-center flex-shrink-0">
+                                                        <button 
+                                                            onclick="toggleGen(${gen})"
+                                                            class="${selectedGens.includes(gen) ? 'bg-blue-600 text-white ring-4 ring-blue-300' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-110 font-bold rounded-full w-10 h-10 transition-all shadow-lg z-10 flex items-center justify-center text-sm"
+                                                        >
+                                                            ${gen}
+                                                        </button>
+                                                        <span class="text-xs ${selectedGens.includes(gen) ? 'text-blue-600 font-bold' : 'text-gray-400'} mt-1.5 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                        <div class="relative pb-6">
+                                            <div class="absolute top-5 left-8 right-8 h-1 bg-gradient-to-r from-purple-300 to-pink-300"></div>
+                                            <div class="relative flex justify-center items-start gap-2">
+                                                ${[6, 7, 8, 9].map(gen => `
+                                                    <div class="flex flex-col items-center flex-shrink-0">
+                                                        <button 
+                                                            onclick="toggleGen(${gen})"
+                                                            class="${selectedGens.includes(gen) ? 'bg-blue-600 text-white ring-4 ring-blue-300' : 'bg-white text-gray-400 border-2 border-gray-300'} hover:scale-110 font-bold rounded-full w-10 h-10 transition-all shadow-lg z-10 flex items-center justify-center text-sm"
+                                                        >
+                                                            ${gen}
+                                                        </button>
+                                                        <span class="text-xs ${selectedGens.includes(gen) ? 'text-blue-600 font-bold' : 'text-gray-400'} mt-1.5 whitespace-nowrap">${GEN_YEARS[gen]}</span>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!-- Quiz Card -->
+                            <div class="text-center mt-4">
+                                ${quizContentHTML}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Set the language selector value after innerHTML update
+            document.getElementById('langSelector').value = currentLang;
+
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial loading text translated
+            if (document.getElementById('app').querySelector('p')) {
+                document.getElementById('app').querySelector('p').innerText = translateText('loading', 'Loading...');
+            }
+            initQuiz();
+        });
+    </script>
+</body>
+</html>
