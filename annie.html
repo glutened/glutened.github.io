@@ -77,6 +77,7 @@
             cursor: pointer;
             margin-bottom: 10px;
             transition: transform 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
 
         button:hover {
@@ -271,13 +272,36 @@
         // Initialize
         loadCategories();
 
+        // Request fullscreen
+        function goFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+            
+            // Lock to landscape orientation
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => {
+                    console.log('Orientation lock not supported');
+                });
+            }
+        }
+
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             
             if (screenId === 'categoriesScreen') {
+                goFullscreen();
                 displayCategories();
             } else if (screenId === 'createScreen') {
+                goFullscreen();
                 document.getElementById('categoryName').value = '';
                 document.getElementById('categoryWords').value = '';
             }
@@ -409,7 +433,7 @@
             showScreen('gameOverScreen');
         }
 
-        // Tilt Detection
+        // Tilt Detection for LANDSCAPE orientation
         let tiltActive = false;
 
         function startTiltDetection() {
@@ -420,6 +444,8 @@
                     .then(permissionState => {
                         if (permissionState === 'granted') {
                             window.addEventListener('deviceorientation', handleTilt);
+                        } else {
+                            alert('Please allow motion access to use tilt controls!');
                         }
                     })
                     .catch(console.error);
@@ -440,18 +466,34 @@
             const now = Date.now();
             if (now - lastTiltAction < 800) return;
             
-            const beta = event.beta; // Front-to-back tilt (-180 to 180)
+            // For landscape orientation, we use gamma (left-right tilt)
+            const gamma = event.gamma; // Left-to-right tilt (-90 to 90)
             
-            // Tilt up (phone tilted back, away from face)
-            if (beta < -30) {
+            // Phone tilted UP (away from face) - gamma becomes more negative
+            if (gamma < -30) {
                 lastTiltAction = now;
                 correctAnswer();
+                flashFeedback('correct');
             }
-            // Tilt down (phone tilted forward, toward ground)
-            else if (beta > 30) {
+            // Phone tilted DOWN (toward ground) - gamma becomes more positive
+            else if (gamma > 30) {
                 lastTiltAction = now;
                 skipWord();
+                flashFeedback('skip');
             }
+        }
+
+        function flashFeedback(type) {
+            const gameScreen = document.getElementById('gameScreen');
+            if (type === 'correct') {
+                gameScreen.style.background = '#4caf50';
+            } else {
+                gameScreen.style.background = '#f44336';
+            }
+            
+            setTimeout(() => {
+                gameScreen.style.background = '#2c3e50';
+            }, 200);
         }
     </script>
 </body>
