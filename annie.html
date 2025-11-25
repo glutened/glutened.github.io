@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heads Up! Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .screen {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .category-list {
+            margin-bottom: 20px;
+        }
+
+        .category-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .category-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            padding: 8px 15px;
+            width: auto;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .game-screen {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .game-word {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 40px 0;
+            transform: rotate(180deg);
+        }
+
+        .game-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            transform: rotate(180deg);
+        }
+
+        .score, .timer {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            transform: rotate(180deg);
+        }
+
+        .instructions div {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .tilt-up {
+            color: #4caf50;
+        }
+
+        .tilt-down {
+            color: #f44336;
+        }
+
+        .game-over-screen {
+            text-align: center;
+        }
+
+        .final-score {
+            font-size: 4em;
+            color: #667eea;
+            margin: 30px 0;
+        }
+
+        .hint {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Home Screen -->
+        <div id="homeScreen" class="screen active">
+            <h1>🎭 Heads Up!</h1>
+            <button onclick="showScreen('categoriesScreen')">Play Game</button>
+            <button onclick="showScreen('createScreen')">Create Category</button>
+        </div>
+
+        <!-- Create Category Screen -->
+        <div id="createScreen" class="screen">
+            <h2>Create Category</h2>
+            <input type="text" id="categoryName" placeholder="Category Name (e.g., Movies, Animals)">
+            <textarea id="categoryWords" placeholder="Enter words, one per line&#10;&#10;Example:&#10;Lion&#10;Tiger&#10;Bear&#10;Elephant"></textarea>
+            <div class="hint">Add at least 5 words for a good game!</div>
+            <button onclick="saveCategory()">Save Category</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Cancel</button>
+        </div>
+
+        <!-- Categories List Screen -->
+        <div id="categoriesScreen" class="screen">
+            <h2>Select Category</h2>
+            <div id="categoryList" class="category-list"></div>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Back</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen game-screen">
+            <div class="game-info">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="timer">Time: <span id="timer">60</span></div>
+            </div>
+            <div class="game-word" id="gameWord">Ready?</div>
+            <div class="instructions">
+                <div class="tilt-up">⬆️ Tilt UP if correct</div>
+                <div class="tilt-down">⬇️ Tilt DOWN to skip</div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="screen game-over-screen">
+            <h2>Game Over!</h2>
+            <div class="final-score" id="finalScore">0</div>
+            <p style="font-size: 1.2em; margin-bottom: 30px;">words guessed!</p>
+            <button onclick="showScreen('categoriesScreen')">Play Again</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Home</button>
+        </div>
+    </div>
+
+    <script>
+        let categories = {};
+        let currentCategory = null;
+        let currentWords = [];
+        let currentWordIndex = 0;
+        let score = 0;
+        let timeLeft = 60;
+        let gameTimer = null;
+        let usedWords = [];
+
+        // Load categories from memory
+        function loadCategories() {
+            const stored = localStorage.getItem('headsUpCategories');
+            if (stored) {
+                categories = JSON.parse(stored);
+            }
+        }
+
+        // Save categories to memory
+        function saveCategories() {
+            localStorage.setItem('headsUpCategories', JSON.stringify(categories));
+        }
+
+        // Initialize
+        loadCategories();
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'categoriesScreen') {
+                displayCategories();
+            } else if (screenId === 'createScreen') {
+                document.getElementById('categoryName').value = '';
+                document.getElementById('categoryWords').value = '';
+            }
+        }
+
+        function saveCategory() {
+            const name = document.getElementById('categoryName').value.trim();
+            const wordsText = document.getElementById('categoryWords').value.trim();
+            
+            if (!name) {
+                alert('Please enter a category name!');
+                return;
+            }
+            
+            const words = wordsText.split('\n').map(w => w.trim()).filter(w => w.length > 0);
+            
+            if (words.length < 3) {
+                alert('Please add at least 3 words!');
+                return;
+            }
+            
+            categories[name] = words;
+            saveCategories();
+            alert('Category saved!');
+            showScreen('homeScreen');
+        }
+
+        function displayCategories() {
+            const list = document.getElementById('categoryList');
+            list.innerHTML = '';
+            
+            if (Object.keys(categories).length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #666;">No categories yet. Create one first!</p>';
+                return;
+            }
+            
+            for (const [name, words] of Object.entries(categories)) {
+                const item = document.createElement('div');
+                item.className = 'category-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="category-name">${name}</div>
+                        <div class="category-count">${words.length} words</div>
+                    </div>
+                    <div>
+                        <button onclick="startGame('${name}')" style="width: auto; padding: 8px 15px; margin-right: 10px; font-size: 14px;">Play</button>
+                        <button class="btn-delete" onclick="deleteCategory('${name}')">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            }
+        }
+
+        function deleteCategory(name) {
+            if (confirm(`Delete category "${name}"?`)) {
+                delete categories[name];
+                saveCategories();
+                displayCategories();
+            }
+        }
+
+        function startGame(categoryName) {
+            currentCategory = categoryName;
+            currentWords = [...categories[categoryName]];
+            shuffleArray(currentWords);
+            currentWordIndex = 0;
+            score = 0;
+            timeLeft = 60;
+            usedWords = [];
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            showScreen('gameScreen');
+            
+            setTimeout(() => {
+                nextWord();
+                startTimer();
+                startTiltDetection();
+            }, 1000);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function nextWord() {
+            if (currentWordIndex >= currentWords.length) {
+                currentWords = [...categories[currentCategory]];
+                shuffleArray(currentWords);
+                currentWordIndex = 0;
+                usedWords = [];
+            }
+            
+            document.getElementById('gameWord').textContent = currentWords[currentWordIndex];
+        }
+
+        function correctAnswer() {
+            score++;
+            document.getElementById('score').textContent = score;
+            usedWords.push(currentWords[currentWordIndex]);
+            currentWordIndex++;
+            nextWord();
+        }
+
+        function skipWord() {
+            currentWordIndex++;
+            nextWord();
+        }
+
+        function startTimer() {
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(gameTimer);
+            stopTiltDetection();
+            document.getElementById('finalScore').textContent = score;
+            showScreen('gameOverScreen');
+        }
+
+        // Tilt Detection
+        let tiltActive = false;
+
+        function startTiltDetection() {
+            tiltActive = true;
+            
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener('deviceorientation', handleTilt);
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('deviceorientation', handleTilt);
+            }
+        }
+
+        function stopTiltDetection() {
+            tiltActive = false;
+            window.removeEventListener('deviceorientation', handleTilt);
+        }
+
+        let lastTiltAction = 0;
+        function handleTilt(event) {
+            if (!tiltActive) return;
+            
+            const now = Date.now();
+            if (now - lastTiltAction < 800) return;
+            
+            const beta = event.beta; // Front-to-back tilt (-180 to 180)
+            
+            // Tilt up (phone tilted back, away from face)
+            if (beta < -30) {
+                lastTiltAction = now;
+                correctAnswer();
+            }
+            // Tilt down (phone tilted forward, toward ground)
+            else if (beta > 30) {
+                lastTiltAction = now;
+                skipWord();
+            }
+        }
+    </script>
+</body>
+</html>
