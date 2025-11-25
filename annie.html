@@ -207,11 +207,11 @@
         }
 
         .tilt-up {
-            color: #4caf50;
+            color: #f44336;
         }
 
         .tilt-down {
-            color: #f44336;
+            color: #4caf50;
         }
 
         .game-over-screen .content-box {
@@ -400,6 +400,7 @@
             </p>
             <button onclick="showScreen('categoriesScreen')">Play Game</button>
             <button onclick="showScreen('createScreen')">Create Category</button>
+            <button class="btn-secondary" onclick="enterFullscreen()">Enter Fullscreen</button>
             <button class="btn-secondary" onclick="toggleDebug()">Toggle Debug Mode</button>
         </div>
     </div>
@@ -441,8 +442,8 @@ Elephant"></textarea>
             <div class="game-word" id="gameWord">Ready?</div>
         </div>
         <div class="game-footer">
-            <div class="tilt-up">⬆️ TILT UP = Correct ✓</div>
-            <div class="tilt-down">⬇️ TILT DOWN = Skip ✗</div>
+            <div class="tilt-up">⬆️ TILT UP = Skip ✗</div>
+            <div class="tilt-down">⬇️ TILT DOWN = Correct ✓</div>
         </div>
     </div>
 
@@ -478,6 +479,30 @@ Elephant"></textarea>
         // Initialize
         loadCategories();
         showFullscreenNotice();
+
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => {
+                    alert('Fullscreen not available. On iOS Safari, tap Share > Add to Home Screen for fullscreen experience.');
+                });
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen().catch(err => {
+                    alert('Fullscreen not available. On iOS Safari, tap Share > Add to Home Screen for fullscreen experience.');
+                });
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen().catch(err => {
+                    alert('Fullscreen not available.');
+                });
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen().catch(err => {
+                    alert('Fullscreen not available.');
+                });
+            } else {
+                alert('Fullscreen not supported. On iOS Safari, tap Share > Add to Home Screen for fullscreen experience.');
+            }
+        }
 
         function showFullscreenNotice() {
             const notice = document.getElementById('fullscreenNotice');
@@ -603,6 +628,9 @@ Elephant"></textarea>
         function prepareGame(categoryName) {
             currentCategory = categoryName;
             
+            // Try to enter fullscreen
+            autoFullscreen();
+            
             if (!motionPermissionGranted) {
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     document.getElementById('permissionModal').classList.add('active');
@@ -652,9 +680,9 @@ Elephant"></textarea>
             indicator.style.left = Math.max(0, Math.min(100, normalizedBeta)) + '%';
             
             if (beta < avgBeta - 20) {
-                indicator.style.background = '#4caf50'; // Green for UP
+                indicator.style.background = '#f44336'; // Red for UP (skip)
             } else if (beta > avgBeta + 20) {
-                indicator.style.background = '#f44336'; // Red for DOWN
+                indicator.style.background = '#4caf50'; // Green for DOWN (correct)
             } else {
                 indicator.style.background = '#ffc107'; // Yellow for neutral
             }
@@ -670,7 +698,7 @@ Elephant"></textarea>
             calibrated = true;
             window.removeEventListener('deviceorientation', calibrationListener);
             
-            alert(`Calibrated! Neutral position: ${neutralBeta.toFixed(1)}°\n\nTilt UP for correct, DOWN to skip.`);
+            alert(`Calibrated! Neutral position: ${neutralBeta.toFixed(1)}°\n\nTilt UP (away) to SKIP, DOWN (toward ground) for CORRECT.`);
             startGame();
         }
 
@@ -766,8 +794,8 @@ Elephant"></textarea>
                     Diff: ${diff.toFixed(1)}°<br>
                     Gamma: ${gamma ? gamma.toFixed(1) : 'null'}°<br>
                     <br>
-                    ${diff < -25 ? '<span style="color:#0f0">⬆️ CORRECT</span>' : 
-                      diff > 25 ? '<span style="color:#f00">⬇️ SKIP</span>' : 
+                    ${diff < -25 ? '<span style="color:#f00">⬆️ SKIP</span>' : 
+                      diff > 25 ? '<span style="color:#0f0">⬇️ CORRECT</span>' : 
                       '<span style="color:#ff0">NEUTRAL</span>'}
                 `;
             }
@@ -777,17 +805,17 @@ Elephant"></textarea>
             
             const difference = beta - neutralBeta;
             
-            // Tilt UP (away from face) = beta decreases (more negative from neutral)
+            // Tilt UP (away from face) = beta decreases (more negative from neutral) = SKIP
             if (difference < -25) {
-                lastTiltAction = now;
-                correctAnswer();
-                flashFeedback('correct');
-            }
-            // Tilt DOWN (toward ground) = beta increases (more positive from neutral)
-            else if (difference > 25) {
                 lastTiltAction = now;
                 skipWord();
                 flashFeedback('skip');
+            }
+            // Tilt DOWN (toward ground) = beta increases (more positive from neutral) = CORRECT
+            else if (difference > 25) {
+                lastTiltAction = now;
+                correctAnswer();
+                flashFeedback('correct');
             }
         }
 
@@ -803,6 +831,14 @@ Elephant"></textarea>
             setTimeout(() => {
                 gameScreen.style.background = '#2c3e50';
             }, 150);
+        }
+
+        // Auto-enter fullscreen when starting a game
+        function autoFullscreen() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                return; // Already in fullscreen
+            }
+            enterFullscreen();
         }
 
         // Prevent navigation during game
