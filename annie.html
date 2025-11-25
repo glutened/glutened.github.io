@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
     <title>Heads Up! Game</title>
     <style>
         * {
@@ -19,6 +21,12 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
         }
 
         .container {
@@ -128,12 +136,13 @@
             background: #2c3e50;
             color: white;
             text-align: center;
-            min-height: 80vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             position: relative;
+            transition: background 0.2s;
         }
 
         .game-word {
@@ -195,9 +204,52 @@
             margin-bottom: 15px;
             font-style: italic;
         }
+
+        .permission-prompt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .permission-prompt.active {
+            display: flex;
+        }
+
+        .permission-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .permission-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .permission-content p {
+            margin-bottom: 20px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
+    <div class="permission-prompt" id="permissionPrompt">
+        <div class="permission-content">
+            <h3>📱 Motion Access Needed</h3>
+            <p>This game needs access to your device's motion sensors to detect tilting.</p>
+            <p><strong>Please tap "Allow" when prompted!</strong></p>
+            <button onclick="requestPermissions()">Enable Motion Detection</button>
+        </div>
+    </div>
     <div class="container">
         <!-- Home Screen -->
         <div id="homeScreen" class="screen active">
@@ -255,6 +307,17 @@
         let timeLeft = 60;
         let gameTimer = null;
         let usedWords = [];
+        let permissionGranted = false;
+        let isLandscape = false;
+
+        // Check orientation
+        function checkOrientation() {
+            isLandscape = window.innerWidth > window.innerHeight;
+        }
+
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+        checkOrientation();
 
         // Load categories from memory
         function loadCategories() {
@@ -272,24 +335,55 @@
         // Initialize
         loadCategories();
 
-        // Request fullscreen
+        // Request permissions for iOS
+        function requestPermissions() {
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            permissionGranted = true;
+                            document.getElementById('permissionPrompt').classList.remove('active');
+                        } else {
+                            alert('Motion permission denied. Tilt controls will not work.');
+                        }
+                    })
+                    .catch(console.error);
+            } else if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            permissionGranted = true;
+                            document.getElementById('permissionPrompt').classList.remove('active');
+                        } else {
+                            alert('Motion permission denied. Tilt controls will not work.');
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Non-iOS devices don't need permission
+                permissionGranted = true;
+                document.getElementById('permissionPrompt').classList.remove('active');
+            }
+        }
+
+        // Fullscreen and orientation
         function goFullscreen() {
             const elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) {
-                elem.webkitRequestFullscreen();
-            } else if (elem.mozRequestFullScreen) {
-                elem.mozRequestFullScreen();
-            } else if (elem.msRequestFullscreen) {
-                elem.msRequestFullscreen();
-            }
             
-            // Lock to landscape orientation
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(err => {
-                    console.log('Orientation lock not supported');
-                });
+            // Try to go fullscreen
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => console.log('Fullscreen not available'));
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen().catch(err => console.log('Fullscreen not available'));
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen().catch(err => console.log('Fullscreen not available'));
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen().catch(err => console.log('Fullscreen not available'));
+            }
+
+            // For iOS Safari, we can't force fullscreen, but we can encourage rotation
+            if (!isLandscape) {
+                alert('Please rotate your device to landscape mode for the best experience!');
             }
         }
 
@@ -375,6 +469,11 @@
             document.getElementById('score').textContent = score;
             document.getElementById('timer').textContent = timeLeft;
             
+            // Check for motion permission on iOS
+            if (!permissionGranted && (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function')) {
+                document.getElementById('permissionPrompt').classList.add('active');
+            }
+            
             showScreen('gameScreen');
             
             setTimeout(() => {
@@ -433,25 +532,20 @@
             showScreen('gameOverScreen');
         }
 
-        // Tilt Detection for LANDSCAPE orientation
+        // Tilt Detection - works for both portrait and landscape
         let tiltActive = false;
 
         function startTiltDetection() {
-            tiltActive = true;
-            
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            window.addEventListener('deviceorientation', handleTilt);
-                        } else {
-                            alert('Please allow motion access to use tilt controls!');
-                        }
-                    })
-                    .catch(console.error);
-            } else {
-                window.addEventListener('deviceorientation', handleTilt);
+            if (!permissionGranted && (typeof DeviceMotionEvent === 'undefined' || typeof DeviceMotionEvent.requestPermission !== 'function')) {
+                permissionGranted = true; // Android/other devices
             }
+            
+            if (!permissionGranted) {
+                return;
+            }
+            
+            tiltActive = true;
+            window.addEventListener('deviceorientation', handleTilt);
         }
 
         function stopTiltDetection() {
@@ -466,17 +560,28 @@
             const now = Date.now();
             if (now - lastTiltAction < 800) return;
             
-            // For landscape orientation, we use gamma (left-right tilt)
-            const gamma = event.gamma; // Left-to-right tilt (-90 to 90)
+            let beta = event.beta;   // Front-to-back tilt
+            let gamma = event.gamma; // Left-to-right tilt
             
-            // Phone tilted UP (away from face) - gamma becomes more negative
-            if (gamma < -30) {
+            // Handle different orientations
+            let tiltUp = false;
+            let tiltDown = false;
+            
+            if (isLandscape) {
+                // Landscape mode: use gamma
+                tiltUp = gamma < -35;
+                tiltDown = gamma > 35;
+            } else {
+                // Portrait mode: use beta
+                tiltUp = beta < -35;
+                tiltDown = beta > 35;
+            }
+            
+            if (tiltUp) {
                 lastTiltAction = now;
                 correctAnswer();
                 flashFeedback('correct');
-            }
-            // Phone tilted DOWN (toward ground) - gamma becomes more positive
-            else if (gamma > 30) {
+            } else if (tiltDown) {
                 lastTiltAction = now;
                 skipWord();
                 flashFeedback('skip');
@@ -485,6 +590,8 @@
 
         function flashFeedback(type) {
             const gameScreen = document.getElementById('gameScreen');
+            const originalBg = gameScreen.style.background;
+            
             if (type === 'correct') {
                 gameScreen.style.background = '#4caf50';
             } else {
