@@ -473,8 +473,10 @@ Elephant"></textarea>
         
         // Calibration values
         let neutralBeta = 0;
+        let neutralGamma = 0;
         let calibrated = false;
         let betaReadings = [];
+        let gammaReadings = [];
 
         // Initialize
         loadCategories();
@@ -651,6 +653,7 @@ Elephant"></textarea>
         // Calibration
         function startCalibration() {
             betaReadings = [];
+            gammaReadings = [];
             calibrated = false;
             window.addEventListener('deviceorientation', calibrationListener);
         }
@@ -659,32 +662,46 @@ Elephant"></textarea>
             const beta = event.beta;
             const gamma = event.gamma;
             
-            if (beta === null) return;
+            if (beta === null || gamma === null) return;
             
             betaReadings.push(beta);
-            if (betaReadings.length > 30) betaReadings.shift();
+            gammaReadings.push(gamma);
+            if (betaReadings.length > 30) {
+                betaReadings.shift();
+                gammaReadings.shift();
+            }
             
-            // Calculate average
+            // Calculate averages
             const avgBeta = betaReadings.reduce((a, b) => a + b, 0) / betaReadings.length;
+            const avgGamma = gammaReadings.reduce((a, b) => a + b, 0) / gammaReadings.length;
             
             document.getElementById('calibrationValues').innerHTML = `
                 Beta (tilt): ${beta.toFixed(1)}°<br>
-                Gamma (rotation): ${gamma ? gamma.toFixed(1) : 'null'}°<br>
+                Gamma (rotation): ${gamma.toFixed(1)}°<br>
                 <br>
-                Average neutral: ${avgBeta.toFixed(1)}°
+                Average Beta: ${avgBeta.toFixed(1)}°<br>
+                Average Gamma: ${avgGamma.toFixed(1)}°
             `;
             
-            // Visual indicator
-            const indicator = document.getElementById('calibrationIndicator');
-            const normalizedBeta = ((beta + 90) / 180) * 100;
-            indicator.style.left = Math.max(0, Math.min(100, normalizedBeta)) + '%';
+            // Visual indicator based on both axes
+            const betaDiff = beta - avgBeta;
+            const gammaDiff = Math.abs(gamma - avgGamma);
             
-            if (beta < avgBeta - 20) {
+            const indicator = document.getElementById('calibrationIndicator');
+            
+            // Show tilt state
+            if (betaDiff < -20) {
                 indicator.style.background = '#f44336'; // Red for UP (skip)
-            } else if (beta > avgBeta + 20) {
+                indicator.style.left = '25%';
+            } else if (gammaDiff > 40) {
+                indicator.style.background = '#f44336'; // Red for UP via gamma (skip)
+                indicator.style.left = '25%';
+            } else if (betaDiff > 20) {
                 indicator.style.background = '#4caf50'; // Green for DOWN (correct)
+                indicator.style.left = '75%';
             } else {
                 indicator.style.background = '#ffc107'; // Yellow for neutral
+                indicator.style.left = '50%';
             }
         }
 
@@ -695,10 +712,11 @@ Elephant"></textarea>
             }
             
             neutralBeta = betaReadings.reduce((a, b) => a + b, 0) / betaReadings.length;
+            neutralGamma = gammaReadings.reduce((a, b) => a + b, 0) / gammaReadings.length;
             calibrated = true;
             window.removeEventListener('deviceorientation', calibrationListener);
             
-            alert(`Calibrated! Neutral position: ${neutralBeta.toFixed(1)}°\n\nTilt UP (away) to SKIP, DOWN (toward ground) for CORRECT.`);
+            alert(`Calibrated!\nNeutral Beta: ${neutralBeta.toFixed(1)}°\nNeutral Gamma: ${neutralGamma.toFixed(1)}°\n\nTilt UP (away) to SKIP, DOWN (toward ground) for CORRECT.`);
             startGame();
         }
 
@@ -784,18 +802,25 @@ Elephant"></textarea>
             const beta = event.beta;
             const gamma = event.gamma;
             
-            if (beta === null) return;
+            if (beta === null || gamma === null) return;
+            
+            const betaDiff = beta - neutralBeta;
+            const gammaDiff = gamma - neutralGamma;
+            const gammaAbsDiff = Math.abs(gammaDiff);
             
             if (debugMode) {
-                const diff = beta - neutralBeta;
                 document.getElementById('debug').innerHTML = `
                     Beta: ${beta.toFixed(1)}°<br>
-                    Neutral: ${neutralBeta.toFixed(1)}°<br>
-                    Diff: ${diff.toFixed(1)}°<br>
-                    Gamma: ${gamma ? gamma.toFixed(1) : 'null'}°<br>
+                    Neutral Beta: ${neutralBeta.toFixed(1)}°<br>
+                    Beta Diff: ${betaDiff.toFixed(1)}°<br>
                     <br>
-                    ${diff < -25 ? '<span style="color:#f00">⬆️ SKIP</span>' : 
-                      diff > 25 ? '<span style="color:#0f0">⬇️ CORRECT</span>' : 
+                    Gamma: ${gamma.toFixed(1)}°<br>
+                    Neutral Gamma: ${neutralGamma.toFixed(1)}°<br>
+                    Gamma Diff: ${gammaDiff.toFixed(1)}°<br>
+                    Gamma Abs: ${gammaAbsDiff.toFixed(1)}°<br>
+                    <br>
+                    ${gammaAbsDiff > 40 ? '<span style="color:#f00">⬆️ SKIP (GAMMA)</span>' : 
+                      betaDiff > 25 ? '<span style="color:#0f0">⬇️ CORRECT (BETA)</span>' : 
                       '<span style="color:#ff0">NEUTRAL</span>'}
                 `;
             }
@@ -803,16 +828,15 @@ Elephant"></textarea>
             const now = Date.now();
             if (now - lastTiltAction < 600) return;
             
-            const difference = beta - neutralBeta;
-            
-            // Tilt UP (away from face) = beta decreases (more negative from neutral) = SKIP
-            if (difference < -25) {
+            // Tilt UP (away from face) - detected by large gamma change
+            // When you tilt the phone up/back, gamma swings significantly
+            if (gammaAbsDiff > 40) {
                 lastTiltAction = now;
                 skipWord();
                 flashFeedback('skip');
             }
-            // Tilt DOWN (toward ground) = beta increases (more positive from neutral) = CORRECT
-            else if (difference > 25) {
+            // Tilt DOWN (toward ground) - detected by beta increase
+            else if (betaDiff > 25) {
                 lastTiltAction = now;
                 correctAnswer();
                 flashFeedback('correct');
