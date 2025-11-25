@@ -5,164 +5,493 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Heads Up Motion Test</title>
+    <title>Heads Up! Game</title>
     <style>
-        /* --- CORE STYLES --- */
         :root {
-            --bg: #2d3436;
+            --bg-dark: #2c3e50;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --green: #27ae60;
-            --red: #c0392b;
-            --text: white;
+            --red: #e74c3c;
+            --white: #ffffff;
+            --shadow: rgba(0,0,0,0.3);
         }
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        
+        * {
             margin: 0;
-            overflow: hidden;
-            touch-action: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
         }
 
-        /* --- VIEWS --- */
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--white);
+        }
+
+        /* --- SCREENS --- */
         .screen {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
             display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            transition: background 0.3s;
+            padding: 20px;
+            transition: background 0.2s ease;
         }
-        .screen.active { display: flex; }
 
-        /* --- UI ELEMENTS --- */
-        h1 { font-size: 15vh; margin: 0; line-height: 1; text-transform: uppercase; }
-        p { font-size: 1.5rem; color: #b2bec3; margin: 20px; max-width: 80%; }
-        
+        .screen.active {
+            display: flex;
+        }
+
+        /* --- HOME SCREEN --- */
+        .content-box {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px var(--shadow);
+            color: #333;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 25px;
+        }
+
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        /* --- BUTTONS --- */
         button {
-            background: #0984e3;
-            border: none;
-            color: white;
-            padding: 20px 40px;
-            font-size: 1.5rem;
-            border-radius: 12px;
-            font-weight: bold;
-            box-shadow: 0 4px 0 #075b9e;
-        }
-        button:active { transform: translateY(4px); box-shadow: none; }
-
-        /* --- DEBUG STRIP --- */
-        #debug {
-            position: absolute;
-            bottom: 0; left: 0;
             width: 100%;
-            background: rgba(0,0,0,0.5);
-            font-family: monospace;
-            font-size: 12px;
-            padding: 5px;
-            pointer-events: none;
-            text-align: left;
-            z-index: 999;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: transform 0.1s;
         }
 
-        /* --- ORIENTATION MESSAGE --- */
-        .landscape-hint {
-            display: none;
+        button:active {
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-small {
+            padding: 12px 20px;
+            width: auto;
+            font-size: 16px;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+        }
+
+        /* --- INPUTS --- */
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .hint {
+            color: #999;
+            font-size: 14px;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        /* --- CATEGORY LIST --- */
+        .category-list {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .category-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .category-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* --- GAME SCREEN --- */
+        #gameScreen {
+            background: var(--bg-dark);
+            padding: 0;
+        }
+
+        .game-header {
             position: absolute;
-            top: 10px;
-            font-size: 0.8rem;
-            opacity: 0.5;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: bold;
+            background: rgba(0,0,0,0.2);
         }
-        /* Show hint if in portrait */
-        @media (orientation: portrait) { .landscape-hint { display: block; } }
 
+        .game-word {
+            font-size: 5em;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.2;
+            padding: 20px;
+        }
+
+        .game-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 30px;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .game-footer div {
+            margin: 8px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .tilt-correct {
+            color: var(--green);
+        }
+
+        .tilt-skip {
+            color: var(--red);
+        }
+
+        /* --- COUNTDOWN --- */
+        #countdownScreen h1 {
+            font-size: 10em;
+            color: var(--white);
+        }
+
+        /* --- GAME OVER --- */
+        .final-score {
+            font-size: 5em;
+            color: #667eea;
+            margin: 30px 0;
+            font-weight: bold;
+        }
+
+        /* --- DEBUG --- */
+        .debug {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 15px;
+            font-size: 12px;
+            font-family: monospace;
+            border-radius: 8px;
+            z-index: 10000;
+            display: none;
+            min-width: 280px;
+            line-height: 1.6;
+        }
+
+        .debug.show {
+            display: block;
+        }
+
+        /* --- ORIENTATION HINT --- */
+        .orientation-hint {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,193,7,0.9);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            display: none;
+        }
+
+        @media (orientation: portrait) {
+            .orientation-hint {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Orientation Hint -->
+    <div class="orientation-hint">📱 Please rotate to LANDSCAPE mode</div>
 
-    <div id="home" class="screen active">
-        <div class="landscape-hint">Please Rotate Phone Sideways</div>
-        <p style="font-size: 4rem;">🎭</p>
-        <h1>Charades</h1>
-        <p>1. Lock Orientation<br>2. Rotate Sideways<br>3. Place on Forehead</p>
-        <button onclick="requestPerms()">Start Game</button>
-    </div>
+    <!-- Debug Info -->
+    <div class="debug" id="debug"></div>
 
-    <div id="countdown" class="screen">
-        <h1 id="count-display">3</h1>
-        <p>Calibrating... Keep Steady!</p>
-    </div>
-
-    <div id="game" class="screen">
-        <div style="position: absolute; top: 20px; right: 20px; font-weight:bold; font-size: 2rem;">
-            ⏱ <span id="timer">60</span>
-        </div>
-        <div style="position: absolute; top: 20px; left: 20px; font-weight:bold; font-size: 2rem;">
-            Score: <span id="score">0</span>
-        </div>
-        
-        <h1 id="word">Word</h1>
-        
-        <div style="position: absolute; bottom: 30px; font-size: 1.2rem; opacity: 0.8;">
-            Tilt Screen to <b>Floor</b> = Correct<br>
-            Tilt Screen to <b>Ceiling</b> = Pass
+    <!-- Home Screen -->
+    <div id="homeScreen" class="screen active">
+        <div class="content-box">
+            <h1>🎭 Heads Up!</h1>
+            <p><strong>How to Play:</strong></p>
+            <p>1. Rotate phone to LANDSCAPE<br>2. Hold phone on forehead<br>3. Flip screen to FLOOR = Correct ✓<br>4. Flip screen to CEILING = Skip ✗</p>
+            <button onclick="showScreen('categoriesScreen')">Play Game</button>
+            <button onclick="showScreen('createScreen')">Create Category</button>
+            <button class="btn-secondary" onclick="toggleDebug()">Toggle Debug</button>
         </div>
     </div>
 
-    <div id="result" class="screen">
-        <h1>Time's Up!</h1>
-        <p>Score: <span id="final-score">0</span></p>
-        <button onclick="location.reload()">Play Again</button>
+    <!-- Create Category Screen -->
+    <div id="createScreen" class="screen">
+        <div class="content-box">
+            <h2>Create Category</h2>
+            <input type="text" id="categoryName" placeholder="Category Name">
+            <textarea id="categoryWords" placeholder="Enter words, one per line
+
+Example:
+Lion
+Pizza
+Guitar
+Superman"></textarea>
+            <div class="hint">Add at least 3 words</div>
+            <button onclick="saveCategory()">Save Category</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Cancel</button>
+        </div>
     </div>
 
-    <div id="debug">Initializing...</div>
+    <!-- Categories Screen -->
+    <div id="categoriesScreen" class="screen">
+        <div class="content-box">
+            <h2>Select Category</h2>
+            <div id="categoryList" class="category-list"></div>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Back</button>
+        </div>
+    </div>
+
+    <!-- Countdown Screen -->
+    <div id="countdownScreen" class="screen">
+        <h1 id="countdownNumber">3</h1>
+        <p style="font-size: 1.5em;">Get ready! Hold phone on forehead...</p>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen">
+        <div class="game-header">
+            <div>⏱️ <span id="timer">60</span>s</div>
+            <div>Score: <span id="score">0</span></div>
+        </div>
+        <div class="game-word" id="gameWord">Ready?</div>
+        <div class="game-footer">
+            <div class="tilt-correct">⬇️ Screen to FLOOR = Correct ✓</div>
+            <div class="tilt-skip">⬆️ Screen to CEILING = Skip ✗</div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="screen">
+        <div class="content-box">
+            <h2>Time's Up! 🎉</h2>
+            <div class="final-score" id="finalScore">0</div>
+            <p style="font-size: 1.3em;">words guessed!</p>
+            <button onclick="showScreen('categoriesScreen')">Play Again</button>
+            <button class="btn-secondary" onclick="showScreen('homeScreen')">Home</button>
+        </div>
+    </div>
 
     <script>
-        // --- CONFIG ---
-        const WORDS = ["Lion", "Pizza", "Titanic", "Beyonce", "T-Rex", "Shower", "Zombie", "Guitar", "Superman"];
-        const ROUND_TIME = 60;
-        const TILT_ANGLE = 35; // How many degrees to tilt to trigger
-        const RESET_ANGLE = 15; // How close to vertical to reset
-
         // --- STATE ---
-        let state = {
-            screen: 'home',
-            neutralGamma: 0, // The "Zero" point on your forehead
-            orientationDir: 1, // 1 or -1 based on how you hold the phone
-            wordIndex: 0,
-            score: 0,
-            timeLeft: ROUND_TIME,
-            triggerState: 'ready' // 'ready' or 'triggered'
-        };
+        let categories = {};
+        let currentCategory = null;
+        let currentWords = [];
+        let currentWordIndex = 0;
+        let score = 0;
+        let timeLeft = 60;
+        let gameTimer = null;
+        let debugMode = false;
         
-        let timerInt;
+        // Motion detection
+        let motionPermissionGranted = false;
+        let neutralGamma = 0;
         let lastGamma = 0;
+        let triggerState = 'ready'; // 'ready' or 'triggered'
+        let tiltActive = false;
+        
+        const TILT_ANGLE = 40; // Degrees to trigger action
+        const RESET_ANGLE = 20; // Degrees to reset trigger
 
-        // --- SETUP ---
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            state.screen = id;
+        // --- INITIALIZE ---
+        loadCategories();
+
+        // --- DEBUG ---
+        function toggleDebug() {
+            debugMode = !debugMode;
+            document.getElementById('debug').classList.toggle('show', debugMode);
         }
 
-        // --- PERMISSIONS (iOS 13+) ---
-        function requestPerms() {
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(resp => {
-                        if (resp === 'granted') startCountdown();
-                        else alert("Motion permission required!");
-                    })
-                    .catch(console.error);
+        // --- STORAGE ---
+        function loadCategories() {
+            const stored = localStorage.getItem('headsUpCategories');
+            if (stored) {
+                categories = JSON.parse(stored);
+            }
+        }
+
+        function saveCategories() {
+            localStorage.setItem('headsUpCategories', JSON.stringify(categories));
+        }
+
+        // --- NAVIGATION ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'categoriesScreen') {
+                displayCategories();
+            } else if (screenId === 'createScreen') {
+                document.getElementById('categoryName').value = '';
+                document.getElementById('categoryWords').value = '';
+            }
+        }
+
+        // --- CATEGORY MANAGEMENT ---
+        function saveCategory() {
+            const name = document.getElementById('categoryName').value.trim();
+            const wordsText = document.getElementById('categoryWords').value.trim();
+            
+            if (!name) {
+                alert('Please enter a category name!');
+                return;
+            }
+            
+            const words = wordsText.split('\n').map(w => w.trim()).filter(w => w.length > 0);
+            
+            if (words.length < 3) {
+                alert('Please add at least 3 words!');
+                return;
+            }
+            
+            categories[name] = words;
+            saveCategories();
+            alert('Category saved!');
+            showScreen('homeScreen');
+        }
+
+        function displayCategories() {
+            const list = document.getElementById('categoryList');
+            list.innerHTML = '';
+            
+            if (Object.keys(categories).length === 0) {
+                list.innerHTML = '<p style="text-align: center; padding: 20px;">No categories yet. Create one first!</p>';
+                return;
+            }
+            
+            for (const [name, words] of Object.entries(categories)) {
+                const item = document.createElement('div');
+                item.className = 'category-item';
+                const safeName = name.replace(/'/g, "\\'");
+                item.innerHTML = `
+                    <div>
+                        <div class="category-name">${name}</div>
+                        <div class="category-count">${words.length} words</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-small" onclick="prepareGame('${safeName}')">Play</button>
+                        <button class="btn-small btn-delete" onclick="deleteCategory('${safeName}')">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            }
+        }
+
+        function deleteCategory(name) {
+            if (confirm(`Delete category "${name}"?`)) {
+                delete categories[name];
+                saveCategories();
+                displayCategories();
+            }
+        }
+
+        // --- GAME SETUP ---
+        function prepareGame(categoryName) {
+            currentCategory = categoryName;
+            
+            // Request motion permission
+            if (!motionPermissionGranted) {
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(response => {
+                            if (response === 'granted') {
+                                motionPermissionGranted = true;
+                                startCountdown();
+                            } else {
+                                alert('Motion permission denied. Game needs motion access!');
+                            }
+                        })
+                        .catch(err => {
+                            alert('Error requesting permission: ' + err.message);
+                        });
+                } else {
+                    motionPermissionGranted = true;
+                    startCountdown();
+                }
             } else {
                 startCountdown();
             }
@@ -170,164 +499,210 @@
 
         // --- COUNTDOWN & CALIBRATION ---
         function startCountdown() {
-            showScreen('countdown');
-            window.addEventListener('deviceorientation', handleMotion);
+            showScreen('countdownScreen');
+            window.addEventListener('deviceorientation', captureNeutral);
             
             let count = 3;
-            document.getElementById('count-display').innerText = count;
+            document.getElementById('countdownNumber').textContent = count;
             
-            let int = setInterval(() => {
+            const interval = setInterval(() => {
                 count--;
-                if(count > 0) {
-                    document.getElementById('count-display').innerText = count;
+                if (count > 0) {
+                    document.getElementById('countdownNumber').textContent = count;
                 } else {
-                    clearInterval(int);
+                    clearInterval(interval);
                     calibrate();
                     startGame();
                 }
             }, 1000);
         }
 
-        // This is the magic fix. We capture the angle of your forehead.
-        function calibrate() {
-            state.neutralGamma = lastGamma;
-            
-            // Detect if holding Left-landscape or Right-landscape
-            // If neutralGamma is positive (e.g., 90), phone is one way.
-            // If negative (e.g., -90), phone is the other way.
-            // We want "Tilting Down" (screen to floor) to always be POSITIVE math.
-            
-            if (state.neutralGamma < 0) {
-                state.orientationDir = -1; 
-            } else {
-                state.orientationDir = 1;
+        function captureNeutral(event) {
+            if (event.gamma !== null) {
+                lastGamma = event.gamma;
             }
         }
 
-        // --- GAME LOOP ---
+        function calibrate() {
+            neutralGamma = lastGamma;
+            window.removeEventListener('deviceorientation', captureNeutral);
+        }
+
+        // --- GAME LOGIC ---
         function startGame() {
-            showScreen('game');
-            state.score = 0;
-            state.timeLeft = ROUND_TIME;
-            updateWord();
+            currentWords = [...categories[currentCategory]];
+            shuffleArray(currentWords);
+            currentWordIndex = 0;
+            score = 0;
+            timeLeft = 60;
+            triggerState = 'ready';
             
-            timerInt = setInterval(() => {
-                state.timeLeft--;
-                document.getElementById('timer').innerText = state.timeLeft;
-                if(state.timeLeft <= 0) endGame();
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            showScreen('gameScreen');
+            nextWord();
+            startTimer();
+            startMotionDetection();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function nextWord() {
+            if (currentWordIndex >= currentWords.length) {
+                currentWords = [...categories[currentCategory]];
+                shuffleArray(currentWords);
+                currentWordIndex = 0;
+            }
+            
+            document.getElementById('gameWord').textContent = currentWords[currentWordIndex];
+        }
+
+        function correctAnswer() {
+            score++;
+            document.getElementById('score').textContent = score;
+            currentWordIndex++;
+            nextWord();
+        }
+
+        function skipWord() {
+            currentWordIndex++;
+            nextWord();
+        }
+
+        function startTimer() {
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
             }, 1000);
         }
 
         function endGame() {
-            clearInterval(timerInt);
+            clearInterval(gameTimer);
+            stopMotionDetection();
+            document.getElementById('finalScore').textContent = score;
+            showScreen('gameOverScreen');
+        }
+
+        // --- MOTION DETECTION (THE KEY PART) ---
+        function startMotionDetection() {
+            tiltActive = true;
+            window.addEventListener('deviceorientation', handleMotion);
+        }
+
+        function stopMotionDetection() {
+            tiltActive = false;
             window.removeEventListener('deviceorientation', handleMotion);
-            document.getElementById('final-score').innerText = state.score;
-            showScreen('result');
         }
 
-        function updateWord() {
-            document.getElementById('word').innerText = WORDS[state.wordIndex % WORDS.length];
-            document.getElementById('score').innerText = state.score;
-            // Visual Reset
-            document.body.style.backgroundColor = '#2d3436';
-        }
-
-        // --- THE MOTION ENGINE ---
-        function handleMotion(e) {
-            let gamma = e.gamma; // Rotation around the long edge
+        function handleMotion(event) {
+            if (!tiltActive) return;
+            
+            const gamma = event.gamma;
             if (gamma === null) return;
             
             lastGamma = gamma;
             
-            // Debug text to help you see what's happening
-            document.getElementById('debug').innerHTML = 
-                `Raw Gamma: ${gamma.toFixed(0)}° | Neutral: ${state.neutralGamma.toFixed(0)}°`;
+            // Calculate absolute values for comparison
+            const absGamma = Math.abs(gamma);
+            const absNeutral = Math.abs(neutralGamma);
+            
+            if (debugMode) {
+                const diff = absGamma - absNeutral;
+                document.getElementById('debug').innerHTML = `
+Raw Gamma: ${gamma.toFixed(1)}°
+Neutral: ${neutralGamma.toFixed(1)}°
+Abs Gamma: ${absGamma.toFixed(1)}°
+Abs Neutral: ${absNeutral.toFixed(1)}°
+Difference: ${diff.toFixed(1)}°
+State: ${triggerState}
 
-            if (state.screen !== 'game') return;
-
-            // Math: Calculate how far we are from the forehead position
-            let diff = (gamma - state.neutralGamma);
-            
-            // Normalize direction so Down is always the same mathematical sign
-            // On iOS: Face Down usually moves towards +/-180.
-            // On iOS: Face Up usually moves towards 0.
-            
-            // If we started at -90 (vertical):
-            // Tipping Down goes to -180. Diff is -90.
-            // Tipping Up goes to 0. Diff is +90.
-            
-            // If we started at +90 (vertical):
-            // Tipping Down goes to +180. Diff is +90.
-            // Tipping Up goes to 0. Diff is -90.
-            
-            // We apply the orientationDir to make "Tipping Down" always act the same.
-            let adjustedDiff = diff;
-            if (state.neutralGamma < 0) {
-                // We are at -90. Down goes to -180 (Negative change).
-                // We want Down to be detected.
+${absGamma > (absNeutral + TILT_ANGLE) ? '<span style="color:#0f0">⬇️ CORRECT (Floor)</span>' : 
+  absGamma < (absNeutral - TILT_ANGLE) ? '<span style="color:#f00">⬆️ SKIP (Ceiling)</span>' : 
+  '<span style="color:#ff0">NEUTRAL</span>'}
+                `;
             }
-
-            // Let's simplify.
-            // Abs(Gamma) increases towards 180 = Face Down (Floor)
-            // Abs(Gamma) decreases towards 0 = Face Up (Ceiling)
             
-            let absGamma = Math.abs(gamma);
-            let absNeutral = Math.abs(state.neutralGamma);
-            
-            if (state.triggerState === 'ready') {
-                
-                // DETECT TILT DOWN (CORRECT)
-                // If the absolute angle moves closer to 180 (flat on face)
+            if (triggerState === 'ready') {
+                // TILT TO FLOOR (absGamma increases toward 180) = CORRECT
                 if (absGamma > (absNeutral + TILT_ANGLE)) {
                     trigger('correct');
                 }
-                
-                // DETECT TILT UP (PASS)
-                // If the absolute angle moves closer to 0 (flat on back)
+                // TILT TO CEILING (absGamma decreases toward 0) = SKIP
                 else if (absGamma < (absNeutral - TILT_ANGLE)) {
-                    trigger('pass');
+                    trigger('skip');
                 }
-            } 
-            else if (state.triggerState === 'triggered') {
-                // RESET MECHANISM
-                // User must return to vertical (roughly)
+            }
+            else if (triggerState === 'triggered') {
+                // Reset when returning near neutral
                 if (absGamma > (absNeutral - RESET_ANGLE) && absGamma < (absNeutral + RESET_ANGLE)) {
-                    state.triggerState = 'ready';
-                    document.body.style.backgroundColor = '#2d3436'; // Reset color
+                    triggerState = 'ready';
+                    document.getElementById('gameScreen').style.background = 'var(--bg-dark)';
                 }
             }
         }
 
         function trigger(type) {
-            state.triggerState = 'triggered';
+            triggerState = 'triggered';
+            
+            const gameScreen = document.getElementById('gameScreen');
             
             if (type === 'correct') {
-                state.score++;
-                document.body.style.backgroundColor = 'var(--green)';
-                playSound(600, 'sine'); // High beep
+                correctAnswer();
+                gameScreen.style.background = 'var(--green)';
+                playSound(600, 'sine');
             } else {
-                document.body.style.backgroundColor = 'var(--red)';
-                playSound(200, 'sawtooth'); // Low buzzing
+                skipWord();
+                gameScreen.style.background = 'var(--red)';
+                playSound(200, 'sawtooth');
             }
             
-            state.wordIndex++;
-            setTimeout(updateWord, 500);
+            setTimeout(() => {
+                if (triggerState === 'triggered') {
+                    gameScreen.style.background = 'var(--bg-dark)';
+                }
+            }, 300);
         }
 
-        // Simple Beep
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // --- AUDIO FEEDBACK ---
+        let audioCtx = null;
+        
         function playSound(freq, type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.frequency.value = freq;
             osc.type = type;
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
             osc.start();
             osc.stop(audioCtx.currentTime + 0.15);
         }
 
+        // --- PREVENT ACCIDENTAL NAVIGATION ---
+        window.addEventListener('beforeunload', function(e) {
+            if (tiltActive) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
     </script>
 </body>
 </html>
