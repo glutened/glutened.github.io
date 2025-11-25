@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Heads Up! Game</title>
     <style>
         * {
@@ -12,29 +13,37 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        html, body {
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
             width: 100%;
             height: 100%;
             overflow: hidden;
             position: fixed;
             font-family: 'Arial', sans-serif;
-        }
-
-        body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Hide Safari UI bars */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         .screen {
             display: none;
-            width: 100vw;
-            height: 100vh;
-            position: fixed;
+            width: 100%;
+            height: 100%;
+            position: absolute;
             top: 0;
             left: 0;
-            padding: 40px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .screen.active {
@@ -42,61 +51,64 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
         .content-box {
             background: white;
             border-radius: 20px;
-            padding: 40px;
-            width: 90%;
-            max-width: 800px;
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
         h1 {
             color: #667eea;
             text-align: center;
-            margin-bottom: 40px;
-            font-size: 3em;
+            margin-bottom: 30px;
+            font-size: 2.5em;
         }
 
         h2 {
             color: #333;
-            margin-bottom: 30px;
-            font-size: 2em;
+            margin-bottom: 25px;
+            font-size: 1.8em;
         }
 
         input, textarea {
             width: 100%;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
             border: 2px solid #ddd;
-            border-radius: 15px;
-            font-size: 18px;
+            border-radius: 12px;
+            font-size: 16px;
             font-family: inherit;
         }
 
         textarea {
-            min-height: 200px;
+            min-height: 150px;
             resize: vertical;
         }
 
         button {
             width: 100%;
-            padding: 20px;
+            padding: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 15px;
-            font-size: 20px;
+            border-radius: 12px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 15px;
-            transition: transform 0.2s;
+            margin-bottom: 12px;
+            transition: transform 0.1s;
         }
 
         button:active {
-            transform: scale(0.95);
+            transform: scale(0.97);
         }
 
         .btn-secondary {
@@ -105,22 +117,29 @@
 
         .btn-delete {
             background: #dc3545;
-            padding: 15px 20px;
+            padding: 12px 18px;
             width: auto;
             margin: 0;
-            font-size: 16px;
+            font-size: 14px;
+        }
+
+        .btn-play {
+            padding: 12px 25px;
+            width: auto;
+            margin-right: 10px;
+            font-size: 14px;
         }
 
         .category-list {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             width: 100%;
         }
 
         .category-item {
             background: #f8f9fa;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -129,29 +148,31 @@
         .category-name {
             font-weight: bold;
             color: #333;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .category-count {
             color: #666;
-            font-size: 16px;
+            font-size: 14px;
         }
 
-        /* Game Screen */
+        /* Game Screen - LANDSCAPE ONLY */
         #gameScreen {
             background: #2c3e50;
             padding: 0;
-            justify-content: space-between;
+            justify-content: flex-start;
+            overflow: hidden;
         }
 
         .game-header {
             width: 100%;
-            padding: 30px;
+            padding: 20px 30px;
             display: flex;
             justify-content: space-between;
             color: white;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
+            background: rgba(0,0,0,0.2);
         }
 
         .game-word-container {
@@ -159,26 +180,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 100%;
         }
 
         .game-word {
-            font-size: 4em;
+            font-size: 5em;
             font-weight: bold;
             color: white;
             text-align: center;
-            padding: 40px;
+            padding: 20px;
+            line-height: 1.2;
         }
 
         .game-footer {
             width: 100%;
-            padding: 30px;
+            padding: 20px 30px;
             color: white;
             text-align: center;
+            background: rgba(0,0,0,0.2);
         }
 
         .game-footer div {
-            margin: 15px 0;
-            font-size: 22px;
+            margin: 8px 0;
+            font-size: 18px;
+            font-weight: bold;
         }
 
         .tilt-up {
@@ -194,17 +219,36 @@
         }
 
         .final-score {
-            font-size: 5em;
+            font-size: 4em;
             color: #667eea;
-            margin: 40px 0;
+            margin: 30px 0;
             font-weight: bold;
         }
 
         .hint {
             color: #666;
-            font-size: 16px;
-            margin-bottom: 20px;
+            font-size: 14px;
+            margin-bottom: 15px;
             font-style: italic;
+        }
+
+        /* Fullscreen instruction */
+        .fullscreen-notice {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 10000;
+            display: none;
+        }
+
+        .fullscreen-notice.show {
+            display: block;
         }
 
         /* Permission Modal */
@@ -215,7 +259,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             justify-content: center;
             align-items: center;
             z-index: 9999;
@@ -227,41 +271,93 @@
 
         .modal-content {
             background: white;
-            padding: 50px;
+            padding: 40px;
             border-radius: 20px;
             text-align: center;
-            max-width: 600px;
+            max-width: 500px;
+            margin: 20px;
         }
 
         .modal-content h3 {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             color: #333;
-            font-size: 2em;
+            font-size: 1.8em;
         }
 
         .modal-content p {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             color: #666;
-            font-size: 1.2em;
+            font-size: 1.1em;
             line-height: 1.6;
         }
 
         /* Debug info */
         .debug {
             position: fixed;
-            bottom: 10px;
+            top: 10px;
             left: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 10px;
-            font-size: 12px;
-            border-radius: 5px;
-            z-index: 10000;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 15px;
+            font-size: 14px;
+            font-family: monospace;
+            border-radius: 8px;
+            z-index: 10001;
             display: none;
+            min-width: 250px;
+        }
+
+        .debug.show {
+            display: block;
+        }
+
+        .calibration-screen {
+            background: #34495e;
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .calibration-screen h2 {
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .calibration-values {
+            background: rgba(0,0,0,0.3);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            font-size: 1.2em;
+            font-family: monospace;
+        }
+
+        .calibration-bar {
+            width: 100%;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calibration-indicator {
+            position: absolute;
+            width: 4px;
+            height: 100%;
+            background: #4caf50;
+            left: 50%;
+            transition: left 0.1s;
         }
     </style>
 </head>
 <body>
+    <!-- Fullscreen Notice -->
+    <div class="fullscreen-notice" id="fullscreenNotice">
+        📱 For best experience: Rotate to landscape and scroll down to hide Safari bars
+    </div>
+
     <!-- Debug Info -->
     <div class="debug" id="debug"></div>
 
@@ -270,8 +366,28 @@
         <div class="modal-content">
             <h3>📱 Enable Motion Sensors</h3>
             <p>This game uses your device's motion sensors to detect tilting.</p>
-            <p><strong>Please tap the button below and then tap "Allow" when prompted.</strong></p>
-            <button onclick="requestMotionPermission()">Enable Tilt Controls</button>
+            <p><strong>Tap below, then tap "Allow" when Safari asks for permission.</strong></p>
+            <button onclick="requestMotionPermission()">Enable Motion & Start Game</button>
+        </div>
+    </div>
+
+    <!-- Calibration Screen -->
+    <div id="calibrationScreen" class="screen calibration-screen">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <h2>🎯 Calibration</h2>
+            <p style="font-size: 1.1em; margin-bottom: 30px;">
+                Hold your phone in LANDSCAPE mode on your forehead.<br>
+                We'll detect the neutral position.
+            </p>
+            <div class="calibration-values" id="calibrationValues">
+                Detecting orientation...
+            </div>
+            <div class="calibration-bar">
+                <div class="calibration-indicator" id="calibrationIndicator"></div>
+            </div>
+            <p style="margin: 20px 0;">Tilt your phone UP and DOWN to test</p>
+            <button onclick="finishCalibration()" style="max-width: 300px; margin: 20px auto;">Start Game</button>
+            <button class="btn-secondary" onclick="showScreen('categoriesScreen')" style="max-width: 300px; margin: 0 auto;">Cancel</button>
         </div>
     </div>
 
@@ -279,8 +395,12 @@
     <div id="homeScreen" class="screen active">
         <div class="content-box">
             <h1>🎭 Heads Up!</h1>
+            <p style="text-align: center; color: #666; margin-bottom: 30px; font-size: 1.1em;">
+                Hold phone on forehead in LANDSCAPE mode
+            </p>
             <button onclick="showScreen('categoriesScreen')">Play Game</button>
             <button onclick="showScreen('createScreen')">Create Category</button>
+            <button class="btn-secondary" onclick="toggleDebug()">Toggle Debug Mode</button>
         </div>
     </div>
 
@@ -321,17 +441,17 @@ Elephant"></textarea>
             <div class="game-word" id="gameWord">Ready?</div>
         </div>
         <div class="game-footer">
-            <div class="tilt-up">⬆️ TILT UP = Correct</div>
-            <div class="tilt-down">⬇️ TILT DOWN = Skip</div>
+            <div class="tilt-up">⬆️ TILT UP = Correct ✓</div>
+            <div class="tilt-down">⬇️ TILT DOWN = Skip ✗</div>
         </div>
     </div>
 
     <!-- Game Over Screen -->
     <div id="gameOverScreen" class="screen">
         <div class="content-box game-over-screen">
-            <h2>Game Over!</h2>
+            <h2>Game Over! 🎉</h2>
             <div class="final-score" id="finalScore">0</div>
-            <p style="font-size: 1.5em; margin-bottom: 40px;">words guessed!</p>
+            <p style="font-size: 1.3em; margin-bottom: 30px;">words guessed!</p>
             <button onclick="showScreen('categoriesScreen')">Play Again</button>
             <button class="btn-secondary" onclick="showScreen('homeScreen')">Home</button>
         </div>
@@ -345,15 +465,36 @@ Elephant"></textarea>
         let score = 0;
         let timeLeft = 60;
         let gameTimer = null;
-        let usedWords = [];
         let motionPermissionGranted = false;
         let tiltActive = false;
         let lastTiltAction = 0;
+        let debugMode = false;
+        
+        // Calibration values
+        let neutralBeta = 0;
+        let calibrated = false;
+        let betaReadings = [];
 
-        // Debug mode - set to true to see tilt values
-        const DEBUG = false;
+        // Initialize
+        loadCategories();
+        showFullscreenNotice();
 
-        // Load categories
+        function showFullscreenNotice() {
+            const notice = document.getElementById('fullscreenNotice');
+            notice.classList.add('show');
+            setTimeout(() => notice.classList.remove('show'), 5000);
+        }
+
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const debugEl = document.getElementById('debug');
+            if (debugMode) {
+                debugEl.classList.add('show');
+            } else {
+                debugEl.classList.remove('show');
+            }
+        }
+
         function loadCategories() {
             const stored = localStorage.getItem('headsUpCategories');
             if (stored) {
@@ -361,40 +502,35 @@ Elephant"></textarea>
             }
         }
 
-        // Save categories
         function saveCategories() {
             localStorage.setItem('headsUpCategories', JSON.stringify(categories));
         }
 
-        // Initialize
-        loadCategories();
-
-        // Request motion permission
         function requestMotionPermission() {
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                // iOS 13+ devices
                 DeviceOrientationEvent.requestPermission()
                     .then(response => {
                         if (response === 'granted') {
                             motionPermissionGranted = true;
                             document.getElementById('permissionModal').classList.remove('active');
-                            alert('Motion enabled! Start the game.');
+                            showScreen('calibrationScreen');
+                            startCalibration();
                         } else {
-                            alert('Permission denied. Tilt controls will not work.');
+                            alert('Permission denied. The game needs motion access to work.');
                         }
                     })
                     .catch(err => {
-                        console.error('Error requesting permission:', err);
+                        console.error('Error:', err);
                         alert('Error requesting permission: ' + err.message);
                     });
             } else {
-                // Non-iOS devices or older iOS
                 motionPermissionGranted = true;
                 document.getElementById('permissionModal').classList.remove('active');
+                showScreen('calibrationScreen');
+                startCalibration();
             }
         }
 
-        // Show screen
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
@@ -407,7 +543,6 @@ Elephant"></textarea>
             }
         }
 
-        // Save category
         function saveCategory() {
             const name = document.getElementById('categoryName').value.trim();
             const wordsText = document.getElementById('categoryWords').value.trim();
@@ -430,34 +565,33 @@ Elephant"></textarea>
             showScreen('homeScreen');
         }
 
-        // Display categories
         function displayCategories() {
             const list = document.getElementById('categoryList');
             list.innerHTML = '';
             
             if (Object.keys(categories).length === 0) {
-                list.innerHTML = '<p style="text-align: center; color: #666; font-size: 18px;">No categories yet. Create one first!</p>';
+                list.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No categories yet. Create one first!</p>';
                 return;
             }
             
             for (const [name, words] of Object.entries(categories)) {
                 const item = document.createElement('div');
                 item.className = 'category-item';
+                const safeName = name.replace(/'/g, "\\'");
                 item.innerHTML = `
                     <div>
                         <div class="category-name">${name}</div>
                         <div class="category-count">${words.length} words</div>
                     </div>
-                    <div>
-                        <button onclick="startGame('${name.replace(/'/g, "\\'")}')">Play</button>
-                        <button class="btn-delete" onclick="deleteCategory('${name.replace(/'/g, "\\'")}')">Delete</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-play" onclick="prepareGame('${safeName}')">Play</button>
+                        <button class="btn-delete" onclick="deleteCategory('${safeName}')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
             }
         }
 
-        // Delete category
         function deleteCategory(name) {
             if (confirm(`Delete category "${name}"?`)) {
                 delete categories[name];
@@ -466,9 +600,9 @@ Elephant"></textarea>
             }
         }
 
-        // Start game
-        function startGame(categoryName) {
-            // Check motion permission first
+        function prepareGame(categoryName) {
+            currentCategory = categoryName;
+            
             if (!motionPermissionGranted) {
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     document.getElementById('permissionModal').classList.add('active');
@@ -478,13 +612,74 @@ Elephant"></textarea>
                 }
             }
 
-            currentCategory = categoryName;
-            currentWords = [...categories[categoryName]];
+            if (!calibrated) {
+                showScreen('calibrationScreen');
+                startCalibration();
+            } else {
+                startGame();
+            }
+        }
+
+        // Calibration
+        function startCalibration() {
+            betaReadings = [];
+            calibrated = false;
+            window.addEventListener('deviceorientation', calibrationListener);
+        }
+
+        function calibrationListener(event) {
+            const beta = event.beta;
+            const gamma = event.gamma;
+            
+            if (beta === null) return;
+            
+            betaReadings.push(beta);
+            if (betaReadings.length > 30) betaReadings.shift();
+            
+            // Calculate average
+            const avgBeta = betaReadings.reduce((a, b) => a + b, 0) / betaReadings.length;
+            
+            document.getElementById('calibrationValues').innerHTML = `
+                Beta (tilt): ${beta.toFixed(1)}°<br>
+                Gamma (rotation): ${gamma ? gamma.toFixed(1) : 'null'}°<br>
+                <br>
+                Average neutral: ${avgBeta.toFixed(1)}°
+            `;
+            
+            // Visual indicator
+            const indicator = document.getElementById('calibrationIndicator');
+            const normalizedBeta = ((beta + 90) / 180) * 100;
+            indicator.style.left = Math.max(0, Math.min(100, normalizedBeta)) + '%';
+            
+            if (beta < avgBeta - 20) {
+                indicator.style.background = '#4caf50'; // Green for UP
+            } else if (beta > avgBeta + 20) {
+                indicator.style.background = '#f44336'; // Red for DOWN
+            } else {
+                indicator.style.background = '#ffc107'; // Yellow for neutral
+            }
+        }
+
+        function finishCalibration() {
+            if (betaReadings.length < 10) {
+                alert('Please wait a moment for calibration...');
+                return;
+            }
+            
+            neutralBeta = betaReadings.reduce((a, b) => a + b, 0) / betaReadings.length;
+            calibrated = true;
+            window.removeEventListener('deviceorientation', calibrationListener);
+            
+            alert(`Calibrated! Neutral position: ${neutralBeta.toFixed(1)}°\n\nTilt UP for correct, DOWN to skip.`);
+            startGame();
+        }
+
+        function startGame() {
+            currentWords = [...categories[currentCategory]];
             shuffleArray(currentWords);
             currentWordIndex = 0;
             score = 0;
             timeLeft = 60;
-            usedWords = [];
             
             document.getElementById('score').textContent = score;
             document.getElementById('timer').textContent = timeLeft;
@@ -498,7 +693,6 @@ Elephant"></textarea>
             }, 1000);
         }
 
-        // Shuffle array
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -506,34 +700,28 @@ Elephant"></textarea>
             }
         }
 
-        // Next word
         function nextWord() {
             if (currentWordIndex >= currentWords.length) {
                 currentWords = [...categories[currentCategory]];
                 shuffleArray(currentWords);
                 currentWordIndex = 0;
-                usedWords = [];
             }
             
             document.getElementById('gameWord').textContent = currentWords[currentWordIndex];
         }
 
-        // Correct answer
         function correctAnswer() {
             score++;
             document.getElementById('score').textContent = score;
-            usedWords.push(currentWords[currentWordIndex]);
             currentWordIndex++;
             nextWord();
         }
 
-        // Skip word
         function skipWord() {
             currentWordIndex++;
             nextWord();
         }
 
-        // Start timer
         function startTimer() {
             gameTimer = setInterval(() => {
                 timeLeft--;
@@ -545,7 +733,6 @@ Elephant"></textarea>
             }, 1000);
         }
 
-        // End game
         function endGame() {
             clearInterval(gameTimer);
             stopTiltDetection();
@@ -553,62 +740,57 @@ Elephant"></textarea>
             showScreen('gameOverScreen');
         }
 
-        // Start tilt detection
         function startTiltDetection() {
             tiltActive = true;
-            
-            if (DEBUG) {
-                document.getElementById('debug').style.display = 'block';
-            }
-            
             window.addEventListener('deviceorientation', handleTilt);
         }
 
-        // Stop tilt detection
         function stopTiltDetection() {
             tiltActive = false;
             window.removeEventListener('deviceorientation', handleTilt);
-            
-            if (DEBUG) {
-                document.getElementById('debug').style.display = 'none';
-            }
         }
 
-        // Handle tilt
         function handleTilt(event) {
             if (!tiltActive) return;
             
-            const beta = event.beta;   // Front-to-back (-180 to 180)
-            const gamma = event.gamma; // Left-to-right (-90 to 90)
+            const beta = event.beta;
+            const gamma = event.gamma;
             
-            if (DEBUG) {
+            if (beta === null) return;
+            
+            if (debugMode) {
+                const diff = beta - neutralBeta;
                 document.getElementById('debug').innerHTML = `
-                    Beta: ${beta ? beta.toFixed(1) : 'null'}<br>
-                    Gamma: ${gamma ? gamma.toFixed(1) : 'null'}
+                    Beta: ${beta.toFixed(1)}°<br>
+                    Neutral: ${neutralBeta.toFixed(1)}°<br>
+                    Diff: ${diff.toFixed(1)}°<br>
+                    Gamma: ${gamma ? gamma.toFixed(1) : 'null'}°<br>
+                    <br>
+                    ${diff < -25 ? '<span style="color:#0f0">⬆️ CORRECT</span>' : 
+                      diff > 25 ? '<span style="color:#f00">⬇️ SKIP</span>' : 
+                      '<span style="color:#ff0">NEUTRAL</span>'}
                 `;
             }
             
-            if (beta === null || gamma === null) return;
-            
             const now = Date.now();
-            if (now - lastTiltAction < 700) return;
+            if (now - lastTiltAction < 600) return;
             
-            // In landscape mode (phone horizontal):
-            // - Tilt UP (away from face) = beta becomes more negative (< -40)
-            // - Tilt DOWN (toward ground) = beta becomes more positive (> 40)
+            const difference = beta - neutralBeta;
             
-            if (beta < -40) {
+            // Tilt UP (away from face) = beta decreases (more negative from neutral)
+            if (difference < -25) {
                 lastTiltAction = now;
                 correctAnswer();
                 flashFeedback('correct');
-            } else if (beta > 40) {
+            }
+            // Tilt DOWN (toward ground) = beta increases (more positive from neutral)
+            else if (difference > 25) {
                 lastTiltAction = now;
                 skipWord();
                 flashFeedback('skip');
             }
         }
 
-        // Flash feedback
         function flashFeedback(type) {
             const gameScreen = document.getElementById('gameScreen');
             
@@ -620,15 +802,22 @@ Elephant"></textarea>
             
             setTimeout(() => {
                 gameScreen.style.background = '#2c3e50';
-            }, 200);
+            }, 150);
         }
 
-        // Prevent accidental navigation
+        // Prevent navigation during game
         window.addEventListener('beforeunload', function(e) {
             if (tiltActive) {
                 e.preventDefault();
                 e.returnValue = '';
             }
+        });
+
+        // Hide address bar on scroll
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.scrollTo(0, 1);
+            }, 0);
         });
     </script>
 </body>
