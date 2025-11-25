@@ -2,437 +2,363 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Heads Up! Clone</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <title>Heads Up Clone</title>
+    
     <style>
         :root {
-            --primary: #6c5ce7;
-            --success: #00b894;
-            --skip: #ff7675;
-            --bg: #2d3436;
-            --text: #ffffff;
+            --bg-color: #2c3e50;
+            --card-color: #ecf0f1;
+            --correct-color: #27ae60;
+            --pass-color: #e74c3c;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            font-family: var(--font-main);
             overflow: hidden;
             height: 100vh;
             width: 100vw;
+            /* Handle notch on iPhone X+ */
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
 
-        /* --- Screens --- */
-        .screen {
+        /* Views */
+        .view {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.3s;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .screen.active {
-            opacity: 1;
-            pointer-events: all;
-            z-index: 10;
-        }
-
-        /* --- Orientation Lock Overlay --- */
-        #rotate-message {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: #000;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             text-align: center;
-            padding: 20px;
+            transition: background 0.3s;
         }
         
-        /* Only show rotate message in portrait */
-        @media screen and (orientation: landscape) {
-            #rotate-message { display: none; }
-        }
-        @media screen and (orientation: portrait) {
-            .screen { display: none; }
-        }
+        .view.active { display: flex; }
 
-        /* --- UI Elements --- */
-        h1 { font-size: 3rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        p { font-size: 1.2rem; margin-bottom: 30px; text-align: center; max-width: 600px; color: #b2bec3; }
-
-        button {
-            background: var(--primary);
+        /* Typography */
+        h1 { color: white; font-size: 3rem; margin: 0 0 20px 0; text-transform: uppercase; }
+        h2 { color: white; font-size: 1.5rem; font-weight: normal; margin: 0 0 30px 0; opacity: 0.8; }
+        .big-word { font-size: 18vh; font-weight: 800; color: var(--bg-color); line-height: 1; }
+        
+        /* Buttons */
+        .btn {
+            background: #3498db;
             color: white;
             border: none;
-            padding: 15px 40px;
+            padding: 20px 50px;
             font-size: 1.5rem;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: transform 0.1s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
             margin: 10px;
         }
+        .btn:active { transform: scale(0.95); }
 
-        button:active { transform: scale(0.95); }
-
-        /* --- Game Screen --- */
-        #game-screen { background-color: var(--primary); transition: background-color 0.2s; }
-        #game-screen.correct { background-color: var(--success); }
-        #game-screen.skip { background-color: var(--skip); }
-
-        .card-word {
-            font-size: 15vh; /* Huge text */
-            font-weight: 800;
-            text-align: center;
-            line-height: 1.1;
-            padding: 0 20px;
-        }
-
-        .timer {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 2rem;
-            font-weight: bold;
-            background: rgba(0,0,0,0.2);
-            padding: 10px 20px;
+        /* Game Card */
+        #game-card {
+            background: white;
+            width: 80%;
+            height: 70%;
             border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
         }
 
-        .score-display {
+        /* HUD */
+        .hud {
             position: absolute;
-            top: 20px;
-            left: 30px;
-            font-size: 2rem;
+            color: white;
             font-weight: bold;
+            font-size: 1.5rem;
+            z-index: 10;
+        }
+        .hud.time { top: 20px; right: 40px; }
+        .hud.score { top: 20px; left: 40px; }
+        
+        /* Orientation Warning */
+        #portrait-warning {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000;
+            z-index: 9999;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
-        .instructions {
-            position: absolute;
-            bottom: 20px;
-            font-size: 1rem;
-            opacity: 0.7;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        @media (orientation: landscape) { #portrait-warning { display: none; } }
+        @media (orientation: portrait) { .view { display: none !important; } }
 
-        /* --- Debug Info (Hidden by default) --- */
+        /* Debug console */
         #debug {
             position: fixed;
-            top: 0;
-            left: 0;
-            font-size: 10px;
-            background: rgba(0,0,0,0.5);
+            bottom: 10px; left: 10px;
+            color: lime;
+            font-family: monospace;
+            font-size: 12px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px;
             pointer-events: none;
-            display: none; 
+            display: none; /* Toggle this to block if needed */
         }
     </style>
 </head>
 <body>
 
-    <div id="rotate-message">
-        <h1>🔄</h1>
-        <h2>Please Rotate Your Device</h2>
-        <p>This game must be played in Landscape mode.</p>
-    </div>
-
-    <div id="home-screen" class="screen active">
-        <h1>Heads Up!</h1>
-        <p>1. Rotate to Landscape.<br>2. Place phone on forehead.<br>3. Tilt DOWN for Correct, UP to Skip.</p>
-        
-        <div style="display:flex; flex-wrap:wrap; justify-content:center;">
-            <button onclick="startGame('animals')">Animals 🦁</button>
-            <button onclick="startGame('movies')">Movies 🎬</button>
-            <button onclick="startGame('actions')">Act It Out 🎭</button>
+    <div id="portrait-warning">
+        <div>
+            <h1>Rotate Phone</h1>
+            <p>This game only works in Landscape mode.</p>
         </div>
-        
-        <p style="font-size: 0.9rem; margin-top: 20px;">(Tap a button to request sensor permissions)</p>
     </div>
 
-    <div id="calibration-screen" class="screen">
-        <h1>Place on Forehead</h1>
-        <p>Get ready! Calibrating sensor position...</p>
-        <h2 id="countdown">3</h2>
+    <div id="screen-home" class="view active">
+        <h1>Charades Clone</h1>
+        <h2>Place on forehead to play</h2>
+        <button class="btn" id="btn-start">Start Game</button>
+        <div style="margin-top:20px; color: #bdc3c7; font-size: 0.9rem;">
+            (Tap Share > Add to Home Screen for fullscreen)
+        </div>
+        <div id="debug"></div>
     </div>
 
-    <div id="game-screen" class="screen">
-        <div class="score-display">Score: <span id="score">0</span></div>
-        <div class="timer" id="timer">60</div>
-        <div class="card-word" id="word-display">Word</div>
-        <div class="instructions">Tilt Down: Correct &nbsp;&nbsp;•&nbsp;&nbsp; Tilt Up: Pass</div>
+    <div id="screen-calib" class="view">
+        <h1 style="font-size: 5rem;" id="countdown-text">3</h1>
+        <h2>Hold steady on forehead...</h2>
     </div>
 
-    <div id="results-screen" class="screen">
+    <div id="screen-game" class="view">
+        <div class="hud score">Score: <span id="score-val">0</span></div>
+        <div class="hud time">Time: <span id="time-val">60</span></div>
+        <div id="game-card">
+            <div class="big-word" id="current-word">Word</div>
+        </div>
+        <h2 style="position: absolute; bottom: 10px; font-size: 1rem;">Tilt DOWN for Correct • UP to Pass</h2>
+    </div>
+
+    <div id="screen-result" class="view">
         <h1>Time's Up!</h1>
-        <p>You got</p>
-        <h1 style="font-size: 6rem; margin: 0;" id="final-score">0</h1>
-        <p>points</p>
-        <button onclick="resetGame()">Play Again</button>
+        <h2 style="font-size: 3rem; color: #f1c40f;">Score: <span id="final-score">0</span></h2>
+        <button class="btn" onclick="location.reload()">Play Again</button>
     </div>
-
-    <div id="debug"></div>
 
     <script>
-        // --- Data ---
-        const decks = {
-            animals: ['Lion', 'Tiger', 'Bear', 'Elephant', 'Giraffe', 'Monkey', 'Snake', 'Dog', 'Cat', 'Shark', 'Whale', 'Eagle', 'Penguin', 'Kangaroo'],
-            movies: ['Titanic', 'Avatar', 'Star Wars', 'The Matrix', 'Frozen', 'Lion King', 'Jurassic Park', 'Harry Potter', 'Avengers', 'Shrek', 'Inception'],
-            actions: ['Dancing', 'Swimming', 'Driving', 'Cooking', 'Sleeping', 'Fishing', 'Skiing', 'Boxing', 'Singing', 'Flying', 'Typing']
+        // --- CONFIGURATION ---
+        const WORDS = ["Lion", "Superman", "Pizza", "Dancing", "Titanic", "Sleeping", "Guitar", "Monkey", "Harry Potter", "Swimming", "Zombie", "Cowboy", "Shower", "Tennis"];
+        const ROUND_TIME = 60;
+        const TILT_THRESHOLD = 35; // Degrees to trigger action
+        const RESET_THRESHOLD = 10; // Degrees to return to neutral
+        
+        // --- STATE ---
+        let state = {
+            screen: 'home', // home, calib, game, result
+            score: 0,
+            time: ROUND_TIME,
+            deck: [],
+            wordIndex: 0,
+            neutralGamma: 0, // The angle when they hold it on forehead
+            tiltState: 'neutral', // neutral, pass, correct
+            orientationSign: 1, // 1 for Landscape Primary, -1 for Secondary
         };
 
-        // --- State ---
-        let currentDeck = [];
-        let score = 0;
-        let timeLeft = 60;
-        let gameActive = false;
         let timerInterval;
-        let sensorActive = false;
 
-        // --- Motion Logic State ---
-        let neutralGamma = 0; // The angle of the phone when on the forehead
-        let lastState = 'neutral'; // 'neutral', 'up', 'down'
-        const TILT_THRESHOLD = 30; // Degrees to tilt to trigger action
-        const RESET_THRESHOLD = 10; // Degrees to return to to reset trigger
+        // --- DOM ---
+        const dom = {
+            screens: document.querySelectorAll('.view'),
+            btnStart: document.getElementById('btn-start'),
+            countText: document.getElementById('countdown-text'),
+            wordBox: document.getElementById('current-word'),
+            scoreVal: document.getElementById('score-val'),
+            timeVal: document.getElementById('time-val'),
+            finalScore: document.getElementById('final-score'),
+            gameView: document.getElementById('screen-game'),
+            card: document.getElementById('game-card'),
+            debug: document.getElementById('debug')
+        };
 
-        // --- DOM Elements ---
-        const screens = document.querySelectorAll('.screen');
-        const wordDisplay = document.getElementById('word-display');
-        const timerDisplay = document.getElementById('timer');
-        const scoreDisplay = document.getElementById('score');
-        const finalScoreDisplay = document.getElementById('final-score');
-        const gameScreenEl = document.getElementById('game-screen');
-        const debugEl = document.getElementById('debug');
+        // --- INIT ---
+        dom.btnStart.addEventListener('click', requestPermissions);
 
-        // --- Navigation ---
-        function showScreen(id) {
-            screens.forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        // --- Initialization ---
-        async function startGame(category) {
-            currentDeck = [...decks[category]];
-            shuffle(currentDeck);
-            score = 0;
-            timeLeft = 60;
-            
-            // Request Permission (iOS 13+ requirement)
+        // iOS 13+ requires permission request on user interaction
+        function requestPermissions() {
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                try {
-                    const permissionState = await DeviceOrientationEvent.requestPermission();
-                    if (permissionState === 'granted') {
-                        startCalibration();
-                    } else {
-                        alert("Permission denied. We need motion sensors to play!");
-                    }
-                } catch (error) {
-                    console.error(error);
-                }
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            startCalibrationSequence();
+                        } else {
+                            alert("Motion permission is required to detect tilts!");
+                        }
+                    })
+                    .catch(console.error);
             } else {
-                // Non-iOS 13+ devices
-                startCalibration();
+                // Non-iOS 13+
+                startCalibrationSequence();
             }
         }
 
-        // --- Calibration Phase ---
-        function startCalibration() {
-            showScreen('calibration-screen');
+        // --- FLOW CONTROL ---
+        function showScreen(name) {
+            dom.screens.forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen-${name}`).classList.add('active');
+            state.screen = name;
+        }
+
+        function startCalibrationSequence() {
+            showScreen('calib');
+            state.deck = [...WORDS].sort(() => 0.5 - Math.random());
+            state.wordIndex = 0;
+            state.score = 0;
+            state.time = ROUND_TIME;
+            
+            // Start listening to sensors NOW to get a baseline
+            window.addEventListener('deviceorientation', handleMotion);
+            
             let count = 3;
-            const countEl = document.getElementById('countdown');
-            countEl.innerText = count;
-
-            // Start listening to sensors to get a baseline
-            window.addEventListener('deviceorientation', handleOrientation);
-            sensorActive = true;
-            gameActive = false; // Don't trigger answers yet
-
-            const countdownInterval = setInterval(() => {
+            dom.countText.innerText = count;
+            
+            let interval = setInterval(() => {
                 count--;
-                countEl.innerText = count;
-                if (count <= 0) {
-                    clearInterval(countdownInterval);
-                    captureNeutralPosition();
-                    launchGame();
+                if (count > 0) {
+                    dom.countText.innerText = count;
+                } else {
+                    clearInterval(interval);
+                    // Capture current position as "Zero"
+                    calibrate(); 
+                    startGame();
                 }
             }, 1000);
         }
 
-        // Capture the angle of the phone while it's resting on the forehead
-        function captureNeutralPosition() {
-            // We take the current gamma as the "zero" point.
-            // Note: We rely on the last captured value in the handleOrientation loop
-            // but since gameActive is false, it hasn't done anything yet.
-            console.log("Calibrated Neutral Gamma: " + neutralGamma);
+        function calibrate() {
+            // We assume the user is holding it on their forehead right now.
+            // We snapshot the current Gamma (tilt) and Orientation.
+            state.neutralGamma = state.lastRawGamma || 0;
+            
+            // Detect if phone is Home-Button-Left or Home-Button-Right
+            const orientation = (screen.orientation || {}).type || (window.orientation);
+            if (window.orientation === -90 || orientation === "landscape-secondary") {
+                state.orientationSign = -1;
+            } else {
+                state.orientationSign = 1;
+            }
         }
 
-        // --- Core Game Logic ---
-        function launchGame() {
-            showScreen('game-screen');
-            gameActive = true;
-            nextCard();
-            updateTimer();
+        function startGame() {
+            showScreen('game');
+            updateCard();
+            updateHUD();
             
             timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimer();
-                if (timeLeft <= 0) {
-                    endGame();
-                }
+                state.time--;
+                updateHUD();
+                if (state.time <= 0) endGame();
             }, 1000);
-        }
-
-        function updateTimer() {
-            timerDisplay.innerText = timeLeft;
-        }
-
-        function nextCard() {
-            if (currentDeck.length === 0) {
-                endGame();
-                return;
-            }
-            // Reset background color
-            gameScreenEl.className = 'screen active';
-            wordDisplay.innerText = currentDeck.pop();
-        }
-
-        function handleAnswer(type) {
-            if (type === 'correct') {
-                score++;
-                scoreDisplay.innerText = score;
-                gameScreenEl.classList.add('correct');
-                playSound('correct');
-            } else {
-                gameScreenEl.classList.add('skip');
-                playSound('skip');
-            }
-            
-            // Short delay to show color before next card
-            gameActive = false; // Pause input
-            setTimeout(() => {
-                if (timeLeft > 0) {
-                    gameActive = true;
-                    nextCard();
-                }
-            }, 500);
         }
 
         function endGame() {
-            gameActive = false;
-            sensorActive = false;
             clearInterval(timerInterval);
-            window.removeEventListener('deviceorientation', handleOrientation);
-            finalScoreDisplay.innerText = score;
-            showScreen('results-screen');
+            window.removeEventListener('deviceorientation', handleMotion);
+            dom.finalScore.innerText = state.score;
+            showScreen('result');
         }
 
-        function resetGame() {
-            showScreen('home-screen');
+        // --- GAME LOGIC ---
+        function updateHUD() {
+            dom.scoreVal.innerText = state.score;
+            dom.timeVal.innerText = state.time;
         }
 
-        function shuffle(array) {
-            array.sort(() => Math.random() - 0.5);
+        function updateCard() {
+            if (state.wordIndex >= state.deck.length) {
+                state.wordIndex = 0; // Loop deck if empty
+            }
+            dom.wordBox.innerText = state.deck[state.wordIndex];
+            
+            // Visual reset
+            dom.gameView.style.background = 'var(--bg-color)';
+            dom.card.style.transform = 'rotate(0deg)';
         }
 
-        // --- Motion Physics Engine ---
-        function handleOrientation(event) {
-            // Gamma: Left-to-Right tilt in Portrait. 
-            // In Landscape, Gamma acts as the Up/Down tilt (Looking at floor/ceiling).
-            let gamma = event.gamma; 
-            
-            // Handle edge case where gamma jumps (sometimes happens at 90deg)
-            if (gamma === null) return;
-
-            // Calibration Logic:
-            // If we are in the countdown phase, we constantly update 'neutralGamma' 
-            // to be whatever the phone is currently at. The moment game starts, we stop updating it.
-            if (!gameActive && sensorActive && document.getElementById('calibration-screen').classList.contains('active')) {
-                neutralGamma = gamma;
-                return;
-            }
-
-            if (!gameActive) return;
-
-            // Calculate deviation from the calibrated neutral point
-            let deviation = gamma - neutralGamma;
-
-            // Orientation correction:
-            // Depending on if the home button is left or right, the signs might flip.
-            // However, usually:
-            // Tilt Screen Down (Floor) -> Gamma Increases (Positive Deviation)
-            // Tilt Screen Up (Ceiling) -> Gamma Decreases (Negative Deviation)
-            
-            // If window.orientation is -90 (Landscape Right), logic inverts.
-            // Let's normalize it.
-            if (window.orientation === 90) {
-                deviation = deviation * -1;
-            }
-
-            // Debug text
-            debugEl.innerHTML = `Neutral: ${neutralGamma.toFixed(1)} <br> Current: ${gamma.toFixed(1)} <br> Dev: ${deviation.toFixed(1)}`;
-
-            // --- State Machine ---
-            
-            // 1. Check for triggers
-            if (lastState === 'neutral') {
-                // Check for Correct (Tilt Down / Forehead to Floor)
-                if (deviation > TILT_THRESHOLD) {
-                    lastState = 'down';
-                    if(navigator.vibrate) navigator.vibrate(200);
-                    handleAnswer('correct');
-                }
-                // Check for Skip (Tilt Up / Forehead to Ceiling)
-                else if (deviation < -TILT_THRESHOLD) {
-                    lastState = 'up';
-                    if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
-                    handleAnswer('skip');
-                }
-            }
-            
-            // 2. Check for Reset (Must return to middle before triggering again)
-            else if (lastState === 'down' || lastState === 'up') {
-                if (deviation > -RESET_THRESHOLD && deviation < RESET_THRESHOLD) {
-                    lastState = 'neutral';
-                }
-            }
-        }
-
-        // --- Audio Feedback (Optional simple beeps) ---
-        // Browsers block auto-audio, but since user clicked "Start", this usually works.
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
+        function triggerAction(type) {
             if (type === 'correct') {
-                osc.frequency.value = 600; // High pitch
-                osc.type = 'sine';
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.1);
+                state.score++;
+                dom.gameView.style.background = 'var(--correct-color)';
+                dom.card.style.transform = 'translateY(50px) rotate(-5deg)';
             } else {
-                osc.frequency.value = 200; // Low pitch
-                osc.type = 'sawtooth';
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.15);
+                dom.gameView.style.background = 'var(--pass-color)';
+                dom.card.style.transform = 'translateY(-50px) rotate(5deg)';
             }
+            
+            state.wordIndex++;
+            setTimeout(updateCard, 600); // Wait 0.6s before showing next word
         }
 
+        // --- SENSOR LOGIC (The Hard Part) ---
+        function handleMotion(e) {
+            // Store raw gamma for calibration snapshot
+            state.lastRawGamma = e.gamma;
+            
+            if (state.screen !== 'game') return;
+
+            // 1. Get raw Gamma (Left/Right tilt in portrait, Up/Down in Landscape)
+            let gamma = e.gamma;
+            if (gamma === null) return; // Sensor not ready
+
+            // 2. Adjust for "Neutral" (Calibration)
+            // Example: If neutral is 80, and current is 60, diff is -20.
+            let rawDiff = gamma - state.neutralGamma;
+
+            // 3. Adjust for Landscape Orientation (Home button Left vs Right)
+            // This flips the math so "Down" is always positive (or negative, depending on preference)
+            let adjustedDiff = rawDiff * state.orientationSign;
+
+            // DEBUGGING: Uncomment to see values on screen
+            // dom.debug.style.display = 'block';
+            // dom.debug.innerHTML = `G: ${gamma.toFixed(0)} | Neut: ${state.neutralGamma.toFixed(0)} | Diff: ${adjustedDiff.toFixed(0)}`;
+
+            // 4. Logic State Machine
+            if (state.tiltState === 'neutral') {
+                // Check Correct (Tilt Down / Face to Floor)
+                // Usually represented by a positive adjusted diff in this logic
+                if (adjustedDiff > TILT_THRESHOLD) {
+                    state.tiltState = 'triggered';
+                    triggerAction('correct');
+                    if(navigator.vibrate) navigator.vibrate(200);
+                }
+                // Check Pass (Tilt Up / Face to Ceiling)
+                else if (adjustedDiff < -TILT_THRESHOLD) {
+                    state.tiltState = 'triggered';
+                    triggerAction('pass');
+                    if(navigator.vibrate) navigator.vibrate([50, 50]);
+                }
+            } else if (state.tiltState === 'triggered') {
+                // Must return to "Zone of Reset" before triggering again
+                if (adjustedDiff > -RESET_THRESHOLD && adjustedDiff < RESET_THRESHOLD) {
+                    state.tiltState = 'neutral';
+                }
+            }
+        }
     </script>
 </body>
 </html>
