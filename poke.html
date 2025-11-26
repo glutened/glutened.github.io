@@ -924,6 +924,7 @@ const aboutModalHTML = `
        <option value="ru" ${currentLang === 'ru' ? 'selected' : ''}>🇷🇺 Русский</option>
        <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
        <option value="hi" ${currentLang === 'hi' ? 'selected' : ''}>🇮🇳 हिन्दी</option>
+       <option value="ms" ${currentLang === 'ms' ? 'selected' : ''}>🇲🇾 Bahasa Malaysia</option>
        <option value="bg" ${currentLang === 'bg' ? 'selected' : ''}>🇧🇬 Български</option>
        <option value="cs" ${currentLang === 'cs' ? 'selected' : ''}>🇨🇿 Čeština</option>
        <option value="da" ${currentLang === 'da' ? 'selected' : ''}>🇩🇰 Dansk</option>
@@ -954,47 +955,47 @@ const aboutModalHTML = `
                        
 <br><br>                                                 
 <div class="flex justify-center items-center gap-2 mb-6 flex-wrap">
-<span class="text-sm text-gray-600 font-bold">Image Mode:</span>
+    <span class="text-sm text-gray-600 font-bold">${translateText('imageMode', 'Image Mode:')}</span>
 <button 
    onclick="setSpriteMode('default')"
    class="${spriteMode === 'default' ? 'bg-indigo-600' : 'bg-indigo-400'} hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
 >
-   Art
+   ${translateText('artButton', 'Art')}
 </button>
 <button 
    onclick="setSpriteMode('gb')"
    class="${spriteMode === 'gb' ? 'bg-gray-600' : 'bg-gray-400'} hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
 >
-   Gray
+   ${translateText('grayButton', 'Gray')}
 </button> <button 
    onclick="setSpriteMode('gbc')"
    class="${spriteMode === 'gbc' ? 'bg-blue-600' : 'bg-blue-400'} hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
 >
-   Color
+   ${translateText('colorButton', 'Color')}
 </button>
 <button 
    onclick="setSpriteMode('gif')"
    class="${spriteMode === 'gif' ? 'bg-orange-600' : 'bg-orange-400'} hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
 >
-   2D Motion
+   ${translateText('2dMotionButton', '2D Motion')}
 </button>
 <button 
    onclick="setSpriteMode('3d')"
    class="${spriteMode === '3d' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
 >
-   3D Motion
+   ${translateText('3dMotionButton', '3D Motion')}
 </button>
 <button 
    onclick="setSpriteMode('palette')"
    class="${spriteMode === 'palette' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
 >
-   Palette
+   ${translateText('paletteButton', 'Palette')}
 </button>
 <button 
    onclick="setSpriteMode('card')"
    class="${spriteMode === 'card' ? 'bg-green-600' : 'bg-green-400'} hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
 >
-   Plush
+   ${translateText('plushButton', 'Plush')}
 </button>
 
 </div>
@@ -1008,17 +1009,17 @@ const aboutModalHTML = `
     <div class="text-center h-8 mb-3 flex items-center justify-center gap-3 flex-wrap">
         <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
             ${spriteMode === 'gif' || spriteMode === '3d' || spriteMode === 'card' 
-                ? 'This mode only supports Gen 1 + Gen 2' 
+                ? translateText('modeRestrictionGen1Gen2', 'This mode only supports Gen 1 + Gen 2') 
                 : includeGen2Unofficial 
-                    ? 'Gen 1 + Gen 2' 
-                    : 'Gen 1 Only'}
+                    ? translateText('restrictionGen1Gen2', 'Gen 1 + Gen 2') 
+                    : translateText('restrictionGen1Only', 'Gen 1 Only')}
         </span>
         ${supportsGen2Toggle(spriteMode) ? `
             <button 
                 onclick="toggleGen2Unofficial()"
                 class="${includeGen2Unofficial ? 'bg-blue-600' : 'bg-gray-400'} hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs transition-colors"
             >
-                ${includeGen2Unofficial ? '✓ ' : ''}Include Gen 2
+                ${includeGen2Unofficial ? '✓ ' : ''}${translateText('includeGen2Button', 'Include Gen 2')}
             </button>
         ` : ''}
     </div>
@@ -1184,6 +1185,7 @@ const aboutModalHTML = `
             <option value="ru" ${currentLang === 'ru' ? 'selected' : ''}>🇷🇺 Русский</option>
             <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
             <option value="hi" ${currentLang === 'hi' ? 'selected' : ''}>🇮🇳 हिन्दी</option>
+            <option value="ms" ${currentLang === 'ms' ? 'selected' : ''}>🇲🇾 Bahasa Malaysia</option>
             <option value="bg" ${currentLang === 'bg' ? 'selected' : ''}>🇧🇬 Български</option>
             <option value="cs" ${currentLang === 'cs' ? 'selected' : ''}>🇨🇿 Čeština</option>
             <option value="da" ${currentLang === 'da' ? 'selected' : ''}>🇩🇰 Dansk</option>
@@ -1213,50 +1215,50 @@ const aboutModalHTML = `
 </div>
                             
      <br><br>                                                 
-<div class="flex justify-center items-center gap-2 mb-6 flex-wrap">
-    <span class="text-sm text-gray-600 font-bold">Image Mode:</span>
-    <button 
-        onclick="setSpriteMode('default')"
-        class="${spriteMode === 'default' ? 'bg-indigo-600' : 'bg-indigo-400'} hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
-    >
-        Art
-    </button>
-    <button 
-        onclick="setSpriteMode('gb')"
-        class="${spriteMode === 'gb' ? 'bg-gray-600' : 'bg-gray-400'} hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
-    >
-        Gray
-    </button> <button 
-        onclick="setSpriteMode('gbc')"
-        class="${spriteMode === 'gbc' ? 'bg-blue-600' : 'bg-blue-400'} hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
-    >
-        Color
-    </button>
-    <button 
-        onclick="setSpriteMode('gif')"
-        class="${spriteMode === 'gif' ? 'bg-orange-600' : 'bg-orange-400'} hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
-    >
-        2D Motion
-    </button>
-    <button 
-        onclick="setSpriteMode('3d')"
-        class="${spriteMode === '3d' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
-    >
-        3D Motion
-    </button>
-    <button 
+     <div class="flex justify-center items-center gap-2 mb-6 flex-wrap">
+    <span class="text-sm text-gray-600 font-bold">${translateText('imageMode', 'Image Mode:')}</span>
+<button 
+   onclick="setSpriteMode('default')"
+   class="${spriteMode === 'default' ? 'bg-indigo-600' : 'bg-indigo-400'} hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   ${translateText('artButton', 'Art')}
+</button>
+<button 
+   onclick="setSpriteMode('gb')"
+   class="${spriteMode === 'gb' ? 'bg-gray-600' : 'bg-gray-400'} hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   ${translateText('grayButton', 'Gray')}
+</button> <button 
+   onclick="setSpriteMode('gbc')"
+   class="${spriteMode === 'gbc' ? 'bg-blue-600' : 'bg-blue-400'} hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   ${translateText('colorButton', 'Color')}
+</button>
+<button 
+   onclick="setSpriteMode('gif')"
+   class="${spriteMode === 'gif' ? 'bg-orange-600' : 'bg-orange-400'} hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   ${translateText('2dMotionButton', '2D Motion')}
+</button>
+<button 
+   onclick="setSpriteMode('3d')"
+   class="${spriteMode === '3d' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   ${translateText('3dMotionButton', '3D Motion')}
+</button>
+<button 
    onclick="setSpriteMode('palette')"
    class="${spriteMode === 'palette' ? 'bg-purple-600' : 'bg-purple-400'} hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
 >
-   Palette
+   ${translateText('paletteButton', 'Palette')}
 </button>
-    <button 
-        onclick="setSpriteMode('card')"
-        class="${spriteMode === 'card' ? 'bg-green-600' : 'bg-green-400'} hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
-    >
-        Plush
-    </button>
-   
+<button 
+   onclick="setSpriteMode('card')"
+   class="${spriteMode === 'card' ? 'bg-green-600' : 'bg-green-400'} hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+>
+   ${translateText('plushButton', 'Plush')}
+</button>
+
 </div>
                <br>            
 <div class="mb-4 sm:mb-6">
@@ -1268,17 +1270,17 @@ const aboutModalHTML = `
     <div class="text-center h-8 mb-3 flex items-center justify-center gap-3 flex-wrap">
         <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
             ${spriteMode === 'gif' || spriteMode === '3d' || spriteMode === 'card' 
-                ? 'This mode only supports Gen 1 + Gen 2' 
+                ? translateText('modeRestrictionGen1Gen2', 'This mode only supports Gen 1 + Gen 2') 
                 : includeGen2Unofficial 
-                    ? 'Gen 1 + Gen 2' 
-                    : 'Gen 1 Only'}
+                    ? translateText('restrictionGen1Gen2', 'Gen 1 + Gen 2') 
+                    : translateText('restrictionGen1Only', 'Gen 1 Only')}
         </span>
         ${supportsGen2Toggle(spriteMode) ? `
             <button 
                 onclick="toggleGen2Unofficial()"
                 class="${includeGen2Unofficial ? 'bg-blue-600' : 'bg-gray-400'} hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs transition-colors"
             >
-                ${includeGen2Unofficial ? '✓ ' : ''}Include Gen 2
+                ${includeGen2Unofficial ? '✓ ' : ''}${translateText('includeGen2Button', 'Include Gen 2')}
             </button>
         ` : ''}
     </div>
