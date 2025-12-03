@@ -20,23 +20,105 @@
         .blog-link a {
             display: inline-block;
             padding: 10px 15px;
-            
             color: black;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
-          
         }
         
         .blog-link a:hover {
           color:#dbdf00;
-  
         }
     .container {
       max-width: 1200px;
       margin: 0 auto;
     }
     
+    /* --- NEW INTEGRATED SEARCH/CHAT STYLES --- */
+    .search-container {
+        text-align: center;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 10px; 
+    }
+
+    #search-input {
+        padding: 12px 18px; 
+        width: 450px; 
+        border: 1px solid #ddd;
+        border-radius: 25px; 
+        outline: none;
+        font-size: 1rem;
+        flex-grow: 1; /* Allows it to take up available space */
+        max-width: 600px;
+    }
+
+    #search-input:focus {
+        border-color: #6c63ff;
+        box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+    }
+
+    .search-send-btn {
+        padding: 12px 18px;
+        background-color: #6c63ff;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-send-btn:hover {
+        background-color: #574fe3;
+    }
+    
+    /* The new area where chatbot responses and quick prompts live */
+    .chatbot-response-container {
+        max-width: 650px;
+        margin: 0 auto 30px auto;
+        padding: 15px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    #responseDisplay {
+        margin-top: 15px;
+        padding: 15px;
+        border-left: 4px solid #dbdf00;
+        background-color: #f9f9f9;
+        color: #333;
+        line-height: 1.6;
+        min-height: 20px;
+        white-space: pre-wrap; /* For line breaks */
+        border-radius: 4px;
+        font-size: 0.95rem;
+    }
+
+    /* Quick Prompts */
+    .quick-prompt-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #6366f1;
+        background-color: #e0e7ff;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .quick-prompt-btn:hover {
+        background-color: #c7d2fe;
+        color: #4f46e5;
+    }
+
+
     h1 {
       color: #333;
       text-align: center;
@@ -100,24 +182,7 @@
       border-color: #6c63ff;
     }
     
-    .search-container {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    
-    #search-input {
-      padding: 8px 15px;
-      width: 300px;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      outline: none;
-    }
-    
-    #search-input:focus {
-      border-color: #6c63ff;
-    }
-
-     /* Sticky Notes Styles */
+    /* Sticky Notes Styles */
      .sticky-notes {
       display: flex;
       justify-content: center;
@@ -205,13 +270,222 @@
       <a href="wip.html" >What am I currently working on?</a>
     </div>
 
- 
-
   </div>
+
+<div class="search-container">
+    <input 
+        type="text" 
+        id="search-input" 
+        placeholder="Ask about David's experience (e.g., 'technical skills') or search nodes..."
+    >
+    <button 
+        id="sendButton" 
+        class="search-send-btn"
+        title="Send query to Assistant"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+        </svg>
+    </button>
 </div>
-    <div class="search-container">
-      <input type="text" id="search-input" placeholder="Search for nodes...">
-    </div>
+
+<div id="chatbotResponseContainer" class="chatbot-response-container">
+    <div id="quickPrompts" class="flex flex-wrap gap-2 justify-center"></div>
+    <div id="responseDisplay" class="response-display"></div>
+</div>
+
+<script>
+    const resumeFacts = [
+        { id: 1, action: "Compliance & Governance", context: "Deloitte (GDPR Workflows)", outcome: "Reduced Fines by $500K+", result: "Labeled personal data deletion workflows across global media websites, ensuring GDPR compliance and reducing potential fines by $500K–$1M+.", tags: ["profit", "fortune100", "consulting"], company: "Deloitte" },
+        { id: 2, action: "Cross-functional Collaboration", context: "Deloitte (OneTrust Automation)", outcome: "Saved Hundreds of Staff Hours", result: "Project-managed engineers and legal teams to implement automated OneTrust workflows, replacing manual email requests and saving hundreds of staff hours.", tags: ["time-savings", "managing-others", "fortune100", "consulting"], company: "Deloitte" },
+        { id: 3, action: "Stakeholder Communication", context: "Deloitte (Regulator Transparency)", outcome: "Enhanced Clarity/Transparency", result: "Edited privacy program documentation and client presentations, enhancing clarity and supporting regulator-facing transparency.", tags: ["fortune100", "consulting", "c-suite"], company: "Deloitte" },
+        { id: 11, action: "Management Consulting", context: "Deloitte (C-Suite Fortune 100)", outcome: "Advised Fortune 100 Executives", result: "Consulted with C-suite executives at Fortune 100 media companies on data privacy strategies, translating complex regulatory requirements into actionable business recommendations.", tags: ["consulting", "c-suite", "fortune100"], company: "Deloitte" },
+        { id: 12, action: "Global Team Coordination", context: "Deloitte (Multi-Timezone Projects)", outcome: "Seamless Cross-Continent Delivery", result: "Coordinated project deliverables across US, EU, and APAC time zones, ensuring 24/7 workflow continuity and meeting aggressive client deadlines for Fortune 100 media organizations.", tags: ["time-zone", "fortune100", "consulting"], company: "Deloitte" },
+        { id: 13, action: "Executive Presentation Design", context: "Deloitte (Client Deliverables)", outcome: "C-Suite-Ready Decks", result: "Designed polished PowerPoint presentations and visual reports for C-suite stakeholders, distilling complex data privacy concepts into executive-friendly narratives.", tags: ["c-suite", "consulting", "fortune100"], company: "Deloitte" },
+        { id: 4, action: "Cross-functional Collaboration", context: "Disney (Global Safety Comms)", outcome: "Reached 200,000+ Employees", result: "Developed multilingual safety, security, and crisis materials—including posters, blogs, emails, and graphics—for 200,000+ employees globally.", tags: ["fortune100", "time-zone"], company: "Disney" },
+        { id: 14, action: "Stakeholder Communication", context: "Disney (Global Internal Comms)", outcome: "Unified Crisis Messaging", result: "Crafted crisis communication materials for Disney's Global Security team, ensuring consistent messaging across 200,000+ employees in multiple languages and time zones.", tags: ["fortune100", "time-zone"], company: "Disney" },
+        { id: 5, action: "Data Structuring & Analysis", context: "Pokemon Semantic Data Tools (AI)", outcome: "Built 1,025 Pokémon Framework", result: "Built a semantic ontology and linked data framework for 1,025 Pokémon, using custom AI programs to query weighted attributes for filtering and analysis.", tags: ["technical"], company: "Personal Project" },
+        { id: 6, action: "Data Structuring & Analysis", context: "UW iSchool (Ontology Design)", outcome: "Structured Recommendations", result: "Developed a café menu ontology in PoolParty using SKOS for structured recommendations and improved discoverability.", tags: ["technical"], company: "University of Washington" },
+        { id: 7, action: "Process & Efficiency Optimization", context: "Microsoft (Power BI Adoption)", outcome: "Cut Report Creation Time 15–20%", result: "Conducted UX research and affinity mapping on Power BI adoption, generating insights that cut report creation time 15–20%.", tags: ["time-savings", "fortune100"], company: "Microsoft" },
+        { id: 8, action: "Stakeholder Communication", context: "Rutgers & WIAD (Guest Lecture)", outcome: "Empathy-Driven Design Talk", result: "Presented 'Designing for My Mom,' a talk on empathy-driven human-centered design using personal usability testing with non-technical users.", tags: [], company: "Speaking Engagement" },
+        { id: 9, action: "Education (M.S.)", context: "University of Washington (M.S.)", outcome: "M.S. Degree Completion (2022)", result: "Completed Master of Science in Information Management (2022).", tags: [], company: "University of Washington"},
+        { id: 10, action: "Education (B.A.)", context: "Brigham Young University (B.A.)", outcome: "B.A. Degree Completion (2016)", result: "Completed Bachelor of Arts in Advertising (2016).", tags: [], company: "Brigham Young University"},
+    ];
+
+    const quickPrompts = [
+        "Fortune 100 experience",
+        "Cost savings delivered",
+        "Management consulting",
+        "Technical skills",
+        "Multi-timezone work",
+        "C-suite experience"
+    ];
+
+    let lastResponse = "Hi! I'm David Taylor's AI assistant. Ask me anything about David's experience, skills, or achievements. Try clicking a quick prompt or typing a question!";
+
+    function generateResponse(userMessage) {
+        const lowerMessage = userMessage.toLowerCase();
+        
+        if (lowerMessage.includes('fortune 100') || lowerMessage.includes('fortune100')) {
+            const fortune100Facts = resumeFacts.filter(f => f.tags.includes('fortune100'));
+            const companies = [...new Set(fortune100Facts.map(f => f.company))].filter(c => !c.includes('University'));
+            return `David has extensive Fortune 100 experience with **${companies.join(', ')}**:\n\n${fortune100Facts.slice(0, 3).map(f => `• **${f.company}**: ${f.result}`).join('\n\n')}`;
+        }
+        
+        if (lowerMessage.includes('cost') || lowerMessage.includes('profit') || lowerMessage.includes('savings') || lowerMessage.includes('money')) {
+            const profitFacts = resumeFacts.filter(f => f.tags.includes('profit') || f.tags.includes('time-savings'));
+            return `David has delivered significant cost savings:\n\n${profitFacts.map(f => `• **${f.outcome}** at ${f.company}: ${f.result}`).join('\n\n')}`;
+        }
+        
+        if (lowerMessage.includes('consulting') || lowerMessage.includes('deloitte')) {
+            const consultingFacts = resumeFacts.filter(f => f.tags.includes('consulting'));
+            return `David's management consulting experience includes:\n\n${consultingFacts.map(f => `• **${f.action}**: ${f.result}`).join('\n\n')}`;
+        }
+        
+        if (lowerMessage.includes('c-suite') || lowerMessage.includes('executive')) {
+            const csuiteFacts = resumeFacts.filter(f => f.tags.includes('c-suite'));
+            return `David has worked directly with C-suite executives:\n\n${csuiteFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+        }
+        
+        if (lowerMessage.includes('technical') || lowerMessage.includes('tech') || lowerMessage.includes('data')) {
+            const techFacts = resumeFacts.filter(f => f.tags.includes('technical'));
+            return `David's technical skills include:\n\n${techFacts.map(f => `• **${f.action}**: ${f.result}`).join('\n\n')}`;
+        }
+        
+        if (lowerMessage.includes('disney')) {
+            const disneyFacts = resumeFacts.filter(f => f.company === 'Disney');
+            return `At Disney, David:\n\n${disneyFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+        }
+        
+        if (lowerMessage.includes('microsoft')) {
+            const msftFacts = resumeFacts.filter(f => f.company === 'Microsoft');
+            return `At Microsoft, David:\n\n${msftFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+        }
+        
+        if (lowerMessage.includes('education') || lowerMessage.includes('degree') || lowerMessage.includes('school')) {
+            return `**Education:**\n\n• Master of Science in Information Management from University of Washington (2022)\n• Bachelor of Arts in Advertising from Brigham Young University (2016)`;
+        }
+        
+        if (lowerMessage.includes('timezone') || lowerMessage.includes('global') || lowerMessage.includes('international')) {
+            const tzFacts = resumeFacts.filter(f => f.tags.includes('time-zone'));
+            return `David has experience with multi-timezone work:\n\n${tzFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+        }
+        
+        if (lowerMessage.includes('skill') || lowerMessage.includes('abilities')) {
+            const skills = [...new Set(resumeFacts.filter(f => !f.action.startsWith('Education')).map(f => f.action))];
+            return `David's key transferable skills include:\n\n${skills.map(s => `• ${s}`).join('\n')}`;
+        }
+        
+        if (lowerMessage.includes('company') || lowerMessage.includes('companies') || lowerMessage.includes('where')) {
+            const companies = [...new Set(resumeFacts.map(f => f.company).filter(c => !c.includes('University') && c !== 'Speaking Engagement' && c !== 'Personal Project'))];
+            return `David has worked with: **${companies.join(', ')}**\n\nHe also completed projects at University of Washington, delivered speaking engagements, and built personal technical projects.`;
+        }
+
+        if (lowerMessage.includes('manage') || lowerMessage.includes('leadership')) {
+            const manageFacts = resumeFacts.filter(f => f.tags.includes('managing-others'));
+            return `David has management and leadership experience:\n\n${manageFacts.map(f => `• ${f.result}`).join('\n\n')}`;
+        }
+        
+        const randomFact = resumeFacts[Math.floor(Math.random() * resumeFacts.length)];
+        return `Here's an interesting achievement:\n\n**${randomFact.action}** at ${randomFact.company}: ${randomFact.result}\n\nWhat else would you like to know?`;
+    }
+
+    function formatContent(content) {
+        // Replace new line characters with <br> for better formatting in HTML
+        const contentWithBreaks = content.replace(/\n/g, '<br>');
+
+        // Apply strong tag to text wrapped in **
+        return contentWithBreaks.split('**').map((part, i) => 
+            i % 2 === 0 ? part : `<strong>${part}</strong>`
+        ).join('');
+    }
+    
+    function displayResponse(content) {
+        const display = document.getElementById('responseDisplay');
+        display.innerHTML = formatContent(content);
+    }
+
+    async function handleSend() {
+        const input = document.getElementById('search-input');
+        const message = input.value.trim();
+        
+        // Use a simple heuristic: if the message starts with "search" or is very short, assume it was intended for the graph
+        if (!message || message.toLowerCase().startsWith('search nodes')) {
+             displayResponse('Please enter a full question for the assistant, or start typing in the bar to search the graph.');
+             return;
+        }
+
+        // Display "thinking" message immediately
+        displayResponse('Assistant is thinking...');
+        
+        input.value = ''; // Clear input immediately
+        
+        // Simulate thinking time
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        const response = generateResponse(message);
+        lastResponse = response;
+        displayResponse(response);
+    }
+
+    function renderQuickPrompts() {
+        const container = document.getElementById('quickPrompts');
+        container.innerHTML = quickPrompts.map(prompt => `
+            <button 
+                onclick="document.getElementById('search-input').value = '${prompt}'; handleSend();"
+                class="quick-prompt-btn"
+            >
+                ${prompt}
+            </button>
+        `).join('');
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('search-input');
+        const sendButton = document.getElementById('sendButton');
+        
+        displayResponse(lastResponse);
+        renderQuickPrompts();
+        
+        sendButton.addEventListener('click', handleSend);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+        
+        // The existing graph search logic remains on the 'input' event
+        input.addEventListener('input', function(e) {
+          const searchTerm = e.target.value.toLowerCase();
+          
+          if (searchTerm === '') {
+            // Show all nodes if search is empty
+            node.style('opacity', 1);
+            link.style('opacity', 0.6);
+            nodeText.style('opacity', 1);
+            linkText.style('opacity', 1);
+            return;
+          }
+          
+          // Find matching nodes
+          const matchingNodes = graphData.nodes.filter(n => 
+            n.caption.toLowerCase().includes(searchTerm) || 
+            (n.details && n.details.toLowerCase().includes(searchTerm))
+          ).map(n => n.id);
+          
+          // Highlight matching nodes and their connections
+          node.style('opacity', d => matchingNodes.includes(d.id) ? 1 : 0.2);
+          nodeText.style('opacity', d => matchingNodes.includes(d.id) ? 1 : 0.2);
+          
+          link.style('opacity', d => 
+            matchingNodes.includes(d.source.id) && matchingNodes.includes(d.target.id) ? 0.8 : 0.1
+          );
+          
+          linkText.style('opacity', d => 
+            matchingNodes.includes(d.source.id) && matchingNodes.includes(d.target.id) ? 1 : 0.1
+          );
+        });
+    });
+</script>
     
     <div class="filters">
       <button class="filter-btn active" data-filter="all">All</button>
@@ -492,38 +766,6 @@
       event.subject.fx = null;
       event.subject.fy = null;
     }
-
-    // Add search functionality
-    document.getElementById('search-input').addEventListener('input', function(e) {
-      const searchTerm = e.target.value.toLowerCase();
-      
-      if (searchTerm === '') {
-        // Show all nodes if search is empty
-        node.style('opacity', 1);
-        link.style('opacity', 0.6);
-        nodeText.style('opacity', 1);
-        linkText.style('opacity', 1);
-        return;
-      }
-      
-      // Find matching nodes
-      const matchingNodes = graphData.nodes.filter(n => 
-        n.caption.toLowerCase().includes(searchTerm) || 
-        (n.details && n.details.toLowerCase().includes(searchTerm))
-      ).map(n => n.id);
-      
-      // Highlight matching nodes and their connections
-      node.style('opacity', d => matchingNodes.includes(d.id) ? 1 : 0.2);
-      nodeText.style('opacity', d => matchingNodes.includes(d.id) ? 1 : 0.2);
-      
-      link.style('opacity', d => 
-        matchingNodes.includes(d.source.id) && matchingNodes.includes(d.target.id) ? 0.8 : 0.1
-      );
-      
-      linkText.style('opacity', d => 
-        matchingNodes.includes(d.source.id) && matchingNodes.includes(d.target.id) ? 1 : 0.1
-      );
-    });
 
     // Add filter functionality
     document.querySelectorAll('.filter-btn').forEach(btn => {
