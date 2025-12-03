@@ -12,250 +12,179 @@
       background-color: #f5f5f5;
     }
     .blog-link {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-    }
-    .blog-link a {
-        display: inline-block;
-        padding: 10px 15px;
-        color: black;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-    }
-    .blog-link a:hover {
-        color:#dbdf00;
-    }
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .blog-link a {
+            display: inline-block;
+            padding: 10px 15px;
+            
+            color: black;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+          
+        }
+        
+        .blog-link a:hover {
+          color:#dbdf00;
+  
+        }
     .container {
-        max-width: 1200px;
-        margin: 0 auto;
+      max-width: 1200px;
+      margin: 0 auto;
     }
+    
     h1 {
-        color: #333;
-        text-align: center;
+      color: #333;
+      text-align: center;
     }
-    /* --- NEW ISG STYLES --- */
-    #isg-container {
-        margin-bottom: 30px;
-        padding: 20px;
-        background-color: #e0f7fa; /* Light cyan background for the ISG */
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-    #isg-sentence {
-        font-size: 1.2em;
-        margin-bottom: 15px;
-        min-height: 1.5em; /* Reserve space */
-        font-weight: 600;
-        cursor: default;
-    }
-    .isg-part {
-        display: inline-block;
-        margin: 0 5px;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        border: 1px solid transparent; /* Ensure consistent spacing */
-    }
-    .isg-part.active {
-        background-color: #00bcd4; /* Cyan active part */
-        color: white;
-        border-color: #00bcd4;
-    }
-    .isg-part:not(.active):hover {
-        background-color: #cfd8dc; /* Light grey hover */
-    }
-    #isg-options {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-        min-height: 40px; /* Reserve space */
-    }
-    .isg-option-btn {
-        background-color: #fff;
-        border: 1px solid #00bcd4;
-        padding: 8px 15px;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all 0.3s;
-        text-transform: capitalize;
-    }
-    .isg-option-btn:hover {
-        background-color: #00bcd4;
-        color: white;
-    }
-    /* --- END NEW ISG STYLES --- */
+    
     #graph-container {
-        width: 100%;
-        height: 700px;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        position: relative;
+      width: 100%;
+      height: 700px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      position: relative;
     }
+    
     .info-panel {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        background-color: rgba(255, 255, 255, 0.9);
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        max-width: 350px;
-        display: none;
-        z-index: 100;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 350px;
+      display: none;
     }
+    
     .node {
-        cursor: pointer;
-        stroke-width: 2px;
-        transition: r 0.3s, opacity 0.3s; /* Smooth transitions for highlighting */
+      cursor: pointer;
+      stroke-width: 2px;
     }
+    
     .link {
-        stroke: #999;
-        stroke-opacity: 0.6;
-        transition: stroke-width 0.3s, opacity 0.3s;
+      stroke: #999;
+      stroke-opacity: 0.6;
     }
+    
     .link-label {
-        font-size: 10px;
-        fill: #555;
-        transition: opacity 0.3s;
+      font-size: 10px;
+      fill: #555;
     }
+    
     .filters {
-        margin: 20px 0;
-        text-align: center;
+      margin: 20px 0;
+      text-align: center;
     }
+    
     .filter-btn {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        padding: 8px 15px;
-        margin: 0 5px;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all 0.3s;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 8px 15px;
+      margin: 0 5px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
     }
+    
     .filter-btn:hover, .filter-btn.active {
-        background-color: #6c63ff;
-        color: white;
-        border-color: #6c63ff;
+      background-color: #6c63ff;
+      color: white;
+      border-color: #6c63ff;
     }
+    
     .search-container {
-        text-align: center;
-        margin-bottom: 20px;
-        position: relative;
+      text-align: center;
+      margin-bottom: 20px;
     }
+    
     #search-input {
-        padding: 8px 15px;
-        width: 300px;
-        border: 1px solid #ddd;
-        border-radius: 20px;
-        outline: none;
+      padding: 8px 15px;
+      width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      outline: none;
     }
+    
     #search-input:focus {
-        border-color: #6c63ff;
+      border-color: #6c63ff;
     }
-    /* --- NEW SEARCH SUGGESTIONS STYLES --- */
-    #search-suggestions {
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 300px;
-        max-height: 150px;
-        overflow-y: auto;
-        background-color: white;
-        border: 1px solid #ccc;
-        border-top: none;
-        border-radius: 0 0 8px 8px;
-        z-index: 10;
-        text-align: left;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        display: none;
-    }
-    .suggestion-item {
-        padding: 8px 15px;
-        cursor: pointer;
-    }
-    .suggestion-item:hover {
-        background-color: #f0f0f0;
-    }
-    /* --- STICKY NOTES STYLES (existing) --- */
+
+     /* Sticky Notes Styles */
      .sticky-notes {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin-bottom: 20px;
-      }
-      .sticky-note {
-        background-color: #ffeb3b;
-        padding: 15px;
-        border-radius: 5px;
-        box-shadow: 3px 3px 5px rgba(0,0,0,0.1);
-        width: 250px;
-        position: relative;
-        transform: rotate(-1deg);
-        transition: all 0.3s ease;
-      }
-      .sticky-note:hover {
-        transform: rotate(0deg) scale(1.05);
-      }
-      .sticky-note.email {
-        background-color: #64ffda;
-        transform: rotate(1deg);
-      }
-      .sticky-note a {
-        color: #333;
-        text-decoration: none;
-        font-weight: bold;
-      }
-      .sticky-note a:hover {
-        text-decoration: underline;
-      }
-      .close-btn {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        background: none;
-        border: none;
-        color: #555;
-        cursor: pointer;
-        font-size: 18px;
-        padding: 0;
-        width: 20px;
-        height: 20px;
-        line-height: 1;
-      }
-      .close-btn:hover {
-        color: #000;
-      }
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .sticky-note {
+      background-color: #ffeb3b;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 3px 3px 5px rgba(0,0,0,0.1);
+      width: 250px;
+      position: relative;
+      transform: rotate(-1deg);
+      transition: all 0.3s ease;
+    }
+    
+    .sticky-note:hover {
+      transform: rotate(0deg) scale(1.05);
+    }
+    
+    .sticky-note.email {
+      background-color: #64ffda;
+      transform: rotate(1deg);
+    }
+    
+    .sticky-note a {
+      color: #333;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    
+    .sticky-note a:hover {
+      text-decoration: underline;
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: none;
+      border: none;
+      color: #555;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      line-height: 1;
+    }
+    
+    .close-btn:hover {
+      color: #000;
+    }
   </style>
 </head>
-<body>
-<div class="header">
+<body><div class="header">
   <div class="blog-link">
       <a href="https://grad.substack.com" target="_blank">blog</a>
       <a href="https://podcasts.apple.com/us/podcast/co-design-with-mom-users-who-matter-most/id1817758084" target="_blank">podcast</a>
       <a href="mailto:email@daviddot.com" class="link-button">contact</a>
+       
   </div>
 </div>
 <div class="container">
   <h1>David Taylor's Knowledge Graph</h1>
-
-  <div id="isg-container">
-    <h2>✨ Explore David's Story (Interactive Query)</h2>
-    <p>Click on the **bold sentence parts** below to build a query and highlight the relationship in the graph.</p>
-    <div id="isg-sentence">
-      <span class="isg-part active" data-step="start" data-value="n0">David</span>
-      <span class="isg-part" data-step="relation">...</span>
-      <span class="isg-part" data-step="end">...</span>
-    </div>
-    <div id="isg-options">
-      </div>
-  </div>
   <div class="sticky-notes">
     <div class="sticky-note" id="disney-sticky">
       <button class="close-btn">&times;</button>
@@ -275,12 +204,15 @@
       </p>
       <a href="wip.html" >What am I currently working on?</a>
     </div>
-  </div>
-    <div class="search-container">
-      <input type="text" id="search-input" placeholder="Semantic Search (e.g., 'trust', 'microsoft', 'BYU')...">
-      <div id="search-suggestions"></div>
-    </div>
 
+ 
+
+  </div>
+</div>
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Search for nodes...">
+    </div>
+    
     <div class="filters">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="education">Education</button>
@@ -288,7 +220,7 @@
       <button class="filter-btn" data-filter="skills">Skills</button>
       <button class="filter-btn" data-filter="personal">Personal</button>
     </div>
-
+    
     <div id="graph-container">
       <div class="info-panel" id="info-panel">
         <h3 id="node-title">Node Title</h3>
@@ -299,7 +231,13 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script>
-    // --- GRAPH DATA ---
+     // Add sticky note close functionality
+     document.querySelectorAll('.close-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.parentElement.style.display = 'none';
+      });
+    });
+    // Parse the graph data
     const graphData = {
       nodes: [
         {id: "n0", caption: "David", group: "personal", details: "Central person in this knowledge graph."},
@@ -356,24 +294,7 @@
         {id: "n58", caption: "Lawyer", group: "career", details: "David is not a lawyer no matter how many recruiters message him about legal positions."},
         {id: "n59", caption: "Video chats", group: "communication", details: "David replies to video chats."},
         {id: "n60", caption: "Humanist", group: "personal", details: "David is a scholar of the humanities."},
-        {id: "n61", caption: "Creative", group: "personal", details: "David is a creative, not just a trait."},
-        {id: "n62", caption: "Ontology Design", group: "skills", details: "Core skill in semantic modeling and knowledge organization."},
-        {id: "n63", caption: "Semantic Modeling", group: "skills", details: "Core skill for structuring and connecting data meaningfully."},
-        {id: "n64", caption: "Metadata Management", group: "skills", details: "Core skill for organizing and governing data assets."},
-        {id: "n65", caption: "Knowledge Graphs", group: "skills", details: "Core skill for representing interconnected information."},
-        {id: "n66", caption: "Linked Data", group: "skills", details: "Core skill for connecting distributed data sources."},
-        {id: "n67", caption: "Human-Centered Design", group: "skills", details: "Core skill for creating user-focused solutions."},
-        {id: "n68", caption: "Data Governance", group: "skills", details: "Core skill learned at Deloitte for managing data policies."},
-        {id: "n69", caption: "GDPR Compliance", group: "skills", details: "Expertise gained at Deloitte managing privacy workflows."},
-        {id: "n70", caption: "OneTrust", group: "skills", details: "Privacy management platform used at Deloitte."},
-        {id: "n71", caption: "Power BI", group: "skills", details: "Analytics tool researched during Microsoft capstone project."},
-        {id: "n72", caption: "Affinity Mapping", group: "skills", details: "UX research method used at Microsoft capstone."},
-        {id: "n73", caption: "SKOS", group: "skills", details: "Knowledge organization system used for café menu ontology."},
-        {id: "n74", caption: "Multilingual Content", group: "skills", details: "Created safety materials for 200K+ Disney employees globally."},
-        {id: "n75", caption: "Rutgers Guest Lecture", group: "work", details: "Presented on empathy-driven design for non-technical users."},
-        {id: "n76", caption: "WIAD", group: "work", details: "World Information Architecture Association where David presented."},
-        {id: "n77", caption: "Pokemon Semantic Tools", group: "projects", details: "Built semantic ontology and linked data framework for 1,025 Pokémon."},
-        {id: "n78", caption: "Information Management", group: "education", details: "David's M.S. specialization at University of Washington."}
+        {id: "n61", caption: "Creative", group: "personal", details: "David is a creative, not just a trait."}
       ],
       links: [
         {source: "n0", target: "n1", type: "is_a"},
@@ -398,25 +319,25 @@
         {source: "n6", target: "n19", type: "studied"},
         {source: "n6", target: "n20", type: "studied"},
         {source: "n6", target: "n21", type: "studied"},
-        {source: "n7", target: "n22", type: "was_recruited"},
+        {source: "n7", target: "n22", type: "was recruited"},
         {source: "n22", target: "n8", type: "in"},
-        {source: "n22", target: "n20", type: "worked_in"},
-        {source: "n22", target: "n19", type: "worked_in"},
+        {source: "n22", target: "n20", type: "worked in"},
+        {source: "n22", target: "n19", type: "worked in"},
         {source: "n22", target: "n23", type: "learned"},
         {source: "n22", target: "n24", type: "learned"},
         {source: "n22", target: "n25", type: "transferred"},
         {source: "n25", target: "n29", type: "near"},
-        {source: "n25", target: "n30", type: "favorite_airport"},
+        {source: "n25", target: "n30", type: "favorite airport"},
         {source: "n32", target: "n34", type: "in"},
         {source: "n7", target: "n38", type: "capstone"},
         {source: "n10", target: "n32", type: "interned"},
         {source: "n32", target: "n35", type: "learned"},
         {source: "n32", target: "n36", type: "learned"},
-        {source: "n38", target: "n18", type: "worked_in"},
-        {source: "n25", target: "n39", type: "favorite_restaurant"},
-        {source: "n25", target: "n40", type: "favorite_place"},
-        {source: "n40", target: "n41", type: "summer_job"},
-        {source: "n32", target: "n40", type: "free_admission_to"},
+        {source: "n38", target: "n18", type: "worked iin"},
+        {source: "n25", target: "n39", type: "favorite restaurant"},
+        {source: "n25", target: "n40", type: "favorite place"},
+        {source: "n40", target: "n41", type: "summer job"},
+        {source: "n32", target: "n40", type: "free admission to"},
         {source: "n40", target: "n42", type: "learned"},
         {source: "n10", target: "n43", type: "worked"},
         {source: "n43", target: "n44", type: "learned"},
@@ -424,10 +345,10 @@
         {source: "n41", target: "n46", type: "learned"},
         {source: "n3", target: "n47", type: "learned"},
         {source: "n3", target: "n48", type: "learned"},
-        {source: "n0", target: "n49", type: "worked_on"},
+        {source: "n0", target: "n49", type: "worked on"},
         {source: "n49", target: "n6", type: "via"},
         {source: "n49", target: "n50", type: "learned"},
-        {source: "n0", target: "n51", type: "worked_on"},
+        {source: "n0", target: "n51", type: "worked on"},
         {source: "n51", target: "n52", type: "learned"},
         {source: "n51", target: "n53", type: "learned"},
         {source: "n51", target: "n54", type: "learned"},
@@ -436,204 +357,21 @@
         {source: "n51", target: "n56", type: "learned"},
         {source: "n0", target: "n57", type: "is_not_a"},
         {source: "n0", target: "n58", type: "is_not_a"},
-        {source: "n0", target: "n59", type: "replies_to"},
+        {source: "n0", target: "n59", type: "replies to"},
         {source: "n0", target: "n60", type: "is_a"},
-        {source: "n0", target: "n61", type: "is_a"},
-        {source: "n0", target: "n62", type: "has_skill"},
-        {source: "n0", target: "n63", type: "has_skill"},
-        {source: "n0", target: "n64", type: "has_skill"},
-        {source: "n0", target: "n65", type: "has_skill"},
-        {source: "n0", target: "n66", type: "has_skill"},
-        {source: "n0", target: "n67", type: "has_skill"},
-        {source: "n22", target: "n68", type: "learned"},
-        {source: "n22", target: "n69", type: "learned"},
-        {source: "n22", target: "n70", type: "used"},
-        {source: "n38", target: "n71", type: "researched"},
-        {source: "n38", target: "n72", type: "used"},
-        {source: "n49", target: "n73", type: "used"},
-        {source: "n32", target: "n74", type: "created"},
-        {source: "n0", target: "n75", type: "presented_at"},
-        {source: "n0", target: "n76", type: "presented_at"},
-        {source: "n0", target: "n77", type: "built"},
-        {source: "n77", target: "n62", type: "demonstrates"},
-        {source: "n77", target: "n63", type: "demonstrates"},
-        {source: "n77", target: "n66", type: "demonstrates"},
-        {source: "n12", target: "n78", type: "in"},
-        {source: "n69", target: "n19", type: "related_to"}
+        {source: "n0", target: "n61", type: "is_a"}
       ]
     };
-    
+
+    // Group nodes for filtering
     const nodeCategories = {
-      "education": ["n1", "n6", "n7", "n8", "n9", "n10", "n11", "n12", "n13", "n78"],
-      "work": ["n22", "n32", "n38", "n40", "n41", "n43", "n75", "n76"],
-      "skills": ["n14", "n15", "n16", "n17", "n18", "n19", "n20", "n21", "n23", "n24", "n35", "n36", "n42", "n44", "n45", "n46", "n47", "n48", "n50", "n52", "n53", "n54", "n55", "n56", "n62", "n63", "n64", "n65", "n66", "n67", "n68", "n69", "n70", "n71", "n72", "n73", "n74"],
+      "education": ["n1", "n6", "n7", "n8", "n9", "n10", "n11", "n12", "n13"],
+      "work": ["n22", "n32", "n38", "n40", "n41", "n43"],
+      "skills": ["n14", "n15", "n16", "n17", "n18", "n19", "n20", "n21", "n23", "n24", "n35", "n36", "n42", "n44", "n45", "n46", "n47", "n48", "n50", "n52", "n53", "n54", "n55", "n56"],
       "personal": ["n0", "n29", "n39", "n60", "n61"]
     };
 
-    const nodeMap = new Map(graphData.nodes.map(node => [node.id, node]));
-
-    // Add sticky note close functionality
-    document.querySelectorAll('.close-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        this.parentElement.style.display = 'none';
-      });
-    });
-
-    // --- INTERACTIVE SENTENCE GENERATOR (ISG) LOGIC ---
-    let isgState = {
-      startNodeId: 'n0',
-      relationType: null,
-      endNodeId: null,
-      step: 'relation' 
-    };
-
-    const isgSentenceEl = document.getElementById('isg-sentence');
-    const isgOptionsEl = document.getElementById('isg-options');
-
-    function capitalize(s) {
-      if (typeof s !== 'string') return s;
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    }
-    
-    function renderISG() {
-      // 1. Update the Sentence
-      let startCaption = nodeMap.get(isgState.startNodeId)?.caption || '...';
-      let relationDisplay = isgState.relationType ? isgState.relationType.replace(/_/g, ' ') : '...';
-      let endCaption = nodeMap.get(isgState.endNodeId)?.caption || '...';
-
-      // Ensure 'David' is always capitalized and centered
-      if (isgState.startNodeId === 'n0') startCaption = 'David'; 
-
-      isgSentenceEl.innerHTML = `
-        <span class="isg-part ${isgState.step === 'start' ? 'active' : ''}" data-step="start" data-value="${isgState.startNodeId}">${startCaption}</span>
-        <span class="isg-part ${isgState.step === 'relation' ? 'active' : ''}" data-step="relation" data-value="${isgState.relationType || ''}">${relationDisplay}</span>
-        <span class="isg-part ${isgState.step === 'end' ? 'active' : ''}" data-step="end" data-value="${isgState.endNodeId || ''}">${endCaption}</span>
-      `;
-
-      // 2. Generate Options
-      isgOptionsEl.innerHTML = '';
-      let options = [];
-      let stepValue = '';
-
-      if (isgState.step === 'relation') {
-        // Find all outgoing link types from the current startNodeId
-        options = Array.from(new Set(
-          graphData.links
-            .filter(link => link.source === isgState.startNodeId)
-            .map(link => link.type)
-        ));
-        stepValue = 'relation';
-      } else if (isgState.step === 'end' && isgState.relationType) {
-        // Find all target nodes connected by the selected relationType
-        options = graphData.links
-          .filter(link => link.source === isgState.startNodeId && link.type === isgState.relationType)
-          .map(link => nodeMap.get(link.target).caption);
-        stepValue = 'end';
-      } else if (isgState.step === 'complete') {
-        // Clear options when complete
-        options = [];
-      }
-      
-      // Limit and sort options
-      options = options.sort().slice(0, 15); 
-
-      // 3. Render Options
-      if (options.length > 0) {
-        options.forEach(option => {
-          const btn = document.createElement('button');
-          btn.className = 'isg-option-btn';
-          // Clean up relation type for display, but keep original value for logic
-          let displayText = option;
-          if (stepValue === 'relation') {
-              displayText = option.replace(/_/g, ' ');
-          }
-          btn.textContent = capitalize(displayText);
-          btn.onclick = () => handleISGOptionClick(option, stepValue);
-          isgOptionsEl.appendChild(btn);
-        });
-      } else if (isgState.step === 'complete') {
-         isgOptionsEl.innerHTML = '<p style="color: green;">Sentence complete! Check the graph below for the highlighted relationship. Click any sentence part to reset.</p>';
-      }
-      
-
-      // 4. Add listeners for sentence parts to reset/modify
-      isgSentenceEl.querySelectorAll('.isg-part').forEach(part => {
-          part.onclick = function() {
-              const step = this.getAttribute('data-step');
-              if (step === 'start') {
-                  // Only reset to David is supported for simplicity
-                  isgState = { startNodeId: 'n0', relationType: null, endNodeId: null, step: 'relation' };
-                  performSearch(''); // Reset graph view
-              } else if (step === 'relation' && isgState.startNodeId) {
-                  isgState.relationType = null;
-                  isgState.endNodeId = null;
-                  isgState.step = 'relation';
-                  performSearch(''); // Reset graph view
-              } else if (step === 'end' && isgState.relationType) {
-                  isgState.endNodeId = null;
-                  isgState.step = 'end';
-              }
-              renderISG();
-          };
-      });
-    }
-
-    function handleISGOptionClick(value, stepValue) {
-      if (stepValue === 'relation') {
-        isgState.relationType = value;
-        isgState.step = 'end';
-      } else if (stepValue === 'end') {
-        // Find the ID of the node with this caption
-        const endNode = graphData.nodes.find(n => n.caption === value);
-        if (endNode) {
-          isgState.endNodeId = endNode.id;
-        }
-        isgState.step = 'complete';
-        
-        // **Semantic Search Action:** Highlight nodes in the graph based on the complete sentence
-        highlightISGResult(isgState.startNodeId, isgState.endNodeId, isgState.relationType);
-
-      }
-      renderISG();
-    }
-
-    function highlightISGResult(sourceId, targetId, relation) {
-        // Reset all sizes
-        node.attr('r', d => {
-          if (d.id === 'n0') return 25;
-          if (['n7', 'n10', 'n22', 'n32', 'n38', 'n40', 'n43'].includes(d.id)) return 20;
-          if (['n6', 'n9'].includes(d.id)) return 18;
-          return 12;
-        });
-        link.attr('stroke-width', 2);
-
-        // Dim everything
-        node.style('opacity', 0.1);
-        nodeText.style('opacity', 0.1);
-        link.style('opacity', 0.05);
-        linkText.style('opacity', 0.05);
-
-
-        // Highlight source and target
-        node.filter(d => d.id === sourceId || d.id === targetId).style('opacity', 1).attr('r', 30);
-        nodeText.filter(d => d.id === sourceId || d.id === targetId).style('opacity', 1);
-
-        // Highlight the specific link(s)
-        link.filter(d => 
-            (d.source.id === sourceId && d.target.id === targetId && d.type === relation)
-        ).style('opacity', 1).attr('stroke-width', 4).attr('stroke', '#00bcd4');
-
-        linkText.filter(d => 
-            (d.source.id === sourceId && d.target.id === targetId && d.type === relation)
-        ).style('opacity', 1).attr('fill', '#00bcd4');
-    }
-    
-    // Initial call to render the ISG
-    renderISG();
-    // --- END ISG LOGIC ---
-
-
-    // --- D3 GRAPH RENDERING ---
+    // Create a force-directed graph
     const width = document.getElementById('graph-container').clientWidth;
     const height = document.getElementById('graph-container').clientHeight;
 
@@ -642,39 +380,28 @@
       .attr('width', width)
       .attr('height', height);
 
-    svg.append('defs').append('marker')
-      .attr('id', 'arrowhead')
-      .attr('viewBox', '-0 -5 10 10')
-      .attr('refX', 20)
-      .attr('refY', 0)
-      .attr('orient', 'auto')
-      .attr('markerWidth', 8)
-      .attr('markerHeight', 8)
-      .attr('xoverflow', 'visible')
-      .append('svg:path')
-      .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-      .attr('fill', '#999')
-      .style('stroke', 'none');
-
+    // Define node colors based on groups
     const colorScale = d3.scaleOrdinal()
       .domain(['personal', 'education', 'work', 'skills', 'projects', 'career', 'communication', 'location'])
       .range(['#ffffff', '#dbdf00', '#aea1ff', '#fcdc00', '#68ccca', '#f44e3b', '#68ccca', '#4a90e2']);
 
+    // Create a simulation for positioning nodes
     const simulation = d3.forceSimulation()
       .force('link', d3.forceLink().id(d => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-200))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide().radius(50));
 
+    // Create links
     const link = svg.append('g')
       .selectAll('line')
       .data(graphData.links)
       .enter()
       .append('line')
       .attr('class', 'link')
-      .attr('stroke-width', 2)
-      .attr('marker-end', 'url(#arrowhead)');
+      .attr('stroke-width', 2);
 
+    // Add relationship labels
     const linkText = svg.append('g')
       .selectAll('text')
       .data(graphData.links)
@@ -685,6 +412,7 @@
       .attr('text-anchor', 'middle')
       .text(d => d.type);
 
+    // Create nodes
     const node = svg.append('g')
       .selectAll('circle')
       .data(graphData.nodes)
@@ -692,10 +420,11 @@
       .append('circle')
       .attr('class', 'node')
       .attr('r', d => {
-        if (d.id === 'n0') return 25;
-        if (['n7', 'n10', 'n22', 'n32', 'n38', 'n40', 'n43'].includes(d.id)) return 20;
-        if (['n6', 'n9'].includes(d.id)) return 18;
-        return 12;
+        // Give different sizes based on importance
+        if (d.id === 'n0') return 25; // David is the largest
+        if (['n7', 'n10', 'n22', 'n32', 'n38', 'n40', 'n43'].includes(d.id)) return 20; // Main institutions
+        if (['n6', 'n9'].includes(d.id)) return 18; // Schools
+        return 12; // Default size
       })
       .attr('fill', d => colorScale(d.group))
       .attr('stroke', '#000')
@@ -704,6 +433,7 @@
         .on('drag', dragged)
         .on('end', dragended));
 
+    // Add node labels
     const nodeText = svg.append('g')
       .selectAll('text')
       .data(graphData.nodes)
@@ -714,6 +444,7 @@
       .attr('dx', 15)
       .attr('dy', 4);
 
+    // Add info panel functionality
     node.on('click', function(event, d) {
       const panel = document.getElementById('info-panel');
       document.getElementById('node-title').textContent = d.caption;
@@ -721,6 +452,7 @@
       panel.style.display = 'block';
     });
 
+    // Add simulation tick function
     simulation.nodes(graphData.nodes).on('tick', ticked);
     simulation.force('link').links(graphData.links);
 
@@ -761,100 +493,41 @@
       event.subject.fy = null;
     }
 
-    // --- ENHANCED SEARCH FUNCTIONALITY ---
-    const searchInput = document.getElementById('search-input');
-    const searchSuggestions = document.getElementById('search-suggestions');
-    const allSearchableTerms = graphData.nodes.map(n => n.caption.toLowerCase());
-
-    searchInput.addEventListener('input', function(e) {
+    // Add search functionality
+    document.getElementById('search-input').addEventListener('input', function(e) {
       const searchTerm = e.target.value.toLowerCase();
       
-      if (searchTerm.length > 1) {
-          // Update suggestions
-          const suggestions = allSearchableTerms.filter(term => term.includes(searchTerm)).slice(0, 5);
-          searchSuggestions.innerHTML = '';
-          if (suggestions.length > 0) {
-              suggestions.forEach(suggestion => {
-                  const div = document.createElement('div');
-                  div.className = 'suggestion-item';
-                  div.textContent = suggestion;
-                  div.onclick = () => {
-                      searchInput.value = suggestion;
-                      searchSuggestions.style.display = 'none';
-                      performSearch(suggestion);
-                  };
-                  searchSuggestions.appendChild(div);
-              });
-              searchSuggestions.style.display = 'block';
-          } else {
-              searchSuggestions.style.display = 'none';
-          }
-      } else {
-          searchSuggestions.style.display = 'none';
-      }
-      
-      performSearch(searchTerm);
-    });
-
-    function performSearch(searchTerm) {
-      // Reset ISG state when searching
-      isgState = { startNodeId: 'n0', relationType: null, endNodeId: null, step: 'relation' };
-      renderISG();
-
       if (searchTerm === '') {
         // Show all nodes if search is empty
-        node.style('opacity', 1).attr('r', d => {
-          if (d.id === 'n0') return 25;
-          if (['n7', 'n10', 'n22', 'n32', 'n38', 'n40', 'n43'].includes(d.id)) return 20;
-          if (['n6', 'n9'].includes(d.id)) return 18;
-          return 12;
-        });
-        link.style('opacity', 0.6).attr('stroke-width', 2).attr('stroke', '#999');
+        node.style('opacity', 1);
+        link.style('opacity', 0.6);
         nodeText.style('opacity', 1);
-        linkText.style('opacity', 1).attr('fill', '#555');
+        linkText.style('opacity', 1);
         return;
       }
       
-      // Find matching nodes based on caption OR details
+      // Find matching nodes
       const matchingNodes = graphData.nodes.filter(n => 
         n.caption.toLowerCase().includes(searchTerm) || 
         (n.details && n.details.toLowerCase().includes(searchTerm))
       ).map(n => n.id);
       
-      // Highlight matching nodes and connections
-      node.style('opacity', d => matchingNodes.includes(d.id) ? 1 : 0.2)
-          .attr('r', d => matchingNodes.includes(d.id) ? 25 : 12); // Enlarge matched nodes
+      // Highlight matching nodes and their connections
+      node.style('opacity', d => matchingNodes.includes(d.id) ? 1 : 0.2);
       nodeText.style('opacity', d => matchingNodes.includes(d.id) ? 1 : 0.2);
       
-      // Highlight links connected to or between matching nodes
       link.style('opacity', d => 
-        (matchingNodes.includes(d.source.id) || matchingNodes.includes(d.target.id)) ? 0.8 : 0.1
-      ).attr('stroke-width', d => 
-        (matchingNodes.includes(d.source.id) || matchingNodes.includes(d.target.id)) ? 3 : 2
-      ).attr('stroke', d => 
-        (matchingNodes.includes(d.source.id) || matchingNodes.includes(d.target.id)) ? '#6c63ff' : '#999' // Highlighted link color
+        matchingNodes.includes(d.source.id) && matchingNodes.includes(d.target.id) ? 0.8 : 0.1
       );
       
       linkText.style('opacity', d => 
-        (matchingNodes.includes(d.source.id) || matchingNodes.includes(d.target.id)) ? 1 : 0.1
-      ).attr('fill', d => 
-        (matchingNodes.includes(d.source.id) || matchingNodes.includes(d.target.id)) ? '#6c63ff' : '#555'
+        matchingNodes.includes(d.source.id) && matchingNodes.includes(d.target.id) ? 1 : 0.1
       );
-    }
-    // --- END ENHANCED SEARCH FUNCTIONALITY ---
+    });
 
-    // Add filter functionality 
+    // Add filter functionality
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', function() {
-        // Clear search input and suggestions
-        searchInput.value = '';
-        searchSuggestions.style.display = 'none';
-        
-        // Reset ISG state
-        isgState = { startNodeId: 'n0', relationType: null, endNodeId: null, step: 'relation' };
-        renderISG();
-
-
         // Update active button styling
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
@@ -862,7 +535,11 @@
         const filter = this.getAttribute('data-filter');
         
         if (filter === 'all') {
-          performSearch(''); // Reset to show all
+          // Show everything
+          node.style('opacity', 1);
+          link.style('opacity', 0.6);
+          nodeText.style('opacity', 1);
+          linkText.style('opacity', 1);
           return;
         }
         
@@ -870,8 +547,7 @@
         const relevantNodes = nodeCategories[filter] || [];
         
         // Highlight matching nodes and their connections
-        node.style('opacity', d => relevantNodes.includes(d.id) ? 1 : 0.2)
-            .attr('r', d => relevantNodes.includes(d.id) ? 20 : 12);
+        node.style('opacity', d => relevantNodes.includes(d.id) ? 1 : 0.2);
         nodeText.style('opacity', d => relevantNodes.includes(d.id) ? 1 : 0.2);
         
         link.style('opacity', d => 
@@ -886,8 +562,7 @@
 
     // Close info panel when clicking elsewhere
     document.getElementById('graph-container').addEventListener('click', function(e) {
-      // Check if click target is not a node circle
-      if (e.target.tagName !== 'circle' && e.target.tagName !== 'text') {
+      if (e.target.tagName !== 'circle') {
         document.getElementById('info-panel').style.display = 'none';
       }
     });
