@@ -1,10 +1,13 @@
 <script>
-const folder = "svgs/"; // folder relative to this HTML file
+const folder = "svgs/"; 
 const gallery = document.getElementById("gallery");
 
-// Load list.json that contains all SVG filenames
+// Load list.json
 fetch(folder + "list.json")
-  .then(res => res.json())
+  .then(res => {
+    if (!res.ok) throw new Error("list.json not found");
+    return res.json();
+  })
   .then(list => {
     // Sort alphabetically
     list.sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
@@ -17,6 +20,13 @@ fetch(folder + "list.json")
       img.src = folder + name;
       img.alt = name;
 
+      // Handle missing images gracefully
+      img.onerror = () => {
+        img.src = ""; // or a placeholder image if you want
+        card.style.display = "none"; // hide the card if the SVG is missing
+        console.warn(`Missing SVG: ${name}`);
+      };
+
       const label = document.createElement("div");
       label.className = "name";
       label.textContent = name;
@@ -27,7 +37,7 @@ fetch(folder + "list.json")
     });
   })
   .catch(err => {
-    console.error("Could not load SVG list:", err);
-    gallery.textContent = "Failed to load SVGs.";
+    console.warn("Could not load SVG list:", err);
+    gallery.textContent = "SVG gallery will load once list.json is available.";
   });
 </script>
