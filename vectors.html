@@ -1,46 +1,51 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>SVG Gallery2</title>
+<meta charset="UTF-8">
+<title>SVG Gallery</title>
 <style>
-  body { font-family:sans-serif; padding:20px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px; }
-  .card { padding:10px; border:1px solid #ddd; border-radius:8px; text-align:center; }
-  .card img { width:100%; height:120px; object-fit:contain; }
-  .name { font-size:12px; margin-top:6px; color:#444; }
+  body { font-family: sans-serif; padding: 20px; }
+  h1 { text-align: center; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+  .card { border: 1px solid #ddd; border-radius: 8px; padding: 10px; text-align: center; }
+  .card img { width: 100%; height: 120px; object-fit: contain; }
+  .name { font-size: 12px; margin-top: 6px; color: #444; word-break: break-word; }
 </style>
 </head>
 <body>
 
-<h1>SVG Gallery3</h1>
+<h1>SVG Gallery</h1>
 <div id="gallery" class="grid"></div>
 
 <script>
-const folder = "svgs/";
+const folder = "svgs/"; // folder relative to this HTML file
+const gallery = document.getElementById("gallery");
 
-async function loadSVGs() {
-  const res = await fetch(folder + "list.json");
-  const list = await res.json();
+// Load list.json that contains all SVG filenames
+fetch(folder + "list.json")
+  .then(res => res.json())
+  .then(list => {
+    list.forEach(name => {
+      const card = document.createElement("div");
+      card.className = "card";
 
-  list.forEach(name => {
-    const card = document.createElement("div");
-    card.className = "card";
+      const img = document.createElement("img");
+      img.src = folder + name;
+      img.alt = name;
 
-    const img = document.createElement("img");
-    img.src = folder + name;
+      const label = document.createElement("div");
+      label.className = "name";
+      label.textContent = name;
 
-    const label = document.createElement("div");
-    label.className = "name";
-    label.textContent = name;
-
-    card.appendChild(img);
-    card.appendChild(label);
-    document.getElementById("gallery").appendChild(card);
+      card.appendChild(img);
+      card.appendChild(label);
+      gallery.appendChild(card);
+    });
+  })
+  .catch(err => {
+    console.error("Could not load SVG list:", err);
+    gallery.textContent = "Failed to load SVGs.";
   });
-}
-
-loadSVGs();
 </script>
 
 </body>
