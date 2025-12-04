@@ -11,8 +11,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Generate list.json
         run: |
+          mkdir -p svgs
           cd svgs
           ls *.svg | jq -R -s -c 'split("\n")[:-1]' > list.json
           cd ..
