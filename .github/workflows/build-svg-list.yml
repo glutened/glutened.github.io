@@ -21,10 +21,10 @@ jobs:
           ls *.svg | jq -R -s -c 'split("\n")[:-1]' > list.json
           cd ..
 
-      - name: Commit list.json
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add svgs/list.json
-          git commit -m "Update list.json" || echo "No changes"
-          git push https://glutened:${{ secrets.PAT }}@github.com/glutened/glutened.github.io.git
+  - name: Commit list.json
+  run: |
+    git config user.name "github-actions"
+    git config user.email "github-actions@github.com"
+    git add svgs/list.json
+    git commit -m "Update list.json" || echo "No changes"
+    git push https://glutened:${{ secrets.PAT }}@github.com/glutened/glutened.github.io.git
