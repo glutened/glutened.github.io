@@ -182,20 +182,21 @@
       border-color: #6c63ff;
     }
     
-    /* Sticky Notes Styles */
-     .sticky-notes {
+   /* Sticky Notes Styles */
+    .sticky-notes {
       display: flex;
       justify-content: center;
       gap: 20px;
       margin-bottom: 180px;
+      flex-wrap: wrap;
     }
     
     .sticky-note {
       background-color: #ffeb3b;
-      padding: 15px;
+      padding: 20px;
       border-radius: 5px;
       box-shadow: 3px 3px 5px rgba(0,0,0,0.1);
-      width: 250px;
+      width: 280px;
       position: relative;
       transform: rotate(-1deg);
       transition: all 0.3s ease;
@@ -203,6 +204,10 @@
     
     .sticky-note:hover {
       transform: rotate(0deg) scale(1.05);
+    }
+    
+    .sticky-note:nth-child(2) {
+      transform: rotate(1deg);
     }
     
     .sticky-note.email {
@@ -238,6 +243,76 @@
     .close-btn:hover {
       color: #000;
     }
+
+    /* Enhanced formatting */
+    .sticky-note .main-link {
+      font-size: 17px;
+      font-weight: 600;
+      color: #2d3436;
+      margin-bottom: 12px;
+      line-height: 1.4;
+      display: block;
+    }
+
+    .sticky-note p {
+      margin: 12px 0;
+      line-height: 1.5;
+      color: #2d3436;
+      font-size: 14px;
+    }
+
+    .sticky-note .greeting {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d3436;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .sticky-note .links-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .sticky-note .link-item {
+      background: rgba(255, 255, 255, 0.4);
+      padding: 12px 14px;
+      border-radius: 4px;
+      text-decoration: none;
+      color: #2d3436;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+      display: block;
+      font-size: 14px;
+    }
+
+    .sticky-note .link-item:hover {
+      background: rgba(255, 255, 255, 0.7);
+      border-left-color: #00897b;
+      transform: translateX(3px);
+      text-decoration: none;
+    }
+
+    .sticky-note.email .link-item:hover {
+      border-left-color: #00897b;
+    }
+
+    .sticky-note .link-item::before {
+      content: '→ ';
+      margin-right: 6px;
+      font-weight: bold;
+      color: #00897b;
+    }
+
+    @media (max-width: 900px) {
+      .sticky-notes {
+        flex-direction: column;
+        align-items: center;
+      }
+    
   </style>
 </head>
 <body><div class="header">
@@ -250,30 +325,40 @@
 </div>
 <div class="container">
   <h1>David Taylor's Knowledge Graph</h1>
-  <div class="sticky-notes">
+ <div class="sticky-notes">
     <div class="sticky-note" id="disney-sticky">
-      <button class="close-btn">&times;</button>
-      <a href="https://vimeo.com/1139636394" target="_blank">Winter Update: World Information Architecture Association Lecture</a>
-      <p>Presented “Designing for My Mom,” a talk on empathy-driven human-centered
-design using personal usability testing with non-technical users.</p>
+      <button class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
+      <p class="greeting">
+        <strong>Winter Update: World Information Architecture Association Lecture</strong>
+      </p>
+      <p>Presented "Designing for My Mom," a talk on empathy-driven human-centered design using personal usability testing with non-technical users.</p>
+      <div class="links-section">
+        <a href="https://vimeo.com/1139636394" target="_blank" class="link-item">Watch the lecture on Vimeo</a>
+      </div>
     </div>
+
     <div class="sticky-note" id="pokemon-sticky">
-      <button class="close-btn">&times;</button>
-      <a href="taxonomy.html" target="_blank">Pokemon Taxonomy Tool</a>
-      <p>Explore Pokemon classifications where everything rendered is a clickable filter.</p>
+      <button class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
+      <p class="greeting">
+        <strong>Pokémon Taxonomy Tool</strong>
+      </p>
+      <p>Explore Pokémon classifications where everything rendered is a clickable filter.</p>
+      <div class="links-section">
+        <a href="taxonomy.html" target="_blank" class="link-item">Explore the taxonomy tool</a>
+        <a href="poke.html" class="link-item">International Pokémon quiz</a>
+      </div>
     </div>
 
     <div class="sticky-note email" id="email-sticky">
-      <button class="close-btn">&times;</button>
-      <p>
-        <strong>Glad we met at Information Architecture Conference 2025.</strong><br>
+      <button class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
+      <p class="greeting">
+        <strong>Glad we met at Information Architecture Conference 2025!</strong>
       </p>
-       <a href="fhe.html" >Discover your favorite group activities through this interactive Street Fighter-esq survey</a>
-       <a href="poke.html" >International Pokemon quiz</a>
-      <a href="wip.html" >Future projects</a>
-    </div>
-
-  </div>
+      <div class="links-section">
+        <a href="fhe.html" class="link-item">Discover your favorite group activities through this interactive Street Fighter-esque survey</a>
+        <a href="wip.html" class="link-item">Future projects</a>
+      </div>
+    </div>  </div>
 
 <div class="search-container">
     <input 
