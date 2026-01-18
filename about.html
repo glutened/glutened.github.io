@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About - David Taylor</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    mark {  border-radius: 2px; padding: 0 2px; }
+    /* YOUR EXACT HEADER STYLES */
+    .header {
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+    }
+
+    .header h1 a {
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .header-links a {
+      margin-left: 20px;
+      color: #333;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    
+    .header-links a:hover {
+      color: #6c63ff;
+    }
+
+    /* BODY READABILITY STYLES */
+    .bio-container {
+      max-width: 800px; /* Constrained for reading comfort */
+      margin: 60px auto;
+      padding: 0 25px;
+    }
+    
+    .process-step {
+      background: white;
+      padding: 50px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 40px;
+      line-height: 1.8;
+    }
+
+    .bio-intro {
+      font-size: 1.25rem;
+      color: #1a1a1a;
+      margin-bottom: 25px;
+    }
+
+    .bio-details {
+      font-size: 1.05rem;
+      color: #4a4a4a;
+    }
+
+    .bio-details p {
+      margin-bottom: 20px;
+    }
+
+    .highlights-box {
+      background: #f9f9ff;
+      border-left: 4px solid #6c63ff;
+      padding: 20px;
+      margin: 30px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .cta-section {
+      background: white;
+      padding: 50px 40px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .cta-section h2 {
+      margin-top: 0;
+      font-size: 2rem;
+      color: #333;
+    }
+
+    .cta-section p {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    
+    .cta-btn {
+      display: inline-block;
+      padding: 15px 40px;
+      background: #6c63ff;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(108, 99, 255, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .header-content {
+        padding: 0 10px;
+      }
+      .process-step {
+        padding: 30px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-content">
+      <h1><a href="index.html">DAVID TAYLOR</a></h1>
+      <div class="header-links">
+        <a href="https://grad.substack.com" target="_blank">blog</a>
+        <a href="https://podcasts.apple.com/us/podcast/co-design-with-mom-users-who-matter-most/id1817758084" target="_blank">podcast</a>
+        <a href="about.html">about</a>
+        <a href="mailto:email@daviddot.com">contact</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="bio-container">
+    <div class="process-section">
+        <div class="process-step">
+            <p class="bio-intro">
+              <strong>David Taylor</strong> is a <mark>reluctant technologist</mark> and human-centered designer who makes data fun, content clear, and experiences delightful. 
+            </p>
+          
+            <div class="bio-details">
+              <p>
+                His approach is rooted in curiosity, failure, and humor. He blends <mark>information architecture</mark>, UX research, and a dash of coding to turn messy data into usable, playful experiences.
+              </p>
+              
+              <p>
+                A graduate of Brigham Young University's Advertising Lab and the University of Washington’s iSchool, David has spent a decade in <mark>newspaper publishing</mark>, corporate communications, and <mark>privacy consulting</mark>. He’s skilled in journey mapping, card sorting, <mark>taxonomies</mark>, user interviews, and survey design.
+              </p>
+          
+              <div class="highlights-box">
+                <strong>Interests:</strong> product policy, service design, ux writing, privacy, and child safety
+              </div>
+          
+              <p>
+                David loves <mark>writing</mark>, field research, and his mother. He does not love sudden noises, snow, or finance.
+              </p>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <h2>Let's build something together</h2>
+      <p>I’m always open to discussing information architecture, AI strategy, or Pokémon lore.</p>
+      <div class="cta-buttons">
+        <a href="mailto:email@daviddot.com" class="cta-btn">Contact Me</a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
