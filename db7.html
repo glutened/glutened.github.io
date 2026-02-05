@@ -37,7 +37,7 @@
     button, .filter-chip {
       display: inline-block;
       padding: 0 1px;
-      margin: 0 1px 2px 0;
+      margin: 0 3px 3px 0;
       border: 1px solid #000;
       background: white;
       color: black;
@@ -169,6 +169,9 @@
         height: auto;
         max-width: 56px;
         margin: 0 auto;
+        image-rendering: pixelated;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: crisp-edges;
     }
     
     .grid-view .pokemon-card h3,
@@ -186,7 +189,8 @@
     }
     .grid-view .pokemon-card.expanded h3,
 .grid-view .pokemon-card.expanded .card-details,
-.grid-view .pokemon-card.expanded .pokemon-abilities {
+.grid-view .pokemon-card.expanded .pokemon-abilities,
+.grid-view .pokemon-card.expanded .pokemon-classifications {
     display: block;
 }
 
@@ -206,6 +210,9 @@
         float: left;
         margin-right: 10px;
         max-width: 96px;
+        image-rendering: pixelated;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: crisp-edges;
     }
     
     .clear-button, .toggle-stats {
@@ -632,26 +639,36 @@
         </div>
   
         <div class="filter-group variant-filter-group" onclick="toggleFilterSection('variantExcludeFilters')">
-          <h3 class="collapsible-header">Hide Forms: [+]</h3>
+          <h3 class="collapsible-header">Include Forms: [+]</h3>
           <div class="filter-options" id="variantExcludeFilters"></div>
         </div>
 
         <div class="filter-group" id="movesFilterGroup" style="display:none;" onclick="toggleFilterSection('moveMethodFilters')">
-          <h3>Move Method Filters: [+]</h3>
+          <h3>Include Moves: [+]</h3>
           <div class="filter-options" id="moveMethodFilters">
-            <button id="toggle-EggButton" onclick="event.stopPropagation(); toggleLearnMethod('Egg')" class="selected">Egg</button>
+            <button id="toggle-EggButton" onclick="event.stopPropagation(); toggleLearnMethod('Egg')">Egg</button>
             <button id="toggle-TMButton" onclick="event.stopPropagation(); toggleLearnMethod('TM')">TM</button>
             <button id="toggle-TutorButton" onclick="event.stopPropagation(); toggleLearnMethod('Tutor')">Tu</button>
-            <button id="toggle-VCButton" onclick="event.stopPropagation(); toggleLearnMethod('VC')">VC</button>
+            <button id="toggle-EventButton" onclick="event.stopPropagation(); toggleLearnMethod('Event')">Event</button>
           </div>
         </div>
 
         <div class="filter-group" id="classificationsFilterGroup" style="display:none;" onclick="toggleFilterSection('classificationTagFilters')">
-          <h3>Classifications (OR): [+]</h3>
+          <h3>Classifications (<span id="classLogicLabel">AND</span>): [+] <button id="classLogicToggle" onclick="toggleClassificationLogic(event);" style="font-size:9px; margin-left:4px;">↔ OR</button></h3>
           <div class="filter-options" id="classificationTagFilters"></div>
         </div>
       
       </div>
+    </div>
+
+    <div id="statsPanel" style="display:none; margin-bottom:10px; padding:10px; border:1px solid #000;" onclick="toggleStatsPanel()">
+      <h3 style="margin:0 0 8px 0; cursor:pointer;"><span id="statsPanelTitle">Results Summary</span> (<span id="statsPanelCount">0</span> Pokémon): [+]
+        <button onclick="event.stopPropagation(); adjustStatsTopN(-3)" style="font-size:11px; margin-left:6px; padding:2px 6px;">−</button>
+        <span id="statsTopNDisplay" style="font-size:10px; margin:0 4px;">6</span>
+        <button onclick="event.stopPropagation(); adjustStatsTopN(3)" style="font-size:11px; padding:2px 6px;">+</button>
+        <button id="statsSortToggle" onclick="event.stopPropagation(); toggleStatsSort()" style="font-size:11px; margin-left:6px; padding:2px 6px;">↓</button>
+      </h3>
+      <div id="statsContent" style="font-size:10px;"></div>
     </div>
 
     <div class="controls">
@@ -663,6 +680,7 @@
         <button data-sort="shape" onclick="handleSort('shape')">Shape</button>
         <button data-sort="height" onclick="handleSort('height')">Size</button>
         <button id="moveLevelSortButton" data-sort="movelevel" onclick="handleSort('movelevel')" style="display:none;">Move Level</button>
+        <button id="loreAlphaSortButton" onclick="toggleLoreAlphaSort()" style="display:none;">Lore A-Z</button>
     </div>
 
   <div class="pokemon-container" id="pokemonContainer">
@@ -681,6 +699,13 @@ let classificationsLoaded = false;
 let classificationsData = {}; // keyed by species_id -> { phrases, phraseStates }
 let allClassificationTags = []; // sorted unique tag list
 let activeClassificationFilters = []; // currently selected tags
+let classificationsAndMode = true;   // true=AND (must have ALL selected tags across any phrases), false=OR
+let pokemonLoreExpanded = {};         // pokemonKey -> bool, whether lore section is open
+let pokemonLoreAllExpanded = {};      // pokemonKey -> bool, whether ALL phrases are shown (vs only filtered)
+let statsTopN = 6;                    // how many top results to show in stats panel
+let statsShowRarest = false;          // when true, show rarest instead of most common
+let statsPanelExpanded = false;       // whether stats content is visible
+let loreSortAlpha = false;            // true = tags sorted A-Z, false = sorted by frequency
 
 const pokemonGenerations = {
   1: { start: 1, end: 151.999, region: "Kanto" },
@@ -694,6 +719,7 @@ const pokemonGenerations = {
   10: { start: 899, end: 905.999, region: "Hisui" },
   9: { start: 906, end: 1010.999, region: "Paldea" },
   10.1: { start: 1011, end: 1019.999, region: "Kitakami" },
+  10.3: { start: 1025, end: 1025, region: "Kitakami" },
   9.1: { start: 1020, end: 1025.099, region: "Paldea" },
   10.2: { start: 1025.1, end: 9999, region: "Kitakami" }
 };
@@ -1036,10 +1062,18 @@ function getGroupingKey(name) {
   let expandedCards = new Set();
   
   // Moveset global variables - add egg move filter
-  let showEggMoves = true;
+  let showEggMoves = false;
   let showTMMoves = false;
   let showTutorMoves = false;
-  let showVCMoves = false;
+  let showEventMoves = false;  // V = VC, S = Special, D = Dream World
+
+  // Variant include toggles (default: all OFF = hide these forms, select to include)
+  let includeMinor = false;
+  let includeItem = false;
+  let includeGmax = false;
+  let includeMega = false;
+  let includeBattle = false;
+  let includeNatural = false;
   
   function clearSecondaryFilter() {
       secondaryFilter.type = null;
@@ -1293,8 +1327,9 @@ function getTypesHTML(types) {
           'M': 'TM',
           'T': 'Tu',
           'E': 'Egg',
-          'S': 'Sp',
-          'V': 'VC'
+          'V': 'Event',
+          'S': 'Event',
+          'D': 'Event'
       };
   
       return methodMap[method[0]] || method;
@@ -1308,9 +1343,7 @@ function getTypesHTML(types) {
       const parts = [];
   
       moveEntries.forEach(([move, methods]) => {
-          const displayName = move.split('-')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ');
+          const displayName = formatMoveName(move);
   
           const learnMethod = methods[0];
           const methodType = learnMethod[0];
@@ -1320,7 +1353,7 @@ function getTypesHTML(types) {
           if (methodType === 'E' && !showEggMoves) shouldHide = true;
           else if (methodType === 'M' && !showTMMoves) shouldHide = true;
           else if (methodType === 'T' && !showTutorMoves) shouldHide = true;
-          else if (methodType === 'V' && !showVCMoves) shouldHide = true;
+          else if ((methodType === 'V' || methodType === 'S' || methodType === 'D') && !showEventMoves) shouldHide = true;
   
           const isFiltered = activeFilters.moves.includes(move);
           
@@ -1342,6 +1375,208 @@ function getTypesHTML(types) {
   function togglePokemonMoves(pokemonKey) {
       pokemonMovesExpanded[pokemonKey] = !pokemonMovesExpanded[pokemonKey];
       renderPokemonList();
+  }
+
+  function togglePokemonLore(pokemonKey) {
+      pokemonLoreExpanded[pokemonKey] = !pokemonLoreExpanded[pokemonKey];
+      // Closing the master toggle also resets "show all phrases"
+      if (!pokemonLoreExpanded[pokemonKey]) {
+          pokemonLoreAllExpanded[pokemonKey] = false;
+      }
+      renderPokemonList();
+  }
+
+  function togglePokemonLoreAll(pokemonKey) {
+      pokemonLoreAllExpanded[pokemonKey] = !pokemonLoreAllExpanded[pokemonKey];
+      renderPokemonList();
+  }
+
+  function toggleClassificationLogic(e) {
+      if (e) e.stopPropagation();
+      classificationsAndMode = !classificationsAndMode;
+      document.getElementById('classLogicLabel').textContent = classificationsAndMode ? 'AND' : 'OR';
+      document.getElementById('classLogicToggle').textContent = classificationsAndMode ? '↔ OR' : '↔ AND';
+      renderPokemonList();
+      updateActiveFilters();
+  }
+
+  function toggleLoreAlphaSort() {
+      loreSortAlpha = !loreSortAlpha;
+      const btn = document.getElementById('loreAlphaSortButton');
+      if (btn) {
+          btn.style.fontWeight = loreSortAlpha ? 'bold' : 'normal';
+          btn.style.color   = loreSortAlpha ? 'green' : '';
+      }
+      renderPokemonList();
+  }
+
+  function adjustStatsTopN(delta) {
+      statsTopN = Math.max(3, statsTopN + delta);
+      const display = document.getElementById('statsTopNDisplay');
+      if (display) display.textContent = statsTopN;
+      renderStatsPanel(window._lastPokemonToDisplay || []);
+  }
+
+  function toggleStatsSort() {
+      statsShowRarest = !statsShowRarest;
+      const btn = document.getElementById('statsSortToggle');
+      if (btn) btn.textContent = statsShowRarest ? '↑' : '↓';
+      renderStatsPanel(window._lastPokemonToDisplay || []);
+  }
+
+  function toggleStatsPanel() {
+      statsPanelExpanded = !statsPanelExpanded;
+      const content = document.getElementById('statsContent');
+      const panel = document.getElementById('statsPanel');
+      const header = panel ? panel.querySelector('h3') : null;
+      
+      if (content) content.style.display = statsPanelExpanded ? 'block' : 'none';
+      if (header) header.innerHTML = header.innerHTML.replace(/\[\+\]|\[-\]/, statsPanelExpanded ? '[-]' : '[+]');
+  }
+
+  function renderStatsPanel(pokemonList) {
+      const panel = document.getElementById('statsPanel');
+      const content = document.getElementById('statsContent');
+      const countSpan = document.getElementById('statsPanelCount');
+      const titleSpan = document.getElementById('statsPanelTitle');
+      
+      // Hide panel if no filters are active or no results
+      if (!pokemonList || pokemonList.length === 0 || !hasAnyActiveFilter()) {
+          panel.style.display = 'none';
+          return;
+      }
+
+      panel.style.display = 'block';
+      content.style.display = statsPanelExpanded ? 'block' : 'none';
+      countSpan.textContent = pokemonList.length;
+
+      // ── Build title from active filters ──
+      const titleParts = [];
+      if (activeFilters.types.length > 0) titleParts.push('Type: ' + activeFilters.types.join(', '));
+      if (activeFilters.regions.length > 0) titleParts.push('Region: ' + activeFilters.regions.join(', '));
+      if (activeFilters.colors.length > 0) titleParts.push('Color: ' + activeFilters.colors.join(', '));
+      if (activeFilters.shapes.length > 0) titleParts.push('Shape: ' + activeFilters.shapes.join(', '));
+      if (activeFilters.eggGroups.length > 0) titleParts.push('Egg: ' + activeFilters.eggGroups.join(', '));
+      if (activeFilters.abilities.length > 0) titleParts.push('Ability: ' + activeFilters.abilities.join(', '));
+      if (activeFilters.moves.length > 0) titleParts.push('Move: ' + activeFilters.moves.slice(0, 3).join(', ') + (activeFilters.moves.length > 3 ? '...' : ''));
+      if (activeClassificationFilters.length > 0) titleParts.push('Lore: ' + activeClassificationFilters.slice(0, 2).join(', ') + (activeClassificationFilters.length > 2 ? '...' : ''));
+      if (secondaryFilter.type) titleParts.push('Search: ' + (secondaryFilter.displayValue || secondaryFilter.value || '?'));
+
+      titleSpan.textContent = titleParts.length > 0 ? titleParts.join(' | ') : 'Results Summary';
+
+      // ── Collect frequency data for each attribute ──
+      const freq = {
+          types: {},
+          regions: {},
+          colors: {},
+          shapes: {},
+          eggGroups: {},
+          abilities: {},
+          moves: {},
+          classifications: {}
+      };
+
+      pokemonList.forEach(pokemon => {
+          const key = getPokemonKey(pokemon);
+
+          // Types
+          (pokemon.types || []).forEach(t => { freq.types[t] = (freq.types[t] || 0) + 1; });
+
+          // Region
+          if (pokemon.region) freq.regions[pokemon.region] = (freq.regions[pokemon.region] || 0) + 1;
+
+          // Color
+          if (pokemon.color) freq.colors[pokemon.color] = (freq.colors[pokemon.color] || 0) + 1;
+
+          // Shape
+          const shapeName = typeof pokemon.shape === 'number' ? getShapeName(pokemon.shape) : pokemon.shape;
+          if (shapeName) freq.shapes[shapeName] = (freq.shapes[shapeName] || 0) + 1;
+
+          // Egg Groups
+          (pokemon.eggGroups || []).forEach(g => { freq.eggGroups[g] = (freq.eggGroups[g] || 0) + 1; });
+
+          // Abilities
+          const abs = extractAbilities(pokemon.abilities);
+          abs.forEach(a => { freq.abilities[a] = (freq.abilities[a] || 0) + 1; });
+
+          // Moves (only if loaded, filtered by move method toggles)
+          if (learnsetLoaded && pokemon.learnset) {
+              Object.keys(pokemon.learnset).forEach(move => {
+                  const learnMethods = pokemon.learnset[move];
+                  // Only count if at least one learn method passes the active filters
+                  const hasValidMethod = learnMethods.some(method => {
+                      const methodType = method[0];
+                      if (methodType === 'L') return true;
+                      if (methodType === 'E') return showEggMoves;
+                      if (methodType === 'M') return showTMMoves;
+                      if (methodType === 'T') return showTutorMoves;
+                      if (methodType === 'V' || methodType === 'S' || methodType === 'D') return showEventMoves;
+                      return true;
+                  });
+                  if (hasValidMethod) {
+                      freq.moves[move] = (freq.moves[move] || 0) + 1;
+                  }
+              });
+          }
+
+          // Classifications (only if loaded)
+          if (classificationsLoaded && key) {
+              const speciesId = _classIdBySlug[key];
+              const entry = speciesId ? classificationsData[speciesId] : undefined;
+              if (entry) {
+                  entry.phrases.forEach(phrase => {
+                      (phrase.classifications || []).forEach(tag => {
+                          freq.classifications[tag] = (freq.classifications[tag] || 0) + 1;
+                      });
+                  });
+              }
+          }
+      });
+
+      // ── Helper to format one category with clickable items ──
+      function formatCategory(title, data, topN, filterType) {
+          const entries = Object.entries(data).sort((a, b) => {
+              // If showRarest, reverse the sort (least common first)
+              return statsShowRarest ? (a[1] - b[1]) : (b[1] - a[1]);
+          });
+          const limited = entries.slice(0, topN);
+          if (limited.length === 0) return '';
+
+          const items = limited.map(([name, count]) => {
+              const pct = ((count / pokemonList.length) * 100).toFixed(1);
+              
+              // Check if this item is currently filtered
+              const isActive = filterType === 'classifications'
+                  ? activeClassificationFilters.includes(name)
+                  : (activeFilters[filterType] && activeFilters[filterType].includes(name));
+              
+              const colorStyle = isActive ? 'color:red; font-weight:bold;' : '';
+              
+              // Format display name (especially for moves)
+              const displayName = filterType === 'moves' ? formatMoveName(name) : name;
+              
+              // Make each item clickable to add it as a filter
+              const clickHandler = filterType === 'classifications' 
+                  ? `toggleClassificationFilter('${name.replace(/'/g, "\\'")}')`
+                  : `toggleFilter('${filterType}', '${name.replace(/'/g, "\\'")}')`;
+              return `<span class="clickable" onclick="${clickHandler}" style="margin-right:8px; text-decoration:underline; cursor:pointer; ${colorStyle}">${displayName} (${count}, ${pct}%)</span>`;
+          }).join('');
+
+          return `<div style="margin-bottom:6px;"><strong>${title}:</strong> ${items}</div>`;
+      }
+
+      // ── Render all categories ──
+      let html = '';
+      html += formatCategory('Types', freq.types, statsTopN, 'types');
+      html += formatCategory('Regions', freq.regions, statsTopN, 'regions');
+      html += formatCategory('Colors', freq.colors, statsTopN, 'colors');
+      html += formatCategory('Shapes', freq.shapes, statsTopN, 'shapes');
+      html += formatCategory('Egg Groups', freq.eggGroups, statsTopN, 'eggGroups');
+      html += formatCategory('Abilities', freq.abilities, statsTopN, 'abilities');
+      if (learnsetLoaded) html += formatCategory('Moves', freq.moves, statsTopN, 'moves');
+      if (classificationsLoaded) html += formatCategory('Lore Tags', freq.classifications, statsTopN, 'classifications');
+
+      content.innerHTML = html || '<em>No data to display</em>';
   }
   
   function toggleStats() {
@@ -1380,9 +1615,33 @@ function toggleGridView() {
       } else if (methodKey === 'Tutor') {
           showTutorMoves = !showTutorMoves;
           document.getElementById('toggle-TutorButton').classList.toggle('selected', showTutorMoves);
-      } else if (methodKey === 'VC') {
-          showVCMoves = !showVCMoves;
-          document.getElementById('toggle-VCButton').classList.toggle('selected', showVCMoves);
+      } else if (methodKey === 'Event') {
+          showEventMoves = !showEventMoves;
+          document.getElementById('toggle-EventButton').classList.toggle('selected', showEventMoves);
+      }
+  
+      renderPokemonList();
+  }
+
+  function toggleVariantInclude(variantKey) {
+      if (variantKey === 'Minor') {
+          includeMinor = !includeMinor;
+          document.getElementById('toggle-MinorButton').classList.toggle('selected', includeMinor);
+      } else if (variantKey === 'Item') {
+          includeItem = !includeItem;
+          document.getElementById('toggle-ItemButton').classList.toggle('selected', includeItem);
+      } else if (variantKey === 'Gmax') {
+          includeGmax = !includeGmax;
+          document.getElementById('toggle-GmaxButton').classList.toggle('selected', includeGmax);
+      } else if (variantKey === 'Mega') {
+          includeMega = !includeMega;
+          document.getElementById('toggle-MegaButton').classList.toggle('selected', includeMega);
+      } else if (variantKey === 'Battle') {
+          includeBattle = !includeBattle;
+          document.getElementById('toggle-BattleButton').classList.toggle('selected', includeBattle);
+      } else if (variantKey === 'Natural') {
+          includeNatural = !includeNatural;
+          document.getElementById('toggle-NaturalButton').classList.toggle('selected', includeNatural);
       }
   
       renderPokemonList();
@@ -1407,10 +1666,11 @@ function toggleGridView() {
       
       section.classList.toggle('expanded');
       
+      // Use innerHTML so any child elements (spans, buttons) inside the h3 survive.
       if (section.classList.contains('expanded')) {
-          header.textContent = header.textContent.replace('[+]', '[-]');
+          header.innerHTML = header.innerHTML.replace('[+]', '[-]');
       } else {
-          header.textContent = header.textContent.replace('[-]', '[+]');
+          header.innerHTML = header.innerHTML.replace('[-]', '[+]');
       }
   }
   
@@ -1627,11 +1887,17 @@ function toggleGridView() {
             activeFilters.colors.includes(pokemon.color)
           );
         }
-        if (activeFilters.variantExclude.length > 0) {
-          pokemonToDisplay = pokemonToDisplay.filter(pokemon => 
-            !pokemon.variant || !activeFilters.variantExclude.includes(pokemon.variant)
-          );
-        }
+        // Variant include filter (via toggle buttons)
+        pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
+            if (!pokemon.variant) return true; // no variant = always show
+            if (pokemon.variant === 'Minor') return includeMinor;
+            if (pokemon.variant === 'Item') return includeItem;
+            if (pokemon.variant === 'Gmax') return includeGmax;
+            if (pokemon.variant === 'Mega') return includeMega;
+            if (pokemon.variant === 'Battle') return includeBattle;
+            if (pokemon.variant === 'Natural') return includeNatural;
+            return true; // unknown variant types pass through
+        });
         if (activeFilters.shapes.length > 0) {
           pokemonToDisplay = pokemonToDisplay.filter(pokemon => {
             const shapeName = typeof pokemon.shape === 'number' ? getShapeName(pokemon.shape) : pokemon.shape;
@@ -1656,11 +1922,11 @@ function toggleGridView() {
                   return learnMethods.some(method => {
                       const methodType = method[0];
   
-                      if (methodType === 'L' || methodType === 'S') return true;
+                      if (methodType === 'L') return true;
                       if (methodType === 'E') return showEggMoves;
                       if (methodType === 'M') return showTMMoves;
                       if (methodType === 'T') return showTutorMoves;
-                      if (methodType === 'V') return showVCMoves;
+                      if (methodType === 'V' || methodType === 'S' || methodType === 'D') return showEventMoves;
   
                       return true;
                   });
@@ -1686,7 +1952,10 @@ function toggleGridView() {
       return;
     }
     
-    const frag = document.createDocumentFragment();
+    // Two fragments so expanded cards always render as a contiguous block
+    // at the top, with no thumbnail row splitting them apart.
+    const expandedFrag = document.createDocumentFragment();
+    const collapsedFrag = document.createDocumentFragment();
     pokemonToDisplay.forEach(pokemon => {
       const card = document.createElement('div');
       card.className = 'pokemon-card';
@@ -1701,7 +1970,7 @@ function toggleGridView() {
       }
       
       // Get sprite path - use floor of num for the image
-      const spriteNum = Math.floor(pokemon.num);
+      const spriteNum = Number(pokemon.num).toString();
       const spritePath = `icons/poke/${spriteNum}.png`;
       
       // In grid view, show only images
@@ -1711,7 +1980,7 @@ function toggleGridView() {
           expandedCards.add(pokemonKey);
           renderPokemonList();
         });
-        frag.appendChild(card);
+        collapsedFrag.appendChild(card);
         return;
       }
       
@@ -1868,12 +2137,24 @@ if (displaySettings.color.display !== 'hide') {
       
       const gridImageHTML = displaySettings.gridView && isCardExpanded ? 
         `<img src="${spritePath}" alt="${pokemon.name}" onerror="this.style.display='none'">` : '';
-  
+
+      // Does this species have lore data? If so show the [+] Lore toggle.
+      const hasLore = classificationsLoaded && (() => {
+          const sid = _classIdBySlug[pokemonKey];
+          const ent = sid ? classificationsData[sid] : undefined;
+          return ent && ent.phrases.length > 0;
+      })();
+      const isLoreExpanded = pokemonLoreExpanded[pokemonKey];
+      const loreToggleButton = hasLore
+          ? `<button onclick="togglePokemonLore('${pokemonKey}')" style="margin-left: 4px; font-size: 9px;">${isLoreExpanded ? '[-]' : '[+]'} Lore</button>`
+          : '';
+
       card.innerHTML = `
         ${gridCloseButton}
         ${gridImageHTML}
         <h3>${quickClearButton} ${imageHTML}${titleContent}</h3>${speciesDisplay}
         ${showMovesToggle ? `<button onclick="togglePokemonMoves('${pokemonKey}')" style="margin-left: 4px; font-size: 9px;">${isExpanded ? '[-]' : '[+]'} Moves</button>` : ''}
+        ${loreToggleButton}
         
         ${cardDetailsHTML}
         ${eggSection}
@@ -1890,17 +2171,30 @@ if (displaySettings.color.display !== 'hide') {
       // Apply font size to card
       card.style.fontSize = displaySettings.baseFontSize + 'px';
       
-      // In grid view expanded, allow clicking moves button
+      // In grid view expanded: block bare-card clicks from bubbling (which would
+      // re-trigger expand logic) but let .clickable clicks pass through to the
+      // container's delegated listener.
       if (displaySettings.gridView && isCardExpanded) {
-        // Prevent card click from collapsing when clicking inside
         card.addEventListener('click', (e) => {
-          e.stopPropagation();
+          if (!e.target.closest('.clickable') && !e.target.closest('button')) {
+            e.stopPropagation();
+          }
         });
       }
   
-      frag.appendChild(card);
+      // Grid expanded → expandedFrag; everything else → collapsedFrag
+      if (displaySettings.gridView && isCardExpanded) {
+        expandedFrag.appendChild(card);
+      } else {
+        collapsedFrag.appendChild(card);
+      }
     });
-    container.appendChild(frag);
+    container.appendChild(expandedFrag);
+    container.appendChild(collapsedFrag);
+
+    // Render stats panel at the bottom
+    window._lastPokemonToDisplay = pokemonToDisplay;
+    renderStatsPanel(pokemonToDisplay);
   }
   
   function sortList(list, sortBy, direction) {
@@ -2029,7 +2323,18 @@ if (displaySettings.color.display !== 'hide') {
     populate('typeFilters', allTypes, 'types', 'data-type');
     populate('regionFilters', allRegions, 'regions', 'data-region');
     populate('colorFilters', getAllColors(), 'colors', 'data-color');
-    populate('variantExcludeFilters', getAllVariantTypes(), 'variantExclude', 'data-variant');
+    
+    // Variant filters as buttons (like move methods)
+    const variantContainer = document.getElementById('variantExcludeFilters');
+    variantContainer.innerHTML = `
+      <button id="toggle-MinorButton" onclick="event.stopPropagation(); toggleVariantInclude('Minor')">Minor</button>
+      <button id="toggle-ItemButton" onclick="event.stopPropagation(); toggleVariantInclude('Item')">Item</button>
+      <button id="toggle-GmaxButton" onclick="event.stopPropagation(); toggleVariantInclude('Gmax')">Gmax</button>
+      <button id="toggle-MegaButton" onclick="event.stopPropagation(); toggleVariantInclude('Mega')">Mega</button>
+      <button id="toggle-BattleButton" onclick="event.stopPropagation(); toggleVariantInclude('Battle')">Battle</button>
+      <button id="toggle-NaturalButton" onclick="event.stopPropagation(); toggleVariantInclude('Natural')">Natural</button>
+    `;
+    
     populate('shapeFilters', getAllShapes(), 'shapes', 'data-shape');
     populate('eggGroupFilters', getAllEggGroups(), 'eggGroups', 'data-egggroup');
   }
@@ -2134,6 +2439,10 @@ if (displaySettings.color.display !== 'hide') {
               // Reveal filter group and populate chips
               document.getElementById('classificationsFilterGroup').style.display = 'block';
               populateClassificationFilterChips();
+
+              // Reveal Lore A-Z sort button
+              const loreAlphaBtn = document.getElementById('loreAlphaSortButton');
+              if (loreAlphaBtn) loreAlphaBtn.style.display = 'inline-block';
   
               // Re-populate search suggestions so tags appear in autocomplete
               populateSearchableTerms();
@@ -2216,56 +2525,107 @@ if (displaySettings.color.display !== 'hide') {
       });
   }
 
-  // Returns true if the pokemon (by its key in pokemonData) has at least one
-  // phrase whose classifications include ALL of the active tags (OR across
-  // phrases, AND across tags within a phrase — same logic as egg-group AND).
+  // AND mode: species must have EVERY selected tag somewhere in its phrases
+  //           (tags can be spread across different phrases).
+  // OR  mode: species must have AT LEAST ONE selected tag anywhere.
   function pokemonMatchesClassifications(pokemonKey) {
       if (activeClassificationFilters.length === 0) return true;
       if (!classificationsLoaded) return true;
   
-      // pokemonKey is the Showdown slug (e.g. "farfetchd").
-      // Look it up in the reverse map to get the classifications.json species_id.
       const speciesId = _classIdBySlug[pokemonKey];
       const entry = speciesId ? classificationsData[speciesId] : undefined;
       if (!entry) return false;
   
-      // A pokemon matches if ANY single phrase contains ALL active tags
-      return entry.phrases.some(phrase => {
-          const phraseTags = phrase.classifications || [];
-          return activeClassificationFilters.every(tag => phraseTags.includes(tag));
+      // Collect the full set of tags this species has across ALL phrases
+      const speciesTags = new Set();
+      entry.phrases.forEach(phrase => {
+          (phrase.classifications || []).forEach(t => speciesTags.add(t));
       });
+  
+      if (classificationsAndMode) {
+          // AND: every selected tag must appear somewhere in the species
+          return activeClassificationFilters.every(tag => speciesTags.has(tag));
+      } else {
+          // OR: at least one selected tag appears
+          return activeClassificationFilters.some(tag => speciesTags.has(tag));
+      }
   }
   
-  // Renders the classification phrases for a single pokemon card.
-  // Only shown when classifications are loaded AND the pokemon has data.
-  // Each phrase is individually togglable (expanded/collapsed).
+  // Returns the full Lore block for one card.
+  // • Hidden entirely when pokemonLoreExpanded is false (master toggle).
+  // • Tag bar: unique tags sorted by frequency desc (or A-Z), always visible when open.
+  // • Phrases: when filters are active, only phrases containing a selected tag are shown
+  //   first; a small [+] More at the bottom expands to all phrases.
+  //   When no filters are active, all phrases are shown directly.
   function getClassificationsHTML(pokemonKey) {
       if (!classificationsLoaded) return '';
+      if (!pokemonLoreExpanded[pokemonKey]) return '';   // master toggle is off
+
       const speciesId = _classIdBySlug[pokemonKey];
       const entry = speciesId ? classificationsData[speciesId] : undefined;
       if (!entry || entry.phrases.length === 0) return '';
-  
-      // If there are active classification filters, only show matching phrases
-      const phrasesToShow = activeClassificationFilters.length > 0
+
+      // ── build frequency map across ALL phrases ──
+      const freq = {};
+      entry.phrases.forEach(phrase => {
+          (phrase.classifications || []).forEach(t => { freq[t] = (freq[t] || 0) + 1; });
+      });
+
+      // ── sort tags: frequency desc (ties broken A-Z), or pure A-Z ──
+      const sortedTags = Object.keys(freq).sort((a, b) => {
+          if (loreSortAlpha) return a.localeCompare(b);
+          const diff = freq[b] - freq[a];
+          return diff !== 0 ? diff : a.localeCompare(b);
+      });
+
+      // ── tag bar ──
+      const tagBar = sortedTags.map(tag => {
+          const isActive = activeClassificationFilters.includes(tag);
+          const cls = isActive ? 'clickable selected-result' : 'clickable';
+          return `<span class="${cls}" data-filter-type="classifications" data-filter-value="${tag}">${tag}</span>`;
+      }).join(', ');
+
+      // ── decide which phrases to render ──
+      // "filtered" = phrases that contain at least one active tag.
+      // If no tags are active, filtered === all (show everything, no [+] More needed).
+      const hasActiveFilters = activeClassificationFilters.length > 0;
+      const filteredPhrases = hasActiveFilters
           ? entry.phrases.filter(phrase =>
-              activeClassificationFilters.every(tag => (phrase.classifications || []).includes(tag))
+              activeClassificationFilters.some(tag => (phrase.classifications || []).includes(tag))
           )
           : entry.phrases;
-  
-      if (phrasesToShow.length === 0) return '';
-  
-      const parts = phrasesToShow.map((phrase, i) => {
+
+      const showAll = pokemonLoreAllExpanded[pokemonKey];
+      // Which phrases actually get rendered right now:
+      const phrasesToRender = (showAll || !hasActiveFilters) ? entry.phrases : filteredPhrases;
+      // Do we need a [+] More / [-] Less button?  Only when there are filters AND
+      // there are phrases beyond the filtered set.
+      const needsMoreToggle = hasActiveFilters && filteredPhrases.length < entry.phrases.length;
+
+      // ── render phrases ──
+      function renderPhrase(phrase) {
           const tags = (phrase.classifications || []).map(tag => {
               const isActive = activeClassificationFilters.includes(tag);
               const cls = isActive ? 'clickable selected-result' : 'clickable';
               return `<span class="${cls}" data-filter-type="classifications" data-filter-value="${tag}">${tag}</span>`;
           }).join(' ');
-          return `<div style="margin-left:4px; margin-top:1px; font-size:9px;">"${phrase.text}" → [${tags}]</div>`;
-      });
-  
+          return `<div style="margin-left:8px; margin-top:2px; font-size:12pt; color:#444;">"${phrase.text}" → [${tags}]</div>`;
+      }
+
+      const phrasesHTML = phrasesToRender.map(renderPhrase).join('');
+
+      // ── [+] More / [-] Less toggle at the end ──
+      let moreToggle = '';
+      if (needsMoreToggle) {
+          moreToggle = showAll
+              ? `<div style="margin-left:8px; margin-top:3px;"><button onclick="togglePokemonLoreAll('${pokemonKey}')" style="font-size:9px;">[-] Less</button></div>`
+              : `<div style="margin-left:8px; margin-top:3px;"><button onclick="togglePokemonLoreAll('${pokemonKey}')" style="font-size:9px;">[+] More</button></div>`;
+      }
+
       return '<div class="pokemon-classifications" style="margin-top:2px;">' +
-             '<span style="font-size:9px; color:#555;">Lore:</span>' +
-             parts.join('') +
+             '<span style="font-size:9px; color:#555;">Lore: </span>' +
+             '<span style="font-size:9px;">' + tagBar + '</span>' +
+             '<div class="pokemon-lore-phrases">' + phrasesHTML + moreToggle + '</div>' +
              '</div>';
   }
   
