@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pokemon Size Comparison</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff; color: #000000; display: flex; flex-direction: column;
+        }
+        .header {
+            flex-shrink: 0; padding: 20px 20px 15px; background: #ffffff;
+            border-bottom: 2px solid #000000; margin: 0 20px;
+        }
+        h1 {
+            text-align: center; color: #000000; margin-bottom: 20px;
+            font-size: 1.8em; font-weight: 600; letter-spacing: -0.5px;
+        }
+        .search-section { max-width: 600px; margin: 0 auto 15px; position: relative; }
+        .search-box {
+            width: 100%; padding: 12px 14px; border: 2px solid #000000; border-radius: 0;
+            font-size: 1em; background: #ffffff; transition: box-shadow 0.2s; font-family: inherit;
+        }
+        .search-box:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,0.1); }
+        .search-results {
+            position: absolute; top: 100%; left: 0; right: 0; background: #ffffff;
+            border: 2px solid #000000; border-top: none; max-height: 74vh;
+            overflow-y: auto; display: none; z-index: 100;
+        }
+        .search-results.active { display: block; }
+        .search-result-item {
+            display: flex; align-items: center; gap: 8px; padding: 2px 8px;
+            cursor: pointer; border-bottom: 1px solid #e0e0e0;
+            transition: background 0.02s; line-height: 1;
+        }
+        .search-result-item:nth-child(even) { background: #f5f5f5; }
+        .search-result-item:hover { background: #d0d0d0; }
+        .search-result-item.selected { background: #b0b0b0; }
+        .search-result-item:last-child { border-bottom: none; }
+        .search-result-item img { width: 40px; height: 40px; display: block; }
+        .search-result-item .name { font-weight: 500; color: #000000; font-size: 0.9em; line-height: 1; }
+        .selected-pokemon-area { margin-bottom: 15px; min-height: 35px; }
+        .selected-pokemon-tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .selected-tag {
+            background: #000000; color: #ffffff; padding: 6px 10px; border-radius: 0;
+            display: flex; align-items: center; gap: 6px; font-size: 0.85em; font-weight: 500;
+        }
+        .selected-tag .remove { cursor: pointer; font-weight: bold; opacity: 0.7; margin-left: 4px; }
+        .selected-tag .remove:hover { opacity: 1; }
+        .comparison-area {
+            flex: 1; background: #fafafa; border: 2px solid #000000; border-top: none;
+            margin: 0 20px 20px; padding: 40px; position: relative;
+            overflow-y: auto; overflow-x: auto;
+        }
+        .comparison-area.no-scroll { overflow-y: hidden; }
+        .alignment-line {
+            position: absolute; left: 40px; right: 40px; height: 3px;
+            background: #000000; z-index: 5;
+        }
+        .alignment-line.baseline { z-index: 10; }
+        .alignment-line.grid { height: 1px; background: #d0d0d0; }
+        .line-tooltip {
+            position: absolute; background: #000000; color: #ffffff; padding: 4px 8px;
+            font-size: 0.75em; white-space: nowrap; pointer-events: none;
+            display: none; z-index: 10; bottom: 5px; transform: translateX(-50%);
+        }
+        .alignment-line:hover .line-tooltip { display: block; }
+        .pokemon-row {
+            display: flex; align-items: flex-end; gap: 40px;
+            position: relative; min-height: 100%; padding-bottom: 50px;
+        }
+        .pokemon-item {
+            display: flex; flex-direction: column; align-items: center; position: relative;
+        }
+        .pokemon-item.reference { order: -1; }
+        .pokemon-image { display: flex; align-items: flex-end; justify-content: center; }
+        .pokemon-image img, .pokemon-image video { display: block; }
+        .pokemon-image.clickable { position: relative; overflow: hidden; }
+        .measure-line {
+            position: absolute; background: #ff0000; transform-origin: top left;
+            pointer-events: auto; z-index: 20; cursor: pointer; height: 2px;
+        }
+        /* Wider invisible hit area for easier clicking/deleting */
+        .measure-line-hitarea {
+            position: absolute; background: transparent; transform-origin: top left;
+            pointer-events: auto; z-index: 19; cursor: pointer; height: 18px; margin-top: -8px;
+        }
+        .measure-line.drawing { pointer-events: none; }
+        .measure-line-hitarea:hover + .measure-line,
+        .measure-line:hover { background: #cc0000; }
+        .measure-line::before, .measure-line::after {
+            content: ''; position: absolute; width: 2px; height: 10px;
+            background: #ff0000; display: none;
+        }
+        .measure-line::before { left: 0; top: 50%; transform: translateY(-50%); }
+        .measure-line::after { right: 0; top: 50%; transform: translateY(-50%); }
+        .measure-line-hitarea:hover + .measure-line::before,
+        .measure-line-hitarea:hover + .measure-line::after,
+        .measure-line:hover::before, .measure-line:hover::after {
+            display: block; background: #cc0000;
+        }
+        .measure-label {
+            position: absolute; background: #ff0000; color: #ffffff; padding: 2px 6px;
+            font-size: 0.75em; white-space: nowrap; pointer-events: none; z-index: 21;
+            border-radius: 2px; display: none; transform: translate(-50%, -100%); margin-top: -5px;
+        }
+        .pokemon-labels {
+            display: flex; flex-direction: column; align-items: center;
+            position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%);
+        }
+        .pokemon-height {
+            font-size: 0.85em; color: #666666;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace; text-align: center;
+        }
+        .remove-pokemon {
+            margin-top: 2px; font-size: 0.75em; color: #999999;
+            cursor: pointer; text-decoration: none; transition: color 0.2s;
+        }
+        .remove-pokemon:hover { color: #000000; }
+        .controls {
+            flex-shrink: 0; background: #ffffff; border-top: 2px solid #000000;
+            padding: 12px 20px; display: flex; justify-content: space-between;
+            align-items: center; position: relative;
+        }
+        .controls-left, .controls-center, .controls-right {
+            display: flex; gap: 10px; align-items: center;
+        }
+        .controls-center { position: absolute; left: 50%; transform: translateX(-50%); }
+        .control-btn {
+            background: #ffffff; color: #000000; border: 2px solid #000000;
+            padding: 7px 14px; cursor: pointer; font-size: 0.85em; font-weight: 600;
+            font-family: inherit; transition: all 0.2s; display: flex;
+            align-items: center; gap: 6px;
+        }
+        .control-btn:hover { background: #f0f0f0; }
+        .control-btn.active { background: #000000; color: #ffffff; }
+        .control-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .empty-state {
+            display: flex; flex-direction: column; align-items: flex-start;
+            justify-content: flex-start; height: 100%;
+            padding: 30px 80px 40px; text-align: left; position: relative;
+        }
+        .empty-state h2 { font-size: 1.5em; margin-bottom: 10px; color: #333; }
+        .empty-state p {
+            font-size: 0.95em; color: #666; margin-bottom: 20px;
+            max-width: 680px; line-height: 1.6;
+        }
+        .tutorial-links { display: flex; gap: 20px; }
+        .tutorial-link {
+            color: #000; font-size: 0.9em; font-weight: 600; cursor: pointer;
+            text-decoration: underline; text-underline-offset: 3px; user-select: none;
+        }
+        .tutorial-link:hover { opacity: 0.55; }
+        .tutorial-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+            display: none; align-items: center; justify-content: center; z-index: 3000;
+        }
+        .tutorial-modal-overlay.active { display: flex; }
+        .tutorial-modal {
+            background: #fff; border: 2px solid #000; padding: 24px;
+            position: relative; max-width: 90vw;
+        }
+        .tutorial-modal h3 { margin: 0 0 14px 0; font-size: 1.1em; }
+        .tutorial-modal video {
+            display: block; max-width: 700px; width: 70vw; height: auto; background: #000;
+        }
+        .tutorial-modal-footer {
+            margin-top: 12px; display: flex; gap: 10px;
+            align-items: center; justify-content: flex-end;
+        }
+        .tutorial-modal-footer .close-btn {
+            padding: 7px 18px; border: 2px solid #000; background: #fff; color: #000;
+            cursor: pointer; font-family: inherit; font-size: 0.9em; font-weight: 600;
+        }
+        .tutorial-modal-footer .close-btn:hover { background: #f0f0f0; }
+        .help-button {
+            position: absolute; top: 60px; right: 60px; width: 32px; height: 32px;
+            border-radius: 50%; background: #e0e0e0; border: none; cursor: pointer;
+            font-size: 18px; color: #666; display: none; align-items: center;
+            justify-content: center; transition: background 0.2s; z-index: 100;
+        }
+        .help-button:hover { background: #d0d0d0; }
+        .help-button .tooltip {
+            position: absolute; bottom: -30px; right: 0; background: #333; color: #fff;
+            padding: 4px 8px; border-radius: 3px; font-size: 12px;
+            white-space: nowrap; display: none; pointer-events: none;
+        }
+        .help-button:hover .tooltip { display: block; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); display: none; align-items: center;
+            justify-content: center; z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #ffffff; border: 2px solid #000000; padding: 30px;
+            max-width: 400px; width: 90%;
+        }
+        .modal h3 { margin: 0 0 20px 0; font-size: 1.3em; }
+        .modal-field { margin-bottom: 20px; }
+        .modal-field label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; }
+        .modal-field input {
+            width: 100%; padding: 8px; border: 2px solid #000000;
+            font-family: inherit; font-size: 1em;
+        }
+        .modal-field input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,0.1); }
+        .modal-gender { display: flex; gap: 10px; }
+        .modal-gender-btn {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 10px; border: 2px solid #000000; cursor: pointer;
+            transition: background 0.2s, color 0.2s; font-weight: 500;
+            font-family: inherit; font-size: 1em; background: #ffffff; color: #000000;
+        }
+        .modal-gender-btn:hover { background: #f0f0f0; }
+        .modal-gender-btn.active { background: #000000; color: #ffffff; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 25px; }
+        .modal-buttons button {
+            flex: 1; padding: 10px; border: 2px solid #000000; background: #ffffff;
+            cursor: pointer; font-family: inherit; font-size: 1em;
+            font-weight: 500; transition: background 0.2s;
+        }
+        .modal-buttons button:hover { background: #f0f0f0; }
+        .modal-buttons button.primary { background: #000000; color: #ffffff; }
+        .modal-buttons button.primary:hover { background: #333333; }
+        .anim-play-btn {
+            background: #000; color: #fff; border: none; padding: 4px 14px;
+            font-size: 0.8em; font-family: inherit; cursor: pointer;
+            margin-top: 4px; font-weight: 600;
+        }
+        .anim-play-btn:hover { background: #333; }
+        .scale-btn {
+            background: #000000; color: #ffffff; border: 2px solid #000000;
+            padding: 7px 12px; cursor: pointer; font-size: 0.85em; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; font-family: inherit;
+        }
+        .scale-btn:hover { background: #333333; }
+        .scale-options {
+            display: none; position: absolute; bottom: 100%; left: 0;
+            background: #000000; margin-bottom: 4px; padding: 6px; gap: 6px;
+        }
+        .scale-options.active { display: flex; }
+        .scale-option {
+            background: transparent; color: #ffffff; border: 1px solid #ffffff;
+            padding: 6px 10px; cursor: pointer; font-size: 1.1em; transition: all 0.2s;
+        }
+        .scale-option:hover { background: #ffffff; color: #000000; }
+        .media-toggle { display: flex; gap: 0; border: 2px solid #000000; }
+        .media-btn {
+            background: #ffffff; border: none; border-right: 2px solid #000000;
+            padding: 7px 12px; cursor: pointer; font-size: 0.8em;
+            transition: all 0.2s; font-family: inherit; font-weight: 600;
+        }
+        .media-btn:last-child { border-right: none; }
+        .media-btn:hover { background: #f0f0f0; }
+        .media-btn.active { background: #000000; color: #ffffff; }
+
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header { padding: 12px 10px 10px; margin: 0 8px; }
+            h1 { font-size: 1.2em; margin-bottom: 10px; }
+            .search-box { padding: 10px 12px; font-size: 16px; /* prevents iOS zoom */ }
+            .search-result-item { padding: 6px 10px; gap: 10px; }
+            .search-result-item img { width: 32px; height: 32px; }
+            .selected-pokemon-area { margin-bottom: 8px; min-height: 28px; }
+            .selected-pokemon-tags { gap: 5px; }
+            .selected-tag { padding: 5px 8px; font-size: 0.78em; }
+            .comparison-area { margin: 0 8px 8px; padding: 15px; }
+            .alignment-line { left: 15px; right: 15px; }
+            .pokemon-row { gap: 15px; padding-bottom: 40px; }
+            .empty-state { padding: 15px 20px 20px; }
+            .empty-state h2 { font-size: 1.15em; }
+            .empty-state p { font-size: 0.85em; line-height: 1.5; }
+            .tutorial-links { flex-direction: column; gap: 10px; }
+            .help-button { top: 15px; right: 15px; }
+            .controls {
+                padding: 8px 10px; flex-wrap: wrap; gap: 6px; justify-content: center;
+            }
+            .controls-center {
+                position: static; transform: none; order: -1;
+                width: 100%; justify-content: center;
+            }
+            .controls-left { order: 0; }
+            .controls-right { order: 1; }
+            .controls-left, .controls-center, .controls-right { gap: 5px; }
+            .control-btn { padding: 6px 10px; font-size: 0.75em; }
+            .scale-btn { padding: 6px 10px; font-size: 0.75em; }
+            .scale-options { bottom: auto; top: 100%; margin-top: 4px; margin-bottom: 0; }
+            .media-btn { padding: 6px 8px; font-size: 0.72em; }
+            .tutorial-modal { padding: 16px; max-width: 95vw; }
+            .tutorial-modal video { width: 85vw; max-width: 85vw; }
+            .modal { padding: 20px; max-width: 95vw; }
+        }
+        @media (max-width: 420px) {
+            h1 { font-size: 1em; margin-bottom: 8px; }
+            .selected-tag { padding: 4px 6px; font-size: 0.72em; }
+            .control-btn { padding: 5px 7px; font-size: 0.7em; }
+            .scale-btn { padding: 5px 7px; font-size: 0.7em; }
+            .media-btn { padding: 5px 6px; font-size: 0.68em; }
+            .pokemon-row { gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="mainContent" style="display: flex; height: 100%; flex-direction: column;">
+        <div class="header">
+            <h1>Pokemon Size Comparison</h1>
+            <div class="search-section">
+                <input type="text" id="searchBox" class="search-box" placeholder="Search Pokemon..." autocomplete="off">
+                <div id="searchResults" class="search-results"></div>
+            </div>
+            <div class="selected-pokemon-area">
+                <div id="selectedTags" class="selected-pokemon-tags"></div>
+            </div>
+        </div>
+
+        <div class="comparison-area no-scroll" id="comparisonArea">
+            <button class="help-button" id="helpButton">?<span class="tooltip">Review tutorial</span></button>
+            <div id="pokemonRow" class="pokemon-row">
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <h2>Pokemon Size Comparison</h2>
+                    <p>Search for any Pokemon to add them to the canvas — stack as many as you like. Toggle <strong>Grid Lines</strong> for scale reference, swap the <strong>Scale</strong> object (human, car, door…) or enter a custom height, hit <strong>Actual Size</strong> to see true-to-screen scale, and switch to <strong>Animated</strong> mode for 3D sprites.</p>
+                    <div class="tutorial-links">
+                        <span class="tutorial-link" id="tutorialLink1">▶ How to measure</span>
+                        <span class="tutorial-link" id="tutorialLink2">▶ How to adjust scale</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="controls-left">
+                <div style="position: relative;">
+                    <button class="scale-btn" id="scaleBtn">SCALE <span id="scaleEmoji">👤</span></button>
+                    <div class="scale-options" id="scaleOptions">
+                        <button class="scale-option" data-ref="human">👤</button>
+                        <button class="scale-option" data-ref="child">🧒</button>
+                        <button class="scale-option" data-ref="dog">🐕</button>
+                        <button class="scale-option" data-ref="ball">🏀</button>
+                        <button class="scale-option" data-ref="car">🚗</button>
+                        <button class="scale-option" data-ref="door">🚪</button>
+                        <button class="scale-option" data-ref="custom">⚙️</button>
+                    </div>
+                </div>
+                <button class="control-btn" id="gridToggle">Grid Lines</button>
+                <button class="control-btn" id="clearLinesBtn" style="display: none;">Clear Lines</button>
+            </div>
+            <div class="controls-center">
+                <button class="control-btn active" id="zoomToggle">🔍 Zoom to Fit</button>
+            </div>
+            <div class="controls-right">
+                <button class="control-btn" id="unitToggle">🌐</button>
+                <div class="media-toggle">
+                    <button class="media-btn active" data-media="static">Static</button>
+                    <button class="media-btn" data-media="animated">Animated</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Modals -->
+    <div class="tutorial-modal-overlay" id="tutorialModal1">
+        <div class="tutorial-modal">
+            <h3>How to Measure</h3>
+            <video id="tutorialVideo1" preload="metadata" muted playsinline controls>
+                <source src="tutorials/measuring-tool.mp4" type="video/mp4">
+                <source src="tutorials/measuring-tool.webm" type="video/webm">
+            </video>
+            <div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial1b">Close</button></div>
+        </div>
+    </div>
+    <div class="tutorial-modal-overlay" id="tutorialModal2">
+        <div class="tutorial-modal">
+            <h3>How to Adjust Scale</h3>
+            <video id="tutorialVideo2" preload="metadata" muted playsinline controls>
+                <source src="tutorials/basic-usage.mp4" type="video/mp4">
+                <source src="tutorials/basic-usage.webm" type="video/webm">
+            </video>
+            <div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial2b">Close</button></div>
+        </div>
+    </div>
+
+    <!-- Custom Scale Modal -->
+    <div class="modal-overlay" id="customScaleModal">
+        <div class="modal">
+            <h3>Custom Reference Scale</h3>
+            <div class="modal-field">
+                <label for="customHeight">Height</label>
+                <input type="text" id="customHeight" placeholder="e.g., 5'8&quot; or 173cm">
+            </div>
+            <div class="modal-field">
+                <label>Gender</label>
+                <div class="modal-gender">
+                    <button class="modal-gender-btn active" id="genderMale" type="button">Male</button>
+                    <button class="modal-gender-btn" id="genderFemale" type="button">Female</button>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="cancelCustomScale">Cancel</button>
+                <button class="primary" id="saveCustomScale">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="height-data.js"></script>
+    <script>
+        let selectedPokemon = [];
+        let currentReference = 'human';
+        let currentMediaType = 'static';
+        let useImperial = true;
+        let useBestFit = true;
+        let showGrid = false;
+        let selectedSearchIndex = -1;
+        let scaleExpanded = false;
+
+        // Measuring line state
+        let measuringState = null;
+        let measureLines = {};
+        let tutorialShown = false;
+        let measureLineIdCounter = 0;
+        let displayRafId = null;
+
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof pokemonData !== 'undefined' && pokemonData.length > 0) {
+                initializeApp();
+            } else {
+                console.error('Pokemon data not found. Make sure height-data.js is loaded.');
+            }
+        });
+
+        const STATIC_FOLDER = 'images/';
+        const ANIMATED_FOLDER = 'images/size/';
+        const ICON_FOLDER = 'icons/poke/';
+        const REFERENCE_FOLDER = 'images/reference/';
+        const BASE_SCALE = 1000;
+        const BASELINE_OFFSET = 80;
+        const COMPARISON_PADDING = 40;
+
+        const REFERENCES = {
+            human:  { scale: 1750, icon: '👤', file: 'human.png' },
+            child:  { scale: 1200, icon: '🧒', file: 'child.png' },
+            dog:    { scale: 600,  icon: '🐕', file: 'dog.png' },
+            ball:   { scale: 240,  icon: '🏀', file: 'ball.png' },
+            car:    { scale: 1500, icon: '🚗', file: 'car.png' },
+            door:   { scale: 2000, icon: '🚪', file: 'door.png' },
+            custom: { scale: 1750, icon: '⚙️', file: 'custom-male.png', gender: 'male' }
+        };
+
+        function initializeApp() {
+            document.getElementById('helpButton').addEventListener('click', showTutorial);
+            document.getElementById('scaleBtn').addEventListener('click', toggleScale);
+            document.getElementById('gridToggle').addEventListener('click', toggleGrid);
+            document.getElementById('clearLinesBtn').addEventListener('click', clearAllLines);
+            document.getElementById('zoomToggle').addEventListener('click', toggleZoom);
+            document.getElementById('unitToggle').addEventListener('click', toggleUnits);
+            document.getElementById('cancelCustomScale').addEventListener('click', cancelCustomScale);
+            document.getElementById('saveCustomScale').addEventListener('click', saveCustomScale);
+
+            document.getElementById('genderMale').addEventListener('click', () => {
+                document.getElementById('genderMale').classList.add('active');
+                document.getElementById('genderFemale').classList.remove('active');
+            });
+            document.getElementById('genderFemale').addEventListener('click', () => {
+                document.getElementById('genderFemale').classList.add('active');
+                document.getElementById('genderMale').classList.remove('active');
+            });
+
+            function closeTutorial(n) {
+                document.getElementById('tutorialModal' + n).classList.remove('active');
+                const video = document.getElementById('tutorialVideo' + n);
+                video.pause();
+                video.currentTime = 0;
+            }
+            function openTutorial(n) {
+                document.getElementById('tutorialModal' + n).classList.add('active');
+            }
+
+            document.getElementById('tutorialLink1').addEventListener('click', () => openTutorial(1));
+            document.getElementById('tutorialLink2').addEventListener('click', () => openTutorial(2));
+            [1, 2].forEach(n => {
+                document.getElementById('closeTutorial' + n + 'b').addEventListener('click', () => closeTutorial(n));
+                document.getElementById('tutorialModal' + n).addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) closeTutorial(n);
+                });
+            });
+
+            if (!isTouchDevice) {
+                setTimeout(() => document.getElementById('searchBox').focus(), 100);
+            }
+            updateDisplay();
+        }
+
+        function convertToFeetInches(scale) {
+            const totalInches = (scale / 1000) * 39.3701;
+            const feet = Math.floor(totalInches / 12);
+            const inches = Math.round(totalInches % 12);
+            return feet + "'" + inches + '"';
+        }
+        function convertToMeters(scale) {
+            return (scale / 1000).toFixed(2) + 'm';
+        }
+        function getImageFilename(id) {
+            if (id.includes('.')) return id;
+            return String(parseInt(id, 10));
+        }
+        function getImagePath(pokemon) {
+            const fn = getImageFilename(pokemon.id);
+            return currentMediaType === 'animated'
+                ? ANIMATED_FOLDER + fn + '.webm'
+                : STATIC_FOLDER + fn + '.svg';
+        }
+        function getIconPath(pokemon) {
+            const id = pokemon.id;
+            const dotIndex = id.indexOf('.');
+            if (dotIndex !== -1) {
+                const suffix = id.slice(dotIndex + 1);
+                const baseNum = parseInt(suffix.replace(/^\d/, ''), 10) || parseInt(suffix, 10);
+                return ICON_FOLDER + baseNum + '.png';
+            }
+            return ICON_FOLDER + parseInt(id, 10) + '.png';
+        }
+        function calculateScale(visualHeight) { return visualHeight / BASE_SCALE; }
+        function getTopPoint(p) { return (p.groundOffset || 0) + p.visualHeight; }
+
+        function createPokemonElement(pokemon, isReference, scaleMultiplier) {
+            isReference = isReference || false;
+            scaleMultiplier = scaleMultiplier || 1;
+            const baseScale = calculateScale(pokemon.visualHeight);
+            const scale = baseScale * scaleMultiplier;
+            const heightPx = scale * 200;
+
+            const groundOffset = (!useBestFit && (pokemon.groundOffset || 0)) || 0;
+            const groundOffsetPx = (groundOffset / BASE_SCALE) * scaleMultiplier * 200;
+
+            const container = document.createElement('div');
+            container.className = 'pokemon-item' + (isReference ? ' reference' : '');
+            container.dataset.pokemonId = pokemon.id || 'reference';
+            if (groundOffsetPx > 0) container.style.marginBottom = groundOffsetPx + 'px';
+
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'pokemon-image';
+            imageContainer.style.height = heightPx + 'px';
+
+            let animPlayBtn = null;
+
+            if (currentMediaType === 'animated' && !isReference) {
+                const video = document.createElement('video');
+                video.src = getImagePath(pokemon);
+                video.style.height = heightPx + 'px';
+                video.style.width = 'auto';
+                video.muted = true;
+                video.playsInline = true;
+                video.setAttribute('muted', '');
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
+
+                let hasFallenBack = false;
+                function fallbackToStatic() {
+                    if (hasFallenBack) return;
+                    hasFallenBack = true;
+                    video.style.display = 'none';
+                    video.removeAttribute('src');
+                    video.load(); // release resources
+                    const img = document.createElement('img');
+                    const fn = getImageFilename(pokemon.id);
+                    img.src = STATIC_FOLDER + fn + '.svg';
+                    img.style.height = heightPx + 'px';
+                    img.style.width = 'auto';
+                    img.onerror = function() { this.src = STATIC_FOLDER + fn + '.webp'; };
+                    imageContainer.appendChild(img);
+                }
+
+                video.onerror = fallbackToStatic;
+                video.addEventListener('stalled', () => {
+                    setTimeout(() => { if (video.readyState < 2 && !hasFallenBack) fallbackToStatic(); }, 3000);
+                });
+
+                imageContainer.appendChild(video);
+
+                if (isSafari || isTouchDevice) {
+                    animPlayBtn = document.createElement('button');
+                    animPlayBtn.textContent = '▶';
+                    animPlayBtn.className = 'anim-play-btn';
+                    animPlayBtn.addEventListener('click', () => {
+                        if (hasFallenBack) return;
+                        if (video.paused) {
+                            video.play().catch(() => fallbackToStatic());
+                            animPlayBtn.textContent = '⏸';
+                        } else {
+                            video.pause();
+                            video.currentTime = 0;
+                            animPlayBtn.textContent = '▶';
+                        }
+                    });
+                    video.addEventListener('ended', () => {
+                        animPlayBtn.textContent = '▶';
+                        video.currentTime = 0;
+                    });
+                } else {
+                    video.loop = true;
+                    video.addEventListener('mouseenter', () => {
+                        if (!hasFallenBack) video.play().catch(() => fallbackToStatic());
+                    });
+                    video.addEventListener('mouseleave', () => {
+                        if (!hasFallenBack) { video.pause(); video.currentTime = 0; }
+                    });
+                }
+            } else {
+                const img = document.createElement('img');
+                if (isReference) {
+                    img.src = REFERENCE_FOLDER + REFERENCES[currentReference].file;
+                    img.style.height = heightPx + 'px';
+                    img.style.width = 'auto';
+                    img.style.opacity = '0.5';
+                    img.onerror = function() {
+                        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        svg.setAttribute('width', 60);
+                        svg.setAttribute('height', heightPx);
+                        svg.innerHTML = '<text x="30" y="' + (heightPx/2) + '" text-anchor="middle" dominant-baseline="middle" font-size="28" fill="#000000" opacity="0.5">' + pokemon.icon + '</text>';
+                        this.replaceWith(svg);
+                    };
+                } else {
+                    img.src = getImagePath(pokemon);
+                    img.style.height = heightPx + 'px';
+                    img.style.width = 'auto';
+                    img.onerror = function() {
+                        const fn = getImageFilename(pokemon.id);
+                        if (this.src.endsWith('.svg')) this.src = STATIC_FOLDER + fn + '.webp';
+                    };
+                }
+                imageContainer.appendChild(img);
+            }
+
+            // Measuring (non-reference, non-touch only)
+            if (!isReference && !isTouchDevice) {
+                imageContainer.classList.add('clickable');
+                imageContainer.style.cursor = 'crosshair';
+                imageContainer.style.userSelect = 'none';
+                imageContainer.dataset.pokemonId = pokemon.id;
+                imageContainer.dataset.pokemonScale = pokemon.visualHeight;
+                imageContainer.dataset.heightPx = heightPx;
+                imageContainer.addEventListener('mousedown', handleMeasureStart);
+
+                if (measureLines[pokemon.id]) {
+                    measureLines[pokemon.id].forEach(lineData => {
+                        const media = imageContainer.querySelector('img, video');
+                        setTimeout(() => restoreMeasureLine(lineData, imageContainer, media, heightPx, pokemon), 50);
+                    });
+                }
+            }
+
+            container.appendChild(imageContainer);
+            if (animPlayBtn) container.appendChild(animPlayBtn);
+
+            const labelsContainer = document.createElement('div');
+            labelsContainer.className = 'pokemon-labels';
+            const heightLabel = document.createElement('div');
+            heightLabel.className = 'pokemon-height';
+            const scaleValue = !useBestFit ? getTopPoint(pokemon) : pokemon.visualHeight;
+            heightLabel.textContent = useImperial ? convertToFeetInches(scaleValue) : convertToMeters(scaleValue);
+            labelsContainer.appendChild(heightLabel);
+            container.appendChild(labelsContainer);
+
+            return container;
+        }
+
+        function restoreMeasureLine(lineData, imageContainer, media, heightPx, pokemon) {
+            const imgWidth = media ? (media.offsetWidth || media.videoWidth || heightPx) : heightPx;
+            const imgHeight = media ? (media.offsetHeight || media.videoHeight || heightPx) : heightPx;
+            const x1 = lineData.x1Norm * imgWidth;
+            const y1 = lineData.y1Norm * imgHeight;
+            const x2 = lineData.x2Norm * imgWidth;
+            const y2 = lineData.y2Norm * imgHeight;
+            const dx = x2 - x1, dy = y2 - y1;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            const lineId = lineData.lineId;
+
+            const hitArea = document.createElement('div');
+            hitArea.className = 'measure-line-hitarea';
+            hitArea.style.width = length + 'px';
+            hitArea.style.left = x1 + 'px';
+            hitArea.style.top = y1 + 'px';
+            hitArea.style.transform = 'rotate(' + angle + 'deg)';
+            hitArea.dataset.lineId = lineId;
+
+            const lineElement = document.createElement('div');
+            lineElement.className = 'measure-line';
+            lineElement.style.width = length + 'px';
+            lineElement.style.left = x1 + 'px';
+            lineElement.style.top = y1 + 'px';
+            lineElement.style.transform = 'rotate(' + angle + 'deg)';
+            lineElement.dataset.lineId = lineId;
+
+            // FIX: use imgHeight for distance calc, not heightPx (container height)
+            const pokemonScaleMm = parseFloat(imageContainer.dataset.pokemonScale || pokemon.visualHeight);
+            const meters = (length / imgHeight) * (pokemonScaleMm / 1000);
+
+            const labelElement = document.createElement('div');
+            labelElement.className = 'measure-label';
+            labelElement.setAttribute('data-for-line', lineId);
+            labelElement.textContent = useImperial ? convertToFeetInches(meters * 1000) : meters.toFixed(2) + 'm';
+            const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
+            labelElement.style.left = midX + 'px';
+            labelElement.style.top = midY + 'px';
+            labelElement.style.display = 'none';
+
+            const deleteHandler = (e) => { e.stopPropagation(); e.preventDefault(); removeMeasureLine(pokemon.id, lineData); };
+            hitArea.addEventListener('click', deleteHandler);
+            lineElement.addEventListener('click', deleteHandler);
+
+            const showLabel = (e) => {
+                labelElement.style.left = (e.clientX - imageContainer.getBoundingClientRect().left) + 'px';
+                labelElement.style.top = (e.clientY - imageContainer.getBoundingClientRect().top) + 'px';
+                labelElement.style.display = 'block';
+            };
+            const hideLabel = () => { labelElement.style.display = 'none'; };
+            hitArea.addEventListener('mousemove', showLabel);
+            hitArea.addEventListener('mouseleave', hideLabel);
+            lineElement.addEventListener('mousemove', showLabel);
+            lineElement.addEventListener('mouseleave', hideLabel);
+
+            imageContainer.appendChild(hitArea);
+            imageContainer.appendChild(lineElement);
+            imageContainer.appendChild(labelElement);
+            lineData.element = lineElement;
+            lineData.hitarea = hitArea;
+            lineData.label = labelElement;
+        }
+
+        function handleMeasureStart(e) {
+            const imageContainer = e.currentTarget;
+            const pokemonId = imageContainer.dataset.pokemonId;
+            if (e.target.classList.contains('measure-line') || e.target.classList.contains('measure-line-hitarea')) return;
+
+            const img = imageContainer.querySelector('img, video');
+            if (!img) return;
+            const imgRect = img.getBoundingClientRect();
+            const x = e.clientX - imgRect.left;
+            const y = e.clientY - imgRect.top;
+            if (x < 0 || y < 0 || x > imgRect.width || y > imgRect.height) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            measuringState = {
+                pokemonId: pokemonId,
+                imageContainer: imageContainer,
+                imgRect: imgRect,
+                imgWidth: imgRect.width,
+                imgHeight: imgRect.height,
+                startX: x, startY: y,
+                pokemonScale: parseFloat(imageContainer.dataset.pokemonScale),
+                heightPx: parseFloat(imageContainer.dataset.heightPx)
+            };
+
+            const lineElement = document.createElement('div');
+            lineElement.className = 'measure-line drawing';
+            lineElement.style.width = '0px';
+            lineElement.style.height = '2px';
+            lineElement.style.left = x + 'px';
+            lineElement.style.top = y + 'px';
+            imageContainer.appendChild(lineElement);
+            measuringState.lineElement = lineElement;
+
+            document.addEventListener('mousemove', handleMeasureMove);
+            document.addEventListener('mouseup', handleMeasureEnd);
+        }
+
+        function handleMeasureMove(e) {
+            if (!measuringState) return;
+            const imgRect = measuringState.imgRect;
+            let x = Math.max(0, Math.min(e.clientX - imgRect.left, imgRect.width));
+            let y = Math.max(0, Math.min(e.clientY - imgRect.top, imgRect.height));
+            const dx = x - measuringState.startX, dy = y - measuringState.startY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            measuringState.lineElement.style.width = length + 'px';
+            measuringState.lineElement.style.transform = 'rotate(' + angle + 'deg)';
+            measuringState.currentX = x;
+            measuringState.currentY = y;
+        }
+
+        function handleMeasureEnd(e) {
+            if (!measuringState) return;
+            document.removeEventListener('mousemove', handleMeasureMove);
+            document.removeEventListener('mouseup', handleMeasureEnd);
+
+            const endX = measuringState.currentX != null ? measuringState.currentX : measuringState.startX;
+            const endY = measuringState.currentY != null ? measuringState.currentY : measuringState.startY;
+            const dx = endX - measuringState.startX, dy = endY - measuringState.startY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+
+            if (length < 5) {
+                measuringState.lineElement.remove();
+                measuringState = null;
+                return;
+            }
+
+            // FIX: use actual image pixel height for distance, not container heightPx
+            const imgHeight = measuringState.imgHeight;
+            const imgWidth = measuringState.imgWidth;
+            const x1Norm = measuringState.startX / imgWidth;
+            const y1Norm = measuringState.startY / imgHeight;
+            const x2Norm = endX / imgWidth;
+            const y2Norm = endY / imgHeight;
+
+            const pokemonScaleMm = measuringState.pokemonScale;
+            const meters = (length / imgHeight) * (pokemonScaleMm / 1000);
+
+            const lineId = ++measureLineIdCounter;
+            // Capture in local vars so the closure is correct
+            const pokemonId = measuringState.pokemonId;
+            const imageContainer = measuringState.imageContainer;
+
+            const labelElement = document.createElement('div');
+            labelElement.className = 'measure-label';
+            labelElement.setAttribute('data-for-line', lineId);
+            labelElement.textContent = useImperial ? convertToFeetInches(meters * 1000) : meters.toFixed(2) + 'm';
+            const midX = (measuringState.startX + endX) / 2, midY = (measuringState.startY + endY) / 2;
+            labelElement.style.left = midX + 'px';
+            labelElement.style.top = midY + 'px';
+            labelElement.style.display = 'none';
+            imageContainer.appendChild(labelElement);
+
+            const lineElement = measuringState.lineElement;
+            lineElement.classList.remove('drawing');
+            lineElement.dataset.lineId = lineId;
+
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            const hitArea = document.createElement('div');
+            hitArea.className = 'measure-line-hitarea';
+            hitArea.style.width = length + 'px';
+            hitArea.style.left = measuringState.startX + 'px';
+            hitArea.style.top = measuringState.startY + 'px';
+            hitArea.style.transform = 'rotate(' + angle + 'deg)';
+            hitArea.dataset.lineId = lineId;
+            imageContainer.appendChild(hitArea);
+
+            const lineData = { x1Norm: x1Norm, y1Norm: y1Norm, x2Norm: x2Norm, y2Norm: y2Norm, element: lineElement, hitarea: hitArea, label: labelElement, lineId: lineId };
+            if (!measureLines[pokemonId]) measureLines[pokemonId] = [];
+            measureLines[pokemonId].push(lineData);
+
+            const deleteHandler = (ev) => { ev.stopPropagation(); ev.preventDefault(); removeMeasureLine(pokemonId, lineData); };
+            hitArea.addEventListener('click', deleteHandler);
+            lineElement.addEventListener('click', deleteHandler);
+
+            const showLabel = (ev) => {
+                labelElement.style.left = (ev.clientX - imageContainer.getBoundingClientRect().left) + 'px';
+                labelElement.style.top = (ev.clientY - imageContainer.getBoundingClientRect().top) + 'px';
+                labelElement.style.display = 'block';
+            };
+            const hideLabel = () => { labelElement.style.display = 'none'; };
+            hitArea.addEventListener('mousemove', showLabel);
+            hitArea.addEventListener('mouseleave', hideLabel);
+            lineElement.addEventListener('mousemove', showLabel);
+            lineElement.addEventListener('mouseleave', hideLabel);
+
+            updateClearLinesButton();
+            measuringState = null;
+        }
+
+        function removeMeasureLine(pokemonId, lineData) {
+            if (lineData.element) lineData.element.remove();
+            if (lineData.hitarea) lineData.hitarea.remove();
+            if (lineData.label) lineData.label.remove();
+            const lines = measureLines[pokemonId];
+            if (lines) {
+                const idx = lines.indexOf(lineData);
+                if (idx > -1) lines.splice(idx, 1);
+                if (lines.length === 0) delete measureLines[pokemonId];
+            }
+            updateClearLinesButton();
+        }
+
+        function clearAllLines() {
+            Object.values(measureLines).forEach(lines => {
+                lines.forEach(ld => {
+                    if (ld.element) ld.element.remove();
+                    if (ld.hitarea) ld.hitarea.remove();
+                    if (ld.label) ld.label.remove();
+                });
+            });
+            measureLines = {};
+            updateClearLinesButton();
+        }
+
+        function updateClearLinesButton() {
+            document.getElementById('clearLinesBtn').style.display = Object.keys(measureLines).length > 0 ? 'block' : 'none';
+        }
+
+        function cancelCustomScale() {
+            document.getElementById('customScaleModal').classList.remove('active');
+        }
+
+        function saveCustomScale() {
+            const heightInput = document.getElementById('customHeight').value.trim();
+            const gender = document.getElementById('genderMale').classList.contains('active') ? 'male' : 'female';
+            if (!heightInput) { alert('Please enter a height'); return; }
+            let heightMm = parseHeightToMm(heightInput);
+            if (!heightMm || heightMm < 100 || heightMm > 3000) {
+                alert('Please enter a valid height between 0.1m and 3m (or 4" to 10\')');
+                return;
+            }
+            REFERENCES.custom.scale = heightMm;
+            REFERENCES.custom.gender = gender;
+            REFERENCES.custom.file = 'custom-' + gender + '.png';
+            currentReference = 'custom';
+            document.getElementById('scaleEmoji').textContent = REFERENCES.custom.icon;
+            document.getElementById('customScaleModal').classList.remove('active');
+            updateDisplay();
+        }
+
+        function parseHeightToMm(input) {
+            input = input.toLowerCase().trim();
+            var m;
+            m = input.match(/(\d+)['']?\s*(\d+)?[""]?/);
+            if (m) { return Math.round(((parseInt(m[1]) * 12) + (m[2] ? parseInt(m[2]) : 0)) * 25.4); }
+            m = input.match(/(\d+(?:\.\d+)?)\s*cm/);
+            if (m) return Math.round(parseFloat(m[1]) * 10);
+            m = input.match(/(\d+(?:\.\d+)?)\s*m/);
+            if (m) return Math.round(parseFloat(m[1]) * 1000);
+            m = input.match(/(\d+(?:\.\d+)?)\s*[""]?$/);
+            if (m && !input.includes('cm') && !input.includes('m')) return Math.round(parseFloat(m[1]) * 25.4);
+            var num = parseFloat(input);
+            return !isNaN(num) ? Math.round(num * 10) : null;
+        }
+
+        function showTutorial() {
+            document.getElementById('emptyState').style.display = 'flex';
+            document.getElementById('helpButton').style.display = 'none';
+        }
+
+        // Batched display update via requestAnimationFrame
+        function updateDisplay() {
+            if (displayRafId) cancelAnimationFrame(displayRafId);
+            displayRafId = requestAnimationFrame(_updateDisplayImpl);
+        }
+
+        function _updateDisplayImpl() {
+            displayRafId = null;
+            const container = document.getElementById('pokemonRow');
+            const comparisonArea = document.getElementById('comparisonArea');
+            const emptyState = document.getElementById('emptyState');
+            const helpButton = document.getElementById('helpButton');
+
+            container.querySelectorAll('.pokemon-item').forEach(el => el.remove());
+
+            if (selectedPokemon.length === 0) {
+                comparisonArea.classList.add('no-scroll');
+                comparisonArea.querySelectorAll('.alignment-line').forEach(l => l.remove());
+                if (!tutorialShown) { emptyState.style.display = 'flex'; helpButton.style.display = 'none'; }
+                else { emptyState.style.display = 'none'; helpButton.style.display = 'flex'; }
+                return;
+            }
+
+            tutorialShown = true;
+            emptyState.style.display = 'none';
+            helpButton.style.display = 'none';
+
+            const allScales = [REFERENCES[currentReference].scale].concat(selectedPokemon.map(p => p.visualHeight));
+            const maxScale = Math.max.apply(null, allScales);
+            const maxHeight = (maxScale / BASE_SCALE) * 200;
+            const viewHeight = comparisonArea.clientHeight - BASELINE_OFFSET - 60;
+            let scaleMultiplier = 1;
+            if (useBestFit && maxHeight > viewHeight) scaleMultiplier = viewHeight / maxHeight;
+
+            var baselinePosition = BASELINE_OFFSET;
+
+            if (!useBestFit) {
+                container.style.minHeight = (maxHeight * scaleMultiplier + BASELINE_OFFSET + 100) + 'px';
+            } else {
+                container.style.minHeight = '100%';
+            }
+
+            // FIX: enable scroll whenever content exceeds viewport in actual size mode
+            // (was previously hard-coded to 3000mm, cutting off 2.2-2.5m Pokemon)
+            var needsScroll = !useBestFit && (maxHeight > viewHeight);
+            comparisonArea.classList.toggle('no-scroll', !needsScroll);
+
+            // Build in fragment to minimize reflows
+            var frag = document.createDocumentFragment();
+            var refData = {
+                visualHeight: REFERENCES[currentReference].scale,
+                groundOffset: 0,
+                icon: REFERENCES[currentReference].icon,
+                id: 'reference'
+            };
+            frag.appendChild(createPokemonElement(refData, true, scaleMultiplier));
+            selectedPokemon.forEach(function(pokemon) {
+                frag.appendChild(createPokemonElement(pokemon, false, scaleMultiplier));
+            });
+            container.appendChild(frag);
+
+            updateGrid(scaleMultiplier, maxScale, baselinePosition);
+
+            if (!useBestFit) {
+                requestAnimationFrame(function() {
+                    comparisonArea.scrollTop = comparisonArea.scrollHeight;
+                    comparisonArea.scrollLeft = 0;
+                });
+            }
+        }
+
+        function updateGrid(scaleMultiplier, maxScale, baselinePosition) {
+            var container = document.getElementById('comparisonArea');
+            container.querySelectorAll('.alignment-line').forEach(function(l) { l.remove(); });
+            if (!useBestFit || selectedPokemon.length === 0) return;
+
+            var baseline = document.createElement('div');
+            baseline.className = 'alignment-line baseline';
+            baseline.style.bottom = baselinePosition + 'px';
+            var baseTooltip = document.createElement('div');
+            baseTooltip.className = 'line-tooltip';
+            baseTooltip.textContent = '0m';
+            baseline.appendChild(baseTooltip);
+            baseline.addEventListener('mousemove', function(e) {
+                baseTooltip.style.left = (e.clientX - baseline.getBoundingClientRect().left) + 'px';
+            });
+            container.appendChild(baseline);
+
+            if (!showGrid || selectedPokemon.length === 0) return;
+
+            if (!maxScale) {
+                var allScales = [REFERENCES[currentReference].scale].concat(selectedPokemon.map(function(p){ return p.visualHeight; }));
+                maxScale = Math.max.apply(null, allScales);
+            }
+            var actualMaxHeight = (maxScale / BASE_SCALE) * 200 * scaleMultiplier;
+            var frag = document.createDocumentFragment();
+            for (var i = 100; i <= actualMaxHeight + 200; i += 100) {
+                var gridLine = document.createElement('div');
+                gridLine.className = 'alignment-line grid';
+                gridLine.style.bottom = (baselinePosition + i) + 'px';
+                var m = (i / scaleMultiplier / 200).toFixed(2);
+                var tooltip = document.createElement('div');
+                tooltip.className = 'line-tooltip';
+                tooltip.textContent = useImperial ? convertToFeetInches(m * 1000) : m + 'm';
+                gridLine.appendChild(tooltip);
+                (function(gl, tt) {
+                    gl.addEventListener('mousemove', function(e) {
+                        tt.style.left = (e.clientX - gl.getBoundingClientRect().left) + 'px';
+                    });
+                })(gridLine, tooltip);
+                frag.appendChild(gridLine);
+            }
+            container.appendChild(frag);
+        }
+
+        function updateSelectedTags() {
+            var container = document.getElementById('selectedTags');
+            container.innerHTML = '';
+            selectedPokemon.forEach(function(pokemon) {
+                var tag = document.createElement('div');
+                tag.className = 'selected-tag';
+                var formText = pokemon.form_name !== 'Normal' ? ' (' + pokemon.form_name + ')' : '';
+                var nameSpan = document.createElement('span');
+                nameSpan.textContent = pokemon.pokemon_name + formText;
+                var removeSpan = document.createElement('span');
+                removeSpan.className = 'remove';
+                removeSpan.textContent = '✕';
+                removeSpan.addEventListener('click', function() { removePokemon(pokemon.id); });
+                tag.appendChild(nameSpan);
+                tag.appendChild(removeSpan);
+                container.appendChild(tag);
+            });
+        }
+
+        function addPokemon(pokemon) {
+            if (selectedPokemon.find(function(p) { return p.id === pokemon.id; })) return;
+            selectedPokemon.push(pokemon);
+            updateSelectedTags();
+            updateDisplay();
+            document.getElementById('searchBox').value = '';
+            document.getElementById('searchResults').classList.remove('active');
+            selectedSearchIndex = -1;
+        }
+
+        function removePokemon(pokemonId) {
+            selectedPokemon = selectedPokemon.filter(function(p) { return p.id !== pokemonId; });
+            delete measureLines[pokemonId];
+            updateSelectedTags();
+            updateDisplay();
+        }
+
+        function searchPokemon(query) {
+            if (!query) {
+                document.getElementById('searchResults').classList.remove('active');
+                selectedSearchIndex = -1;
+                return;
+            }
+            var lq = query.toLowerCase();
+            var results = pokemonData.filter(function(p) { return p.pokemon_name.toLowerCase().startsWith(lq); });
+            if (results.length === 0) results = pokemonData.filter(function(p) { return p.pokemon_name.toLowerCase().includes(lq); });
+            results = results.slice(0, 50);
+
+            var container = document.getElementById('searchResults');
+            container.innerHTML = '';
+            if (results.length > 0) {
+                container.classList.add('active');
+                results.forEach(function(pokemon, index) {
+                    var item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    item.dataset.index = index;
+                    item.onclick = function() { addPokemon(pokemon); };
+                    var img = document.createElement('img');
+                    img.src = getIconPath(pokemon);
+                    img.loading = 'lazy';
+                    img.onerror = function() { this.style.display = 'none'; };
+                    var name = document.createElement('div');
+                    name.className = 'name';
+                    var formText = pokemon.form_name !== 'Normal' ? ' (' + pokemon.form_name + ')' : '';
+                    name.textContent = pokemon.pokemon_name + formText;
+                    item.appendChild(img);
+                    item.appendChild(name);
+                    container.appendChild(item);
+                });
+            } else {
+                container.classList.remove('active');
+            }
+        }
+
+        function selectSearchResult(index) {
+            var items = document.querySelectorAll('.search-result-item');
+            items.forEach(function(item) { item.classList.remove('selected'); });
+            if (index >= 0 && index < items.length) {
+                items[index].classList.add('selected');
+                items[index].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // Event listeners
+        document.getElementById('searchBox').addEventListener('input', function(e) { searchPokemon(e.target.value); });
+
+        document.getElementById('searchBox').addEventListener('keydown', function(e) {
+            var results = document.querySelectorAll('.search-result-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedSearchIndex = Math.min(selectedSearchIndex + 1, results.length - 1);
+                selectSearchResult(selectedSearchIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedSearchIndex = Math.max(selectedSearchIndex - 1, -1);
+                selectSearchResult(selectedSearchIndex);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedSearchIndex >= 0) results[selectedSearchIndex].click();
+                else if (results.length > 0) results[0].click();
+            } else if (e.key === 'Escape') {
+                document.getElementById('searchResults').classList.remove('active');
+                selectedSearchIndex = -1;
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-section')) {
+                document.getElementById('searchResults').classList.remove('active');
+                document.getElementById('searchBox').value = '';
+                selectedSearchIndex = -1;
+            }
+            if (!e.target.closest('.scale-btn, .scale-options') && scaleExpanded) {
+                document.getElementById('scaleOptions').classList.remove('active');
+                scaleExpanded = false;
+            }
+        });
+
+        document.querySelectorAll('.scale-option').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var ref = btn.dataset.ref;
+                if (ref === 'custom') {
+                    document.getElementById('customScaleModal').classList.add('active');
+                    document.getElementById('scaleOptions').classList.remove('active');
+                    scaleExpanded = false;
+                } else {
+                    currentReference = ref;
+                    document.getElementById('scaleEmoji').textContent = REFERENCES[currentReference].icon;
+                    document.getElementById('scaleOptions').classList.remove('active');
+                    scaleExpanded = false;
+                    updateDisplay();
+                }
+            });
+        });
+
+        function toggleScale() {
+            scaleExpanded = !scaleExpanded;
+            document.getElementById('scaleOptions').classList.toggle('active', scaleExpanded);
+        }
+
+        function toggleGrid() {
+            showGrid = !showGrid;
+            document.getElementById('gridToggle').classList.toggle('active', showGrid);
+            var allScales = [REFERENCES[currentReference].scale].concat(selectedPokemon.map(function(p){ return p.visualHeight; }));
+            var maxScale = Math.max.apply(null, allScales);
+            var maxHeight = (maxScale / BASE_SCALE) * 200;
+            var viewHeight = document.getElementById('comparisonArea').clientHeight - BASELINE_OFFSET - 60;
+            var scaleMultiplier = 1;
+            if (useBestFit && maxHeight > viewHeight) scaleMultiplier = viewHeight / maxHeight;
+            updateGrid(scaleMultiplier, maxScale, BASELINE_OFFSET);
+        }
+
+        document.querySelectorAll('.media-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.media-btn').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                currentMediaType = btn.dataset.media;
+                updateDisplay();
+            });
+        });
+
+        function toggleUnits() {
+            useImperial = !useImperial;
+            updateDisplay();
+        }
+
+        function toggleZoom() {
+            useBestFit = !useBestFit;
+            var btn = document.getElementById('zoomToggle');
+            var gridBtn = document.getElementById('gridToggle');
+            btn.innerHTML = useBestFit ? '🔍 Zoom to Fit' : '🔍 Actual Size';
+            btn.classList.toggle('active', useBestFit);
+            if (!useBestFit) {
+                gridBtn.disabled = true;
+                showGrid = false;
+                gridBtn.classList.remove('active');
+            } else {
+                gridBtn.disabled = false;
+            }
+            updateDisplay();
+        }
+    </script>
+</body>
+</html>
