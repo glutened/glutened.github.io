@@ -38,7 +38,7 @@
         .pokemon-row { display: flex; align-items: flex-end; gap: 40px; position: relative; min-height: 100%; padding-bottom: 80px; z-index: 10; }
         .pokemon-item { display: flex; flex-direction: column; align-items: center; position: relative; }
         .pokemon-item.reference { order: -1; }
-        .pokemon-image { display: flex; align-items: flex-end; justify-content: center; position: relative; }
+        .pokemon-image { display: flex; align-items: flex-end; justify-content: center; position: relative; margin-bottom: 4px; }
         .pokemon-image img, .pokemon-image video { display: block; }
         .pokemon-image.clickable { overflow: hidden; }
         .measure-line { position: absolute; background: #f00; transform-origin: top left; pointer-events: auto; z-index: 20; cursor: pointer; height: 2px; }
@@ -125,6 +125,8 @@
         .expand-overlay.active { display: flex; }
         .expand-content { flex: 1; overflow: auto; display: flex; align-items: flex-end; justify-content: center; padding: 20px; position: relative; }
         .expand-controls { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 2px solid #000; background: #fff; }
+        .expand-controls > div:first-child, .expand-controls > .media-toggle { flex: 1; }
+        .expand-controls > .media-toggle { display: flex; justify-content: flex-end; }
         .expand-baseline { position: absolute; left: 0; right: 0; height: 3px; background: #000; }
         .mobile-zoom-btn { display: none; }
         /* Unlock modal */
@@ -145,24 +147,22 @@
             .search-box { padding: 10px 12px; font-size: 16px; }
             .selected-pokemon-area { margin-bottom: 6px; min-height: 28px; }
             .selected-tag { padding: 5px 8px; font-size: 0.78em; }
-            .comparison-area { margin: 0 6px 6px; padding: 6px 2px 6px 2px; }
-            .pokemon-row { gap: 4px; padding-bottom: 60px; justify-content: flex-start; padding-left: 8px; }
-            .pokemon-item { max-width: 45vw; flex-shrink: 0; }
-            .pokemon-image img, .pokemon-image video { max-width: 44vw; height: auto !important; }
+            .comparison-area { margin: 0 6px 6px; padding: 6px 4px 6px 4px; }
+            .pokemon-row { gap: 4px; padding-bottom: 40px; justify-content: center; flex-wrap: nowrap; padding-left: 4px; }
             .pokemon-height { font-size: 0.85em; }
             .pokemon-labels { bottom: -28px; }
             .grid-label { font-size: 0.6em; left: 2px; }
             .empty-state { padding: 12px 16px; }
-            .controls-center { display: none; }
-            .controls { padding: 8px 10px; gap: 8px; justify-content: space-between; }
-            .control-btn { padding: 10px 14px; font-size: 0.9em; }
-            .scale-btn { padding: 10px 14px; font-size: 0.9em; }
+            .controls { padding: 8px 10px; gap: 6px; justify-content: space-between; flex-wrap: nowrap; }
+            .controls-center { position: static; transform: none; }
+            .control-btn { padding: 8px 12px; font-size: 0.85em; }
+            .scale-btn { padding: 8px 12px; font-size: 0.85em; }
             .scale-options { display: none !important; }
             .media-toggle { border: 2px solid #000; }
-            .media-btn { padding: 10px 14px; font-size: 1.1em; border-right: 2px solid #000; }
+            .media-btn { padding: 8px 12px; font-size: 1em; border-right: 2px solid #000; }
             .media-btn:last-child { border-right: none; }
             .view-toggle { border: 2px solid #000; }
-            .view-btn { padding: 10px 14px; font-size: 1.1em; border-right: 2px solid #000; }
+            .view-btn { padding: 8px 12px; font-size: 1em; border-right: 2px solid #000; }
             .view-btn:last-child { border-right: none; }
             .mobile-zoom-btn { display: none; }
         }
@@ -227,12 +227,8 @@
 <div class="expand-overlay" id="expandOverlay">
     <div class="expand-content" id="expandContent"></div>
     <div class="expand-controls">
-        <div style="display:flex;gap:10px;align-items:center">
-            <div class="view-toggle">
-                <button class="view-btn" data-view="fit" id="expandBackBtn">Fit ⛶</button>
-                <button class="view-btn active" data-view="expand">Expand ⤢</button>
-            </div>
-        </div>
+        <div></div>
+        <button class="control-btn" id="expandCloseBtn" style="font-size:1em;padding:10px 28px;">✕ Close</button>
         <div id="expandMediaToggle" class="media-toggle">
             <button class="media-btn active" data-media="static">Static</button>
             <button class="media-btn" data-media="animated">Animated</button>
@@ -256,8 +252,8 @@ var isTouchDevice=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
 var isMobile=window.matchMedia('(max-width:768px)').matches;
 var isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-var STATIC_FOLDER='images/', ANIMATED_FOLDER='images/size/', THREED_FOLDER='3d/';
-var PLUSH_FOLDER='card/', SPRITE_FOLDER='xgif/';
+var STATIC_FOLDER='images/', ANIMATED_FOLDER='images/size/', THREED_FOLDER='images/3d/';
+var PLUSH_FOLDER='images/card/', SPRITE_FOLDER='images/xgif/';
 var ICON_FOLDER='icons/poke/', REFERENCE_FOLDER='images/reference/';
 var BASE_SCALE=1000, BASELINE_OFFSET=isMobile?70:120, TOP_PADDING=30, MOBILE_MAX_POKEMON=2;
 
@@ -316,7 +312,11 @@ function initializeApp(){
             else { useBestFit=true; updateViewButtons(); updateDisplay(); }
         });
     });
-    $('expandBackBtn').addEventListener('click',exitExpand);
+    $('expandCloseBtn').addEventListener('click',exitExpand);
+    $('expandContent').addEventListener('click',function(e){
+        // Exit if clicking background, not on an image/video/button
+        if(!e.target.closest('img,video,button')) exitExpand();
+    });
 
     // Media toggles (main + expand)
     function setupMediaToggle(container){
@@ -682,6 +682,22 @@ function _updateDisplayImpl(){
     var vH=ca.clientHeight-BASELINE_OFFSET-TOP_PADDING;
     var sm=1; if(maxH>vH) sm=vH/maxH;
 
+    // Mobile: also constrain by width so items fit side by side
+    if(isMobile && visPoke.length>0){
+        var numItems=visPoke.length+(showRef?1:0);
+        var availW=ca.clientWidth-16; // padding
+        var maxItemW=availW/numItems-8; // gap
+        // Estimate widths: assume aspect ratio ~0.7 (width/height)
+        // After height scaling, each item's width ≈ hPx * 0.7
+        // We need: maxItemScaledH * 0.7 <= maxItemW
+        var tallestH=(maxS/BASE_SCALE)*sm*200;
+        var estWidth=tallestH*0.85; // generous ratio
+        if(estWidth>maxItemW){
+            var widthSm=maxItemW/(tallestH*0.85);
+            sm=sm*widthSm;
+        }
+    }
+
     ca.classList.add('no-scroll');
     container.style.minHeight='100%';
 
@@ -719,7 +735,10 @@ function updateSelectedTags(){
     selectedPokemon.forEach(function(p){
         var tag=document.createElement('div');tag.className='selected-tag';
         var ft=p.form_name!=='Normal'?' ('+p.form_name+')':'';
-        tag.textContent=p.pokemon_name+ft;
+        tag.textContent=''; // clear
+        var ns=document.createElement('span');ns.textContent=p.pokemon_name+ft;
+        var rs=document.createElement('span');rs.textContent=' ✕';rs.style.opacity='0.7';rs.style.marginLeft='4px';
+        tag.appendChild(ns);tag.appendChild(rs);
         tag.addEventListener('click',function(){removePokemon(p.id);});
         c.appendChild(tag);
     });
