@@ -56,18 +56,20 @@
             overflow-y: auto; overflow-x: auto;
         }
         .comparison-area.no-scroll { overflow-y: hidden; }
+        /* Grid lines - now with labels on left edge */
         .alignment-line {
-            position: absolute; left: 40px; right: 40px; height: 3px;
+            position: absolute; left: 0px; right: 0px; height: 3px;
             background: #000000; z-index: 5;
         }
         .alignment-line.baseline { z-index: 10; }
-        .alignment-line.grid { height: 1px; background: #d0d0d0; }
-        .line-tooltip {
-            position: absolute; background: #000000; color: #ffffff; padding: 4px 8px;
-            font-size: 0.75em; white-space: nowrap; pointer-events: none;
-            display: none; z-index: 10; bottom: 5px; transform: translateX(-50%);
+        .alignment-line.grid-major { height: 1px; background: #aaa; }
+        .alignment-line.grid-minor { height: 1px; background: #ddd; }
+        .grid-label {
+            position: absolute; left: 4px; bottom: 3px; font-size: 0.8em;
+            color: #888; font-family: 'SF Mono','Monaco','Courier New',monospace;
+            white-space: nowrap; pointer-events: none; z-index: 6;
         }
-        .alignment-line:hover .line-tooltip { display: block; }
+        .grid-label.major-label { color: #555; font-weight: 600; font-size: 0.85em; }
         .pokemon-row {
             display: flex; align-items: flex-end; gap: 40px;
             position: relative; min-height: 100%; padding-bottom: 50px;
@@ -83,14 +85,12 @@
             position: absolute; background: #ff0000; transform-origin: top left;
             pointer-events: auto; z-index: 20; cursor: pointer; height: 2px;
         }
-        /* Wider invisible hit area for easier clicking/deleting */
         .measure-line-hitarea {
             position: absolute; background: transparent; transform-origin: top left;
             pointer-events: auto; z-index: 19; cursor: pointer; height: 18px; margin-top: -8px;
         }
         .measure-line.drawing { pointer-events: none; }
-        .measure-line-hitarea:hover + .measure-line,
-        .measure-line:hover { background: #cc0000; }
+        .measure-line-hitarea:hover + .measure-line, .measure-line:hover { background: #cc0000; }
         .measure-line::before, .measure-line::after {
             content: ''; position: absolute; width: 2px; height: 10px;
             background: #ff0000; display: none;
@@ -99,12 +99,10 @@
         .measure-line::after { right: 0; top: 50%; transform: translateY(-50%); }
         .measure-line-hitarea:hover + .measure-line::before,
         .measure-line-hitarea:hover + .measure-line::after,
-        .measure-line:hover::before, .measure-line:hover::after {
-            display: block; background: #cc0000;
-        }
+        .measure-line:hover::before, .measure-line:hover::after { display: block; background: #cc0000; }
         .measure-label {
-            position: absolute; background: #ff0000; color: #ffffff; padding: 2px 6px;
-            font-size: 0.75em; white-space: nowrap; pointer-events: none; z-index: 21;
+            position: absolute; background: #ff0000; color: #ffffff; padding: 3px 8px;
+            font-size: 0.9em; white-space: nowrap; pointer-events: none; z-index: 21;
             border-radius: 2px; display: none; transform: translate(-50%, -100%); margin-top: -5px;
         }
         .pokemon-labels {
@@ -112,14 +110,10 @@
             position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%);
         }
         .pokemon-height {
-            font-size: 0.85em; color: #666666;
-            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace; text-align: center;
+            font-size: 1em; color: #555;
+            font-family: 'SF Mono','Monaco','Courier New',monospace; text-align: center;
+            font-weight: 600;
         }
-        .remove-pokemon {
-            margin-top: 2px; font-size: 0.75em; color: #999999;
-            cursor: pointer; text-decoration: none; transition: color 0.2s;
-        }
-        .remove-pokemon:hover { color: #000000; }
         .controls {
             flex-shrink: 0; background: #ffffff; border-top: 2px solid #000000;
             padding: 12px 20px; display: flex; justify-content: space-between;
@@ -144,37 +138,17 @@
             padding: 30px 80px 40px; text-align: left; position: relative;
         }
         .empty-state h2 { font-size: 1.5em; margin-bottom: 10px; color: #333; }
-        .empty-state p {
-            font-size: 0.95em; color: #666; margin-bottom: 20px;
-            max-width: 680px; line-height: 1.6;
-        }
+        .empty-state p { font-size: 0.95em; color: #666; margin-bottom: 20px; max-width: 680px; line-height: 1.6; }
         .tutorial-links { display: flex; gap: 20px; }
-        .tutorial-link {
-            color: #000; font-size: 0.9em; font-weight: 600; cursor: pointer;
-            text-decoration: underline; text-underline-offset: 3px; user-select: none;
-        }
+        .tutorial-link { color: #000; font-size: 0.9em; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; user-select: none; }
         .tutorial-link:hover { opacity: 0.55; }
-        .tutorial-modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-            display: none; align-items: center; justify-content: center; z-index: 3000;
-        }
+        .tutorial-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; z-index: 3000; }
         .tutorial-modal-overlay.active { display: flex; }
-        .tutorial-modal {
-            background: #fff; border: 2px solid #000; padding: 24px;
-            position: relative; max-width: 90vw;
-        }
+        .tutorial-modal { background: #fff; border: 2px solid #000; padding: 24px; position: relative; max-width: 90vw; }
         .tutorial-modal h3 { margin: 0 0 14px 0; font-size: 1.1em; }
-        .tutorial-modal video {
-            display: block; max-width: 700px; width: 70vw; height: auto; background: #000;
-        }
-        .tutorial-modal-footer {
-            margin-top: 12px; display: flex; gap: 10px;
-            align-items: center; justify-content: flex-end;
-        }
-        .tutorial-modal-footer .close-btn {
-            padding: 7px 18px; border: 2px solid #000; background: #fff; color: #000;
-            cursor: pointer; font-family: inherit; font-size: 0.9em; font-weight: 600;
-        }
+        .tutorial-modal video { display: block; max-width: 700px; width: 70vw; height: auto; background: #000; }
+        .tutorial-modal-footer { margin-top: 12px; display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
+        .tutorial-modal-footer .close-btn { padding: 7px 18px; border: 2px solid #000; background: #fff; color: #000; cursor: pointer; font-family: inherit; font-size: 0.9em; font-weight: 600; }
         .tutorial-modal-footer .close-btn:hover { background: #f0f0f0; }
         .help-button {
             position: absolute; top: 60px; right: 60px; width: 32px; height: 32px;
@@ -183,123 +157,82 @@
             justify-content: center; transition: background 0.2s; z-index: 100;
         }
         .help-button:hover { background: #d0d0d0; }
-        .help-button .tooltip {
-            position: absolute; bottom: -30px; right: 0; background: #333; color: #fff;
-            padding: 4px 8px; border-radius: 3px; font-size: 12px;
-            white-space: nowrap; display: none; pointer-events: none;
-        }
+        .help-button .tooltip { position: absolute; bottom: -30px; right: 0; background: #333; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; white-space: nowrap; display: none; pointer-events: none; }
         .help-button:hover .tooltip { display: block; }
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); display: none; align-items: center;
-            justify-content: center; z-index: 1000;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal-overlay.active { display: flex; }
-        .modal {
-            background: #ffffff; border: 2px solid #000000; padding: 30px;
-            max-width: 400px; width: 90%;
-        }
+        .modal { background: #ffffff; border: 2px solid #000000; padding: 30px; max-width: 400px; width: 90%; }
         .modal h3 { margin: 0 0 20px 0; font-size: 1.3em; }
         .modal-field { margin-bottom: 20px; }
         .modal-field label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; }
-        .modal-field input {
-            width: 100%; padding: 8px; border: 2px solid #000000;
-            font-family: inherit; font-size: 1em;
-        }
+        .modal-field input { width: 100%; padding: 8px; border: 2px solid #000000; font-family: inherit; font-size: 1em; }
         .modal-field input:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,0.1); }
         .modal-gender { display: flex; gap: 10px; }
-        .modal-gender-btn {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            padding: 10px; border: 2px solid #000000; cursor: pointer;
-            transition: background 0.2s, color 0.2s; font-weight: 500;
-            font-family: inherit; font-size: 1em; background: #ffffff; color: #000000;
-        }
+        .modal-gender-btn { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; border: 2px solid #000000; cursor: pointer; transition: background 0.2s, color 0.2s; font-weight: 500; font-family: inherit; font-size: 1em; background: #ffffff; color: #000000; }
         .modal-gender-btn:hover { background: #f0f0f0; }
         .modal-gender-btn.active { background: #000000; color: #ffffff; }
         .modal-buttons { display: flex; gap: 10px; margin-top: 25px; }
-        .modal-buttons button {
-            flex: 1; padding: 10px; border: 2px solid #000000; background: #ffffff;
-            cursor: pointer; font-family: inherit; font-size: 1em;
-            font-weight: 500; transition: background 0.2s;
-        }
+        .modal-buttons button { flex: 1; padding: 10px; border: 2px solid #000000; background: #ffffff; cursor: pointer; font-family: inherit; font-size: 1em; font-weight: 500; transition: background 0.2s; }
         .modal-buttons button:hover { background: #f0f0f0; }
         .modal-buttons button.primary { background: #000000; color: #ffffff; }
         .modal-buttons button.primary:hover { background: #333333; }
-        .anim-play-btn {
-            background: #000; color: #fff; border: none; padding: 4px 14px;
-            font-size: 0.8em; font-family: inherit; cursor: pointer;
-            margin-top: 4px; font-weight: 600;
-        }
+        .anim-play-btn { background: #000; color: #fff; border: none; padding: 4px 14px; font-size: 0.8em; font-family: inherit; cursor: pointer; margin-top: 4px; font-weight: 600; }
         .anim-play-btn:hover { background: #333; }
-        .scale-btn {
-            background: #000000; color: #ffffff; border: 2px solid #000000;
-            padding: 7px 12px; cursor: pointer; font-size: 0.85em; font-weight: 600;
-            display: flex; align-items: center; gap: 6px; font-family: inherit;
-        }
+        .scale-btn { background: #000000; color: #ffffff; border: 2px solid #000000; padding: 7px 12px; cursor: pointer; font-size: 0.85em; font-weight: 600; display: flex; align-items: center; gap: 6px; font-family: inherit; }
         .scale-btn:hover { background: #333333; }
-        .scale-options {
-            display: none; position: absolute; bottom: 100%; left: 0;
-            background: #000000; margin-bottom: 4px; padding: 6px; gap: 6px;
-        }
+        .scale-options { display: none; position: absolute; bottom: 100%; left: 0; background: #000000; margin-bottom: 4px; padding: 6px; gap: 6px; }
         .scale-options.active { display: flex; }
-        .scale-option {
-            background: transparent; color: #ffffff; border: 1px solid #ffffff;
-            padding: 6px 10px; cursor: pointer; font-size: 1.1em; transition: all 0.2s;
-        }
+        .scale-option { background: transparent; color: #ffffff; border: 1px solid #ffffff; padding: 6px 10px; cursor: pointer; font-size: 1.1em; transition: all 0.2s; }
         .scale-option:hover { background: #ffffff; color: #000000; }
         .media-toggle { display: flex; gap: 0; border: 2px solid #000000; }
-        .media-btn {
-            background: #ffffff; border: none; border-right: 2px solid #000000;
-            padding: 7px 12px; cursor: pointer; font-size: 0.8em;
-            transition: all 0.2s; font-family: inherit; font-weight: 600;
-        }
+        .media-btn { background: #ffffff; border: none; border-right: 2px solid #000000; padding: 7px 12px; cursor: pointer; font-size: 0.8em; transition: all 0.2s; font-family: inherit; font-weight: 600; }
         .media-btn:last-child { border-right: none; }
         .media-btn:hover { background: #f0f0f0; }
         .media-btn.active { background: #000000; color: #ffffff; }
+        /* Mobile zoom button inside comparison area */
+        .mobile-zoom-btn {
+            display: none; position: absolute; bottom: 12px; right: 12px; z-index: 50;
+            background: #fff; color: #000; border: 2px solid #000; padding: 10px 16px;
+            cursor: pointer; font-size: 0.95em; font-weight: 700; font-family: inherit;
+        }
+        .mobile-zoom-btn.active { background: #000; color: #fff; }
 
-        /* ===== MOBILE RESPONSIVE ===== */
+        /* ===== MOBILE ===== */
         @media (max-width: 768px) {
-            .header { padding: 12px 10px 10px; margin: 0 8px; }
-            h1 { font-size: 1.2em; margin-bottom: 10px; }
-            .search-box { padding: 10px 12px; font-size: 16px; /* prevents iOS zoom */ }
-            .search-result-item { padding: 6px 10px; gap: 10px; }
-            .search-result-item img { width: 32px; height: 32px; }
-            .selected-pokemon-area { margin-bottom: 8px; min-height: 28px; }
+            .header { padding: 18px 12px 10px; margin: 0 6px; }
+            h1 { font-size: 1.5em; margin-bottom: 12px; }
+            .search-box { padding: 10px 12px; font-size: 16px; }
+            .search-result-item { padding: 8px 10px; gap: 10px; }
+            .search-result-item img { width: 36px; height: 36px; }
+            .selected-pokemon-area { margin-bottom: 6px; min-height: 28px; }
             .selected-pokemon-tags { gap: 5px; }
             .selected-tag { padding: 5px 8px; font-size: 0.78em; }
-            .comparison-area { margin: 0 8px 8px; padding: 15px; }
-            .alignment-line { left: 15px; right: 15px; }
-            .pokemon-row { gap: 15px; padding-bottom: 40px; }
-            .empty-state { padding: 15px 20px 20px; }
-            .empty-state h2 { font-size: 1.15em; }
-            .empty-state p { font-size: 0.85em; line-height: 1.5; }
-            .tutorial-links { flex-direction: column; gap: 10px; }
-            .help-button { top: 15px; right: 15px; }
+            .comparison-area { margin: 0 6px 6px; padding: 10px 10px 10px 36px; }
+            .pokemon-row { gap: 8px; padding-bottom: 20px; justify-content: center; }
+            .pokemon-height { font-size: 0.9em; }
+            .grid-label { font-size: 0.65em; left: 2px; }
+            .empty-state { padding: 12px 16px 16px; }
+            .empty-state h2 { font-size: 1.1em; }
+            .empty-state p { font-size: 0.82em; line-height: 1.4; }
+            .tutorial-links { flex-direction: column; gap: 8px; }
+            .help-button { top: 10px; right: 10px; }
+            /* Desktop controls hidden; mobile bar shown */
+            .controls-center { display: none; }
             .controls {
-                padding: 8px 10px; flex-wrap: wrap; gap: 6px; justify-content: center;
+                padding: 8px 10px; flex-wrap: nowrap; gap: 8px; justify-content: space-between;
             }
-            .controls-center {
-                position: static; transform: none; order: -1;
-                width: 100%; justify-content: center;
-            }
-            .controls-left { order: 0; }
-            .controls-right { order: 1; }
-            .controls-left, .controls-center, .controls-right { gap: 5px; }
-            .control-btn { padding: 6px 10px; font-size: 0.75em; }
-            .scale-btn { padding: 6px 10px; font-size: 0.75em; }
-            .scale-options { bottom: auto; top: 100%; margin-top: 4px; margin-bottom: 0; }
-            .media-btn { padding: 6px 8px; font-size: 0.72em; }
+            .controls-left { gap: 6px; }
+            .controls-right { gap: 6px; }
+            .control-btn { padding: 10px 14px; font-size: 0.9em; }
+            .scale-btn { padding: 10px 14px; font-size: 0.9em; }
+            .scale-options { display: none !important; } /* mobile uses cycle */
+            .media-toggle { border: none; gap: 0; }
+            .media-btn { padding: 10px 14px; font-size: 0.9em; border: 2px solid #000; }
+            .media-btn:last-child { border-left: none; }
+            .mobile-zoom-btn { display: block; }
             .tutorial-modal { padding: 16px; max-width: 95vw; }
             .tutorial-modal video { width: 85vw; max-width: 85vw; }
             .modal { padding: 20px; max-width: 95vw; }
-        }
-        @media (max-width: 420px) {
-            h1 { font-size: 1em; margin-bottom: 8px; }
-            .selected-tag { padding: 4px 6px; font-size: 0.72em; }
-            .control-btn { padding: 5px 7px; font-size: 0.7em; }
-            .scale-btn { padding: 5px 7px; font-size: 0.7em; }
-            .media-btn { padding: 5px 6px; font-size: 0.68em; }
-            .pokemon-row { gap: 10px; }
         }
     </style>
 </head>
@@ -315,13 +248,13 @@
                 <div id="selectedTags" class="selected-pokemon-tags"></div>
             </div>
         </div>
-
         <div class="comparison-area no-scroll" id="comparisonArea">
             <button class="help-button" id="helpButton">?<span class="tooltip">Review tutorial</span></button>
+            <button class="mobile-zoom-btn active" id="mobileZoomBtn">ZOOM</button>
             <div id="pokemonRow" class="pokemon-row">
                 <div class="empty-state" id="emptyState" style="display: none;">
                     <h2>Pokemon Size Comparison</h2>
-                    <p>Search for any Pokemon to add them to the canvas — stack as many as you like. Toggle <strong>Grid Lines</strong> for scale reference, swap the <strong>Scale</strong> object (human, car, door…) or enter a custom height, hit <strong>Actual Size</strong> to see true-to-screen scale, and switch to <strong>Animated</strong> mode for 3D sprites.</p>
+                    <p>Search for any Pokemon to add them to the canvas — stack as many as you like. Toggle <strong>Grid Lines</strong> for scale reference, swap the <strong>Scale</strong> object, hit <strong>Actual Size</strong> to see true-to-screen scale, and switch to <strong>Animated</strong> mode for 3D sprites.</p>
                     <div class="tutorial-links">
                         <span class="tutorial-link" id="tutorialLink1">▶ How to measure</span>
                         <span class="tutorial-link" id="tutorialLink2">▶ How to adjust scale</span>
@@ -329,7 +262,6 @@
                 </div>
             </div>
         </div>
-
         <div class="controls">
             <div class="controls-left">
                 <div style="position: relative;">
@@ -346,12 +278,12 @@
                 </div>
                 <button class="control-btn" id="gridToggle">Grid Lines</button>
                 <button class="control-btn" id="clearLinesBtn" style="display: none;">Clear Lines</button>
+                <button class="control-btn" id="unitToggle">🌐</button>
             </div>
             <div class="controls-center">
                 <button class="control-btn active" id="zoomToggle">🔍 Zoom to Fit</button>
             </div>
             <div class="controls-right">
-                <button class="control-btn" id="unitToggle">🌐</button>
                 <div class="media-toggle">
                     <button class="media-btn active" data-media="static">Static</button>
                     <button class="media-btn" data-media="animated">Animated</button>
@@ -359,51 +291,11 @@
             </div>
         </div>
     </div>
-
     <!-- Tutorial Modals -->
-    <div class="tutorial-modal-overlay" id="tutorialModal1">
-        <div class="tutorial-modal">
-            <h3>How to Measure</h3>
-            <video id="tutorialVideo1" preload="metadata" muted playsinline controls>
-                <source src="tutorials/measuring-tool.mp4" type="video/mp4">
-                <source src="tutorials/measuring-tool.webm" type="video/webm">
-            </video>
-            <div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial1b">Close</button></div>
-        </div>
-    </div>
-    <div class="tutorial-modal-overlay" id="tutorialModal2">
-        <div class="tutorial-modal">
-            <h3>How to Adjust Scale</h3>
-            <video id="tutorialVideo2" preload="metadata" muted playsinline controls>
-                <source src="tutorials/basic-usage.mp4" type="video/mp4">
-                <source src="tutorials/basic-usage.webm" type="video/webm">
-            </video>
-            <div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial2b">Close</button></div>
-        </div>
-    </div>
-
+    <div class="tutorial-modal-overlay" id="tutorialModal1"><div class="tutorial-modal"><h3>How to Measure</h3><video id="tutorialVideo1" preload="metadata" muted playsinline controls><source src="tutorials/measuring-tool.mp4" type="video/mp4"><source src="tutorials/measuring-tool.webm" type="video/webm"></video><div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial1b">Close</button></div></div></div>
+    <div class="tutorial-modal-overlay" id="tutorialModal2"><div class="tutorial-modal"><h3>How to Adjust Scale</h3><video id="tutorialVideo2" preload="metadata" muted playsinline controls><source src="tutorials/basic-usage.mp4" type="video/mp4"><source src="tutorials/basic-usage.webm" type="video/webm"></video><div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial2b">Close</button></div></div></div>
     <!-- Custom Scale Modal -->
-    <div class="modal-overlay" id="customScaleModal">
-        <div class="modal">
-            <h3>Custom Reference Scale</h3>
-            <div class="modal-field">
-                <label for="customHeight">Height</label>
-                <input type="text" id="customHeight" placeholder="e.g., 5'8&quot; or 173cm">
-            </div>
-            <div class="modal-field">
-                <label>Gender</label>
-                <div class="modal-gender">
-                    <button class="modal-gender-btn active" id="genderMale" type="button">Male</button>
-                    <button class="modal-gender-btn" id="genderFemale" type="button">Female</button>
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button id="cancelCustomScale">Cancel</button>
-                <button class="primary" id="saveCustomScale">Apply</button>
-            </div>
-        </div>
-    </div>
-
+    <div class="modal-overlay" id="customScaleModal"><div class="modal"><h3>Custom Reference Scale</h3><div class="modal-field"><label for="customHeight">Height</label><input type="text" id="customHeight" placeholder="e.g., 5'8&quot; or 1.73m"></div><div class="modal-field"><label>Gender</label><div class="modal-gender"><button class="modal-gender-btn active" id="genderMale" type="button">Male</button><button class="modal-gender-btn" id="genderFemale" type="button">Female</button></div></div><div class="modal-buttons"><button id="cancelCustomScale">Cancel</button><button class="primary" id="saveCustomScale">Apply</button></div></div></div>
     <script src="height-data.js"></script>
     <script>
         let selectedPokemon = [];
@@ -414,8 +306,6 @@
         let showGrid = false;
         let selectedSearchIndex = -1;
         let scaleExpanded = false;
-
-        // Measuring line state
         let measuringState = null;
         let measureLines = {};
         let tutorialShown = false;
@@ -423,24 +313,18 @@
         let displayRafId = null;
 
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof pokemonData !== 'undefined' && pokemonData.length > 0) {
-                initializeApp();
-            } else {
-                console.error('Pokemon data not found. Make sure height-data.js is loaded.');
-            }
-        });
 
         const STATIC_FOLDER = 'images/';
         const ANIMATED_FOLDER = 'images/size/';
         const ICON_FOLDER = 'icons/poke/';
         const REFERENCE_FOLDER = 'images/reference/';
         const BASE_SCALE = 1000;
-        const BASELINE_OFFSET = 80;
-        const COMPARISON_PADDING = 40;
+        const BASELINE_OFFSET = isMobile ? 30 : 80;
+        const MOBILE_MAX_POKEMON = 2;
 
+        const REFERENCE_KEYS = ['human','child','dog','ball','car','door'];
         const REFERENCES = {
             human:  { scale: 1750, icon: '👤', file: 'human.png' },
             child:  { scale: 1200, icon: '🧒', file: 'child.png' },
@@ -451,6 +335,11 @@
             custom: { scale: 1750, icon: '⚙️', file: 'custom-male.png', gender: 'male' }
         };
 
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof pokemonData !== 'undefined' && pokemonData.length > 0) initializeApp();
+            else console.error('Pokemon data not found.');
+        });
+
         function initializeApp() {
             document.getElementById('helpButton').addEventListener('click', showTutorial);
             document.getElementById('scaleBtn').addEventListener('click', toggleScale);
@@ -458,99 +347,110 @@
             document.getElementById('clearLinesBtn').addEventListener('click', clearAllLines);
             document.getElementById('zoomToggle').addEventListener('click', toggleZoom);
             document.getElementById('unitToggle').addEventListener('click', toggleUnits);
-            document.getElementById('cancelCustomScale').addEventListener('click', cancelCustomScale);
+            document.getElementById('cancelCustomScale').addEventListener('click', function(){ document.getElementById('customScaleModal').classList.remove('active'); });
             document.getElementById('saveCustomScale').addEventListener('click', saveCustomScale);
+            document.getElementById('mobileZoomBtn').addEventListener('click', toggleZoom);
 
-            document.getElementById('genderMale').addEventListener('click', () => {
-                document.getElementById('genderMale').classList.add('active');
-                document.getElementById('genderFemale').classList.remove('active');
+            document.getElementById('genderMale').addEventListener('click', function(){ this.classList.add('active'); document.getElementById('genderFemale').classList.remove('active'); });
+            document.getElementById('genderFemale').addEventListener('click', function(){ this.classList.add('active'); document.getElementById('genderMale').classList.remove('active'); });
+
+            function closeTutorial(n) { document.getElementById('tutorialModal'+n).classList.remove('active'); var v=document.getElementById('tutorialVideo'+n); v.pause(); v.currentTime=0; }
+            function openTutorial(n) { document.getElementById('tutorialModal'+n).classList.add('active'); }
+            document.getElementById('tutorialLink1').addEventListener('click', function(){ openTutorial(1); });
+            document.getElementById('tutorialLink2').addEventListener('click', function(){ openTutorial(2); });
+            [1,2].forEach(function(n){
+                document.getElementById('closeTutorial'+n+'b').addEventListener('click', function(){ closeTutorial(n); });
+                document.getElementById('tutorialModal'+n).addEventListener('click', function(e){ if(e.target===e.currentTarget) closeTutorial(n); });
             });
-            document.getElementById('genderFemale').addEventListener('click', () => {
-                document.getElementById('genderFemale').classList.add('active');
-                document.getElementById('genderMale').classList.remove('active');
-            });
 
-            function closeTutorial(n) {
-                document.getElementById('tutorialModal' + n).classList.remove('active');
-                const video = document.getElementById('tutorialVideo' + n);
-                video.pause();
-                video.currentTime = 0;
-            }
-            function openTutorial(n) {
-                document.getElementById('tutorialModal' + n).classList.add('active');
+            // Mobile: rename buttons
+            if (isMobile) {
+                document.getElementById('gridToggle').textContent = 'GRID';
+                // Media toggle: use emoji icons
+                var mediaBtns = document.querySelectorAll('.media-btn');
+                mediaBtns[0].textContent = '🎨';
+                mediaBtns[1].textContent = '🎬';
             }
 
-            document.getElementById('tutorialLink1').addEventListener('click', () => openTutorial(1));
-            document.getElementById('tutorialLink2').addEventListener('click', () => openTutorial(2));
-            [1, 2].forEach(n => {
-                document.getElementById('closeTutorial' + n + 'b').addEventListener('click', () => closeTutorial(n));
-                document.getElementById('tutorialModal' + n).addEventListener('click', (e) => {
-                    if (e.target === e.currentTarget) closeTutorial(n);
-                });
+            // Global keypress -> focus search (type anywhere)
+            document.addEventListener('keydown', function(e) {
+                var tag = e.target.tagName.toLowerCase();
+                if (tag === 'input' || tag === 'textarea') return;
+                if (e.metaKey || e.ctrlKey || e.altKey) return;
+                if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
+                    var sb = document.getElementById('searchBox');
+                    sb.focus();
+                    // Don't prevent default; the character will be typed into the now-focused input
+                }
             });
 
             if (!isTouchDevice) {
-                setTimeout(() => document.getElementById('searchBox').focus(), 100);
+                setTimeout(function(){ document.getElementById('searchBox').focus(); }, 100);
             }
             updateDisplay();
         }
 
         function convertToFeetInches(scale) {
-            const totalInches = (scale / 1000) * 39.3701;
-            const feet = Math.floor(totalInches / 12);
-            const inches = Math.round(totalInches % 12);
+            var totalInches = (scale / 1000) * 39.3701;
+            var feet = Math.floor(totalInches / 12);
+            var inches = Math.round(totalInches % 12);
             return feet + "'" + inches + '"';
         }
-        function convertToMeters(scale) {
-            return (scale / 1000).toFixed(2) + 'm';
-        }
+        function convertToMeters(scale) { return (scale / 1000).toFixed(2) + 'm'; }
+
         function getImageFilename(id) {
-            if (id.includes('.')) return id;
-            return String(parseInt(id, 10));
+            if (!id) return "";
+            var cleanId = id.startsWith('#') ? id.slice(1) : id;
+            if (cleanId.includes('.')) return cleanId;
+            return String(parseInt(cleanId, 10));
         }
         function getImagePath(pokemon) {
-            const fn = getImageFilename(pokemon.id);
-            return currentMediaType === 'animated'
-                ? ANIMATED_FOLDER + fn + '.webm'
-                : STATIC_FOLDER + fn + '.svg';
+            var fn = getImageFilename(pokemon.id);
+            return currentMediaType === 'animated' ? ANIMATED_FOLDER + fn + '.webm' : STATIC_FOLDER + fn + '.svg';
         }
         function getIconPath(pokemon) {
-            const id = pokemon.id;
-            const dotIndex = id.indexOf('.');
-            if (dotIndex !== -1) {
-                const suffix = id.slice(dotIndex + 1);
-                const baseNum = parseInt(suffix.replace(/^\d/, ''), 10) || parseInt(suffix, 10);
-                return ICON_FOLDER + baseNum + '.png';
-            }
-            return ICON_FOLDER + parseInt(id, 10) + '.png';
+            var fn = getImageFilename(pokemon.id);
+            return ICON_FOLDER + fn + '.png';
         }
-        function calculateScale(visualHeight) { return visualHeight / BASE_SCALE; }
+        function calculateScale(vh) { return vh / BASE_SCALE; }
         function getTopPoint(p) { return (p.groundOffset || 0) + p.visualHeight; }
 
         function createPokemonElement(pokemon, isReference, scaleMultiplier) {
             isReference = isReference || false;
             scaleMultiplier = scaleMultiplier || 1;
-            const baseScale = calculateScale(pokemon.visualHeight);
-            const scale = baseScale * scaleMultiplier;
-            const heightPx = scale * 200;
+            var baseScale = calculateScale(pokemon.visualHeight);
+            var scale = baseScale * scaleMultiplier;
+            var heightPx = scale * 200;
+            var groundOffset = pokemon.groundOffset || 0;
+            var groundOffsetPx = 0;
 
-            const groundOffset = (!useBestFit && (pokemon.groundOffset || 0)) || 0;
-            const groundOffsetPx = (groundOffset / BASE_SCALE) * scaleMultiplier * 200;
-
-            const container = document.createElement('div');
+            var container = document.createElement('div');
             container.className = 'pokemon-item' + (isReference ? ' reference' : '');
             container.dataset.pokemonId = pokemon.id || 'reference';
-            if (groundOffsetPx > 0) container.style.marginBottom = groundOffsetPx + 'px';
 
-            const imageContainer = document.createElement('div');
+            // Actual size mode: handle ground offset
+            if (!useBestFit && groundOffset !== 0) {
+                groundOffsetPx = (groundOffset / BASE_SCALE) * scaleMultiplier * 200;
+                if (groundOffset > 0) {
+                    // Flying pokemon: lift above ground
+                    container.style.marginBottom = groundOffsetPx + 'px';
+                } else {
+                    // Water/underground pokemon with negative offset:
+                    // Image top hits the |groundOffset| point above ground, rest goes below
+                    // We achieve this by using negative margin-bottom
+                    container.style.marginBottom = groundOffsetPx + 'px'; // negative value pulls it down
+                }
+            }
+
+            var imageContainer = document.createElement('div');
             imageContainer.className = 'pokemon-image';
             imageContainer.style.height = heightPx + 'px';
 
-            let animPlayBtn = null;
+            var animPlayBtn = null;
+            var isAnimated = currentMediaType === 'animated' && !isReference;
 
-            if (currentMediaType === 'animated' && !isReference) {
-                const video = document.createElement('video');
-                video.src = getImagePath(pokemon);
+            if (isAnimated) {
+                var video = document.createElement('video');
                 video.style.height = heightPx + 'px';
                 video.style.width = 'auto';
                 video.muted = true;
@@ -558,86 +458,66 @@
                 video.setAttribute('muted', '');
                 video.setAttribute('playsinline', '');
                 video.setAttribute('webkit-playsinline', '');
+                // Metadata trick: load only first frame for thumbnail
+                video.preload = 'metadata';
+                video.src = getImagePath(pokemon);
 
-                let hasFallenBack = false;
+                var hasFallenBack = false;
                 function fallbackToStatic() {
                     if (hasFallenBack) return;
                     hasFallenBack = true;
                     video.style.display = 'none';
                     video.removeAttribute('src');
-                    video.load(); // release resources
-                    const img = document.createElement('img');
-                    const fn = getImageFilename(pokemon.id);
+                    video.load();
+                    var img = document.createElement('img');
+                    var fn = getImageFilename(pokemon.id);
                     img.src = STATIC_FOLDER + fn + '.svg';
                     img.style.height = heightPx + 'px';
                     img.style.width = 'auto';
-                    img.onerror = function() { this.src = STATIC_FOLDER + fn + '.webp'; };
+                    img.onerror = function(){ this.src = STATIC_FOLDER + fn + '.webp'; };
                     imageContainer.appendChild(img);
                 }
-
                 video.onerror = fallbackToStatic;
-                video.addEventListener('stalled', () => {
-                    setTimeout(() => { if (video.readyState < 2 && !hasFallenBack) fallbackToStatic(); }, 3000);
-                });
-
+                video.addEventListener('stalled', function(){ setTimeout(function(){ if(video.readyState<2 && !hasFallenBack) fallbackToStatic(); }, 3000); });
                 imageContainer.appendChild(video);
 
                 if (isSafari || isTouchDevice) {
                     animPlayBtn = document.createElement('button');
                     animPlayBtn.textContent = '▶';
                     animPlayBtn.className = 'anim-play-btn';
-                    animPlayBtn.addEventListener('click', () => {
-                        if (hasFallenBack) return;
-                        if (video.paused) {
-                            video.play().catch(() => fallbackToStatic());
-                            animPlayBtn.textContent = '⏸';
-                        } else {
-                            video.pause();
-                            video.currentTime = 0;
-                            animPlayBtn.textContent = '▶';
-                        }
+                    animPlayBtn.addEventListener('click', function(e){
+                        e.stopPropagation();
+                        if(hasFallenBack) return;
+                        if(video.paused){ video.play().catch(function(){fallbackToStatic();}); animPlayBtn.textContent='⏸'; }
+                        else { video.pause(); video.currentTime=0; animPlayBtn.textContent='▶'; }
                     });
-                    video.addEventListener('ended', () => {
-                        animPlayBtn.textContent = '▶';
-                        video.currentTime = 0;
-                    });
+                    video.addEventListener('ended', function(){ animPlayBtn.textContent='▶'; video.currentTime=0; });
                 } else {
                     video.loop = true;
-                    video.addEventListener('mouseenter', () => {
-                        if (!hasFallenBack) video.play().catch(() => fallbackToStatic());
-                    });
-                    video.addEventListener('mouseleave', () => {
-                        if (!hasFallenBack) { video.pause(); video.currentTime = 0; }
-                    });
+                    video.addEventListener('mouseenter', function(){ if(!hasFallenBack) video.play().catch(function(){fallbackToStatic();}); });
+                    video.addEventListener('mouseleave', function(){ if(!hasFallenBack){ video.pause(); video.currentTime=0; } });
                 }
             } else {
-                const img = document.createElement('img');
+                var img = document.createElement('img');
                 if (isReference) {
                     img.src = REFERENCE_FOLDER + REFERENCES[currentReference].file;
-                    img.style.height = heightPx + 'px';
-                    img.style.width = 'auto';
-                    img.style.opacity = '0.5';
-                    img.onerror = function() {
-                        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                        svg.setAttribute('width', 60);
-                        svg.setAttribute('height', heightPx);
-                        svg.innerHTML = '<text x="30" y="' + (heightPx/2) + '" text-anchor="middle" dominant-baseline="middle" font-size="28" fill="#000000" opacity="0.5">' + pokemon.icon + '</text>';
+                    img.style.height = heightPx + 'px'; img.style.width = 'auto'; img.style.opacity = '0.5';
+                    img.onerror = function(){
+                        var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+                        svg.setAttribute('width',60); svg.setAttribute('height',heightPx);
+                        svg.innerHTML = '<text x="30" y="'+(heightPx/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="28" fill="#000" opacity="0.5">'+pokemon.icon+'</text>';
                         this.replaceWith(svg);
                     };
                 } else {
                     img.src = getImagePath(pokemon);
-                    img.style.height = heightPx + 'px';
-                    img.style.width = 'auto';
-                    img.onerror = function() {
-                        const fn = getImageFilename(pokemon.id);
-                        if (this.src.endsWith('.svg')) this.src = STATIC_FOLDER + fn + '.webp';
-                    };
+                    img.style.height = heightPx + 'px'; img.style.width = 'auto';
+                    img.onerror = function(){ var fn=getImageFilename(pokemon.id); if(this.src.endsWith('.svg')) this.src=STATIC_FOLDER+fn+'.webp'; };
                 }
                 imageContainer.appendChild(img);
             }
 
-            // Measuring (non-reference, non-touch only)
-            if (!isReference && !isTouchDevice) {
+            // Measuring: only in static mode, desktop only
+            if (!isReference && !isTouchDevice && !isAnimated) {
                 imageContainer.classList.add('clickable');
                 imageContainer.style.cursor = 'crosshair';
                 imageContainer.style.userSelect = 'none';
@@ -645,269 +525,141 @@
                 imageContainer.dataset.pokemonScale = pokemon.visualHeight;
                 imageContainer.dataset.heightPx = heightPx;
                 imageContainer.addEventListener('mousedown', handleMeasureStart);
-
                 if (measureLines[pokemon.id]) {
-                    measureLines[pokemon.id].forEach(lineData => {
-                        const media = imageContainer.querySelector('img, video');
-                        setTimeout(() => restoreMeasureLine(lineData, imageContainer, media, heightPx, pokemon), 50);
+                    measureLines[pokemon.id].forEach(function(ld){
+                        var media = imageContainer.querySelector('img, video');
+                        setTimeout(function(){ restoreMeasureLine(ld, imageContainer, media, heightPx, pokemon); }, 50);
                     });
                 }
+            }
+
+            // Mobile: tap image to remove pokemon
+            if (isMobile && !isReference) {
+                imageContainer.style.cursor = 'pointer';
+                imageContainer.addEventListener('click', function(e){
+                    e.stopPropagation();
+                    removePokemon(pokemon.id);
+                });
             }
 
             container.appendChild(imageContainer);
             if (animPlayBtn) container.appendChild(animPlayBtn);
 
-            const labelsContainer = document.createElement('div');
+            var labelsContainer = document.createElement('div');
             labelsContainer.className = 'pokemon-labels';
-            const heightLabel = document.createElement('div');
+            var heightLabel = document.createElement('div');
             heightLabel.className = 'pokemon-height';
-            const scaleValue = !useBestFit ? getTopPoint(pokemon) : pokemon.visualHeight;
+            var scaleValue = !useBestFit ? getTopPoint(pokemon) : pokemon.visualHeight;
             heightLabel.textContent = useImperial ? convertToFeetInches(scaleValue) : convertToMeters(scaleValue);
             labelsContainer.appendChild(heightLabel);
             container.appendChild(labelsContainer);
-
             return container;
         }
 
         function restoreMeasureLine(lineData, imageContainer, media, heightPx, pokemon) {
-            const imgWidth = media ? (media.offsetWidth || media.videoWidth || heightPx) : heightPx;
-            const imgHeight = media ? (media.offsetHeight || media.videoHeight || heightPx) : heightPx;
-            const x1 = lineData.x1Norm * imgWidth;
-            const y1 = lineData.y1Norm * imgHeight;
-            const x2 = lineData.x2Norm * imgWidth;
-            const y2 = lineData.y2Norm * imgHeight;
-            const dx = x2 - x1, dy = y2 - y1;
-            const length = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-            const lineId = lineData.lineId;
-
-            const hitArea = document.createElement('div');
-            hitArea.className = 'measure-line-hitarea';
-            hitArea.style.width = length + 'px';
-            hitArea.style.left = x1 + 'px';
-            hitArea.style.top = y1 + 'px';
-            hitArea.style.transform = 'rotate(' + angle + 'deg)';
-            hitArea.dataset.lineId = lineId;
-
-            const lineElement = document.createElement('div');
-            lineElement.className = 'measure-line';
-            lineElement.style.width = length + 'px';
-            lineElement.style.left = x1 + 'px';
-            lineElement.style.top = y1 + 'px';
-            lineElement.style.transform = 'rotate(' + angle + 'deg)';
-            lineElement.dataset.lineId = lineId;
-
-            // FIX: use imgHeight for distance calc, not heightPx (container height)
-            const pokemonScaleMm = parseFloat(imageContainer.dataset.pokemonScale || pokemon.visualHeight);
-            const meters = (length / imgHeight) * (pokemonScaleMm / 1000);
-
-            const labelElement = document.createElement('div');
-            labelElement.className = 'measure-label';
-            labelElement.setAttribute('data-for-line', lineId);
-            labelElement.textContent = useImperial ? convertToFeetInches(meters * 1000) : meters.toFixed(2) + 'm';
-            const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
-            labelElement.style.left = midX + 'px';
-            labelElement.style.top = midY + 'px';
-            labelElement.style.display = 'none';
-
-            const deleteHandler = (e) => { e.stopPropagation(); e.preventDefault(); removeMeasureLine(pokemon.id, lineData); };
-            hitArea.addEventListener('click', deleteHandler);
-            lineElement.addEventListener('click', deleteHandler);
-
-            const showLabel = (e) => {
-                labelElement.style.left = (e.clientX - imageContainer.getBoundingClientRect().left) + 'px';
-                labelElement.style.top = (e.clientY - imageContainer.getBoundingClientRect().top) + 'px';
-                labelElement.style.display = 'block';
-            };
-            const hideLabel = () => { labelElement.style.display = 'none'; };
-            hitArea.addEventListener('mousemove', showLabel);
-            hitArea.addEventListener('mouseleave', hideLabel);
-            lineElement.addEventListener('mousemove', showLabel);
-            lineElement.addEventListener('mouseleave', hideLabel);
-
-            imageContainer.appendChild(hitArea);
-            imageContainer.appendChild(lineElement);
-            imageContainer.appendChild(labelElement);
-            lineData.element = lineElement;
-            lineData.hitarea = hitArea;
-            lineData.label = labelElement;
+            var imgWidth = media ? (media.offsetWidth || media.videoWidth || heightPx) : heightPx;
+            var imgHeight = media ? (media.offsetHeight || media.videoHeight || heightPx) : heightPx;
+            var x1=lineData.x1Norm*imgWidth, y1=lineData.y1Norm*imgHeight;
+            var x2=lineData.x2Norm*imgWidth, y2=lineData.y2Norm*imgHeight;
+            var dx=x2-x1, dy=y2-y1, length=Math.sqrt(dx*dx+dy*dy);
+            var angle=Math.atan2(dy,dx)*180/Math.PI;
+            var lineId=lineData.lineId;
+            var hitArea=document.createElement('div'); hitArea.className='measure-line-hitarea';
+            hitArea.style.cssText='width:'+length+'px;left:'+x1+'px;top:'+y1+'px;transform:rotate('+angle+'deg)';
+            var lineEl=document.createElement('div'); lineEl.className='measure-line';
+            lineEl.style.cssText='width:'+length+'px;left:'+x1+'px;top:'+y1+'px;transform:rotate('+angle+'deg)';
+            var pokemonScaleMm=parseFloat(imageContainer.dataset.pokemonScale||pokemon.visualHeight);
+            var meters=(length/imgHeight)*(pokemonScaleMm/1000);
+            var labelEl=document.createElement('div'); labelEl.className='measure-label';
+            labelEl.textContent=useImperial?convertToFeetInches(meters*1000):meters.toFixed(2)+'m';
+            var midX=(x1+x2)/2, midY=(y1+y2)/2;
+            labelEl.style.left=midX+'px'; labelEl.style.top=midY+'px'; labelEl.style.display='none';
+            var del=function(e){e.stopPropagation();e.preventDefault();removeMeasureLine(pokemon.id,lineData);};
+            hitArea.addEventListener('click',del); lineEl.addEventListener('click',del);
+            var show=function(e){labelEl.style.left=(e.clientX-imageContainer.getBoundingClientRect().left)+'px';labelEl.style.top=(e.clientY-imageContainer.getBoundingClientRect().top)+'px';labelEl.style.display='block';};
+            var hide=function(){labelEl.style.display='none';};
+            hitArea.addEventListener('mousemove',show); hitArea.addEventListener('mouseleave',hide);
+            lineEl.addEventListener('mousemove',show); lineEl.addEventListener('mouseleave',hide);
+            imageContainer.appendChild(hitArea); imageContainer.appendChild(lineEl); imageContainer.appendChild(labelEl);
+            lineData.element=lineEl; lineData.hitarea=hitArea; lineData.label=labelEl;
         }
 
         function handleMeasureStart(e) {
-            const imageContainer = e.currentTarget;
-            const pokemonId = imageContainer.dataset.pokemonId;
-            if (e.target.classList.contains('measure-line') || e.target.classList.contains('measure-line-hitarea')) return;
-
-            const img = imageContainer.querySelector('img, video');
-            if (!img) return;
-            const imgRect = img.getBoundingClientRect();
-            const x = e.clientX - imgRect.left;
-            const y = e.clientY - imgRect.top;
-            if (x < 0 || y < 0 || x > imgRect.width || y > imgRect.height) return;
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            measuringState = {
-                pokemonId: pokemonId,
-                imageContainer: imageContainer,
-                imgRect: imgRect,
-                imgWidth: imgRect.width,
-                imgHeight: imgRect.height,
-                startX: x, startY: y,
-                pokemonScale: parseFloat(imageContainer.dataset.pokemonScale),
-                heightPx: parseFloat(imageContainer.dataset.heightPx)
-            };
-
-            const lineElement = document.createElement('div');
-            lineElement.className = 'measure-line drawing';
-            lineElement.style.width = '0px';
-            lineElement.style.height = '2px';
-            lineElement.style.left = x + 'px';
-            lineElement.style.top = y + 'px';
-            imageContainer.appendChild(lineElement);
-            measuringState.lineElement = lineElement;
-
-            document.addEventListener('mousemove', handleMeasureMove);
-            document.addEventListener('mouseup', handleMeasureEnd);
+            var ic=e.currentTarget, pid=ic.dataset.pokemonId;
+            if(e.target.classList.contains('measure-line')||e.target.classList.contains('measure-line-hitarea')) return;
+            var img=ic.querySelector('img, video'); if(!img) return;
+            var ir=img.getBoundingClientRect(), x=e.clientX-ir.left, y=e.clientY-ir.top;
+            if(x<0||y<0||x>ir.width||y>ir.height) return;
+            e.preventDefault(); e.stopPropagation();
+            measuringState={pokemonId:pid,imageContainer:ic,imgRect:ir,imgWidth:ir.width,imgHeight:ir.height,startX:x,startY:y,pokemonScale:parseFloat(ic.dataset.pokemonScale),heightPx:parseFloat(ic.dataset.heightPx)};
+            var le=document.createElement('div'); le.className='measure-line drawing'; le.style.cssText='width:0px;height:2px;left:'+x+'px;top:'+y+'px';
+            ic.appendChild(le); measuringState.lineElement=le;
+            document.addEventListener('mousemove',handleMeasureMove); document.addEventListener('mouseup',handleMeasureEnd);
         }
-
         function handleMeasureMove(e) {
-            if (!measuringState) return;
-            const imgRect = measuringState.imgRect;
-            let x = Math.max(0, Math.min(e.clientX - imgRect.left, imgRect.width));
-            let y = Math.max(0, Math.min(e.clientY - imgRect.top, imgRect.height));
-            const dx = x - measuringState.startX, dy = y - measuringState.startY;
-            const length = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-            measuringState.lineElement.style.width = length + 'px';
-            measuringState.lineElement.style.transform = 'rotate(' + angle + 'deg)';
-            measuringState.currentX = x;
-            measuringState.currentY = y;
+            if(!measuringState) return;
+            var ir=measuringState.imgRect;
+            var x=Math.max(0,Math.min(e.clientX-ir.left,ir.width)), y=Math.max(0,Math.min(e.clientY-ir.top,ir.height));
+            var dx=x-measuringState.startX, dy=y-measuringState.startY;
+            var len=Math.sqrt(dx*dx+dy*dy), ang=Math.atan2(dy,dx)*180/Math.PI;
+            measuringState.lineElement.style.width=len+'px';
+            measuringState.lineElement.style.transform='rotate('+ang+'deg)';
+            measuringState.currentX=x; measuringState.currentY=y;
         }
-
         function handleMeasureEnd(e) {
-            if (!measuringState) return;
-            document.removeEventListener('mousemove', handleMeasureMove);
-            document.removeEventListener('mouseup', handleMeasureEnd);
-
-            const endX = measuringState.currentX != null ? measuringState.currentX : measuringState.startX;
-            const endY = measuringState.currentY != null ? measuringState.currentY : measuringState.startY;
-            const dx = endX - measuringState.startX, dy = endY - measuringState.startY;
-            const length = Math.sqrt(dx * dx + dy * dy);
-
-            if (length < 5) {
-                measuringState.lineElement.remove();
-                measuringState = null;
-                return;
-            }
-
-            // FIX: use actual image pixel height for distance, not container heightPx
-            const imgHeight = measuringState.imgHeight;
-            const imgWidth = measuringState.imgWidth;
-            const x1Norm = measuringState.startX / imgWidth;
-            const y1Norm = measuringState.startY / imgHeight;
-            const x2Norm = endX / imgWidth;
-            const y2Norm = endY / imgHeight;
-
-            const pokemonScaleMm = measuringState.pokemonScale;
-            const meters = (length / imgHeight) * (pokemonScaleMm / 1000);
-
-            const lineId = ++measureLineIdCounter;
-            // Capture in local vars so the closure is correct
-            const pokemonId = measuringState.pokemonId;
-            const imageContainer = measuringState.imageContainer;
-
-            const labelElement = document.createElement('div');
-            labelElement.className = 'measure-label';
-            labelElement.setAttribute('data-for-line', lineId);
-            labelElement.textContent = useImperial ? convertToFeetInches(meters * 1000) : meters.toFixed(2) + 'm';
-            const midX = (measuringState.startX + endX) / 2, midY = (measuringState.startY + endY) / 2;
-            labelElement.style.left = midX + 'px';
-            labelElement.style.top = midY + 'px';
-            labelElement.style.display = 'none';
-            imageContainer.appendChild(labelElement);
-
-            const lineElement = measuringState.lineElement;
-            lineElement.classList.remove('drawing');
-            lineElement.dataset.lineId = lineId;
-
-            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-            const hitArea = document.createElement('div');
-            hitArea.className = 'measure-line-hitarea';
-            hitArea.style.width = length + 'px';
-            hitArea.style.left = measuringState.startX + 'px';
-            hitArea.style.top = measuringState.startY + 'px';
-            hitArea.style.transform = 'rotate(' + angle + 'deg)';
-            hitArea.dataset.lineId = lineId;
-            imageContainer.appendChild(hitArea);
-
-            const lineData = { x1Norm: x1Norm, y1Norm: y1Norm, x2Norm: x2Norm, y2Norm: y2Norm, element: lineElement, hitarea: hitArea, label: labelElement, lineId: lineId };
-            if (!measureLines[pokemonId]) measureLines[pokemonId] = [];
-            measureLines[pokemonId].push(lineData);
-
-            const deleteHandler = (ev) => { ev.stopPropagation(); ev.preventDefault(); removeMeasureLine(pokemonId, lineData); };
-            hitArea.addEventListener('click', deleteHandler);
-            lineElement.addEventListener('click', deleteHandler);
-
-            const showLabel = (ev) => {
-                labelElement.style.left = (ev.clientX - imageContainer.getBoundingClientRect().left) + 'px';
-                labelElement.style.top = (ev.clientY - imageContainer.getBoundingClientRect().top) + 'px';
-                labelElement.style.display = 'block';
-            };
-            const hideLabel = () => { labelElement.style.display = 'none'; };
-            hitArea.addEventListener('mousemove', showLabel);
-            hitArea.addEventListener('mouseleave', hideLabel);
-            lineElement.addEventListener('mousemove', showLabel);
-            lineElement.addEventListener('mouseleave', hideLabel);
-
-            updateClearLinesButton();
-            measuringState = null;
+            if(!measuringState) return;
+            document.removeEventListener('mousemove',handleMeasureMove);
+            document.removeEventListener('mouseup',handleMeasureEnd);
+            var eX=measuringState.currentX!=null?measuringState.currentX:measuringState.startX;
+            var eY=measuringState.currentY!=null?measuringState.currentY:measuringState.startY;
+            var dx=eX-measuringState.startX, dy=eY-measuringState.startY;
+            var len=Math.sqrt(dx*dx+dy*dy);
+            if(len<5){ measuringState.lineElement.remove(); measuringState=null; return; }
+            var iH=measuringState.imgHeight, iW=measuringState.imgWidth;
+            var x1N=measuringState.startX/iW, y1N=measuringState.startY/iH, x2N=eX/iW, y2N=eY/iH;
+            var meters=(len/iH)*(measuringState.pokemonScale/1000);
+            var lineId=++measureLineIdCounter, pid=measuringState.pokemonId, ic=measuringState.imageContainer;
+            var lbl=document.createElement('div'); lbl.className='measure-label';
+            lbl.textContent=useImperial?convertToFeetInches(meters*1000):meters.toFixed(2)+'m';
+            var mX=(measuringState.startX+eX)/2, mY=(measuringState.startY+eY)/2;
+            lbl.style.left=mX+'px'; lbl.style.top=mY+'px'; lbl.style.display='none'; ic.appendChild(lbl);
+            var le=measuringState.lineElement; le.classList.remove('drawing'); le.dataset.lineId=lineId;
+            var ang=Math.atan2(dy,dx)*180/Math.PI;
+            var ha=document.createElement('div'); ha.className='measure-line-hitarea';
+            ha.style.cssText='width:'+len+'px;left:'+measuringState.startX+'px;top:'+measuringState.startY+'px;transform:rotate('+ang+'deg)';
+            ic.appendChild(ha);
+            var ld={x1Norm:x1N,y1Norm:y1N,x2Norm:x2N,y2Norm:y2N,element:le,hitarea:ha,label:lbl,lineId:lineId};
+            if(!measureLines[pid]) measureLines[pid]=[];
+            measureLines[pid].push(ld);
+            var del=function(ev){ev.stopPropagation();ev.preventDefault();removeMeasureLine(pid,ld);};
+            ha.addEventListener('click',del); le.addEventListener('click',del);
+            var show=function(ev){lbl.style.left=(ev.clientX-ic.getBoundingClientRect().left)+'px';lbl.style.top=(ev.clientY-ic.getBoundingClientRect().top)+'px';lbl.style.display='block';};
+            var hide=function(){lbl.style.display='none';};
+            ha.addEventListener('mousemove',show); ha.addEventListener('mouseleave',hide);
+            le.addEventListener('mousemove',show); le.addEventListener('mouseleave',hide);
+            updateClearLinesButton(); measuringState=null;
         }
-
-        function removeMeasureLine(pokemonId, lineData) {
-            if (lineData.element) lineData.element.remove();
-            if (lineData.hitarea) lineData.hitarea.remove();
-            if (lineData.label) lineData.label.remove();
-            const lines = measureLines[pokemonId];
-            if (lines) {
-                const idx = lines.indexOf(lineData);
-                if (idx > -1) lines.splice(idx, 1);
-                if (lines.length === 0) delete measureLines[pokemonId];
-            }
+        function removeMeasureLine(pid,ld) {
+            if(ld.element)ld.element.remove(); if(ld.hitarea)ld.hitarea.remove(); if(ld.label)ld.label.remove();
+            var lines=measureLines[pid];
+            if(lines){ var i=lines.indexOf(ld); if(i>-1)lines.splice(i,1); if(lines.length===0)delete measureLines[pid]; }
             updateClearLinesButton();
         }
-
         function clearAllLines() {
-            Object.values(measureLines).forEach(lines => {
-                lines.forEach(ld => {
-                    if (ld.element) ld.element.remove();
-                    if (ld.hitarea) ld.hitarea.remove();
-                    if (ld.label) ld.label.remove();
-                });
-            });
-            measureLines = {};
-            updateClearLinesButton();
+            Object.values(measureLines).forEach(function(ls){ ls.forEach(function(ld){ if(ld.element)ld.element.remove(); if(ld.hitarea)ld.hitarea.remove(); if(ld.label)ld.label.remove(); }); });
+            measureLines={}; updateClearLinesButton();
         }
-
         function updateClearLinesButton() {
-            document.getElementById('clearLinesBtn').style.display = Object.keys(measureLines).length > 0 ? 'block' : 'none';
-        }
-
-        function cancelCustomScale() {
-            document.getElementById('customScaleModal').classList.remove('active');
+            document.getElementById('clearLinesBtn').style.display = Object.keys(measureLines).length>0 ? 'block' : 'none';
         }
 
         function saveCustomScale() {
-            const heightInput = document.getElementById('customHeight').value.trim();
-            const gender = document.getElementById('genderMale').classList.contains('active') ? 'male' : 'female';
-            if (!heightInput) { alert('Please enter a height'); return; }
-            let heightMm = parseHeightToMm(heightInput);
-            if (!heightMm || heightMm < 100 || heightMm > 3000) {
-                alert('Please enter a valid height between 0.1m and 3m (or 4" to 10\')');
-                return;
-            }
-            REFERENCES.custom.scale = heightMm;
+            var hi = document.getElementById('customHeight').value.trim();
+            var gender = document.getElementById('genderMale').classList.contains('active') ? 'male' : 'female';
+            if (!hi) { alert('Please enter a height'); return; }
+            var hmm = parseHeightToMm(hi);
+            if (!hmm || hmm < 100 || hmm > 3000) { alert('Please enter a valid height between 0.1m and 3m'); return; }
+            REFERENCES.custom.scale = hmm;
             REFERENCES.custom.gender = gender;
             REFERENCES.custom.file = 'custom-' + gender + '.png';
             currentReference = 'custom';
@@ -918,15 +670,23 @@
 
         function parseHeightToMm(input) {
             input = input.toLowerCase().trim();
-            var m;
-            m = input.match(/(\d+)['']?\s*(\d+)?[""]?/);
-            if (m) { return Math.round(((parseInt(m[1]) * 12) + (m[2] ? parseInt(m[2]) : 0)) * 25.4); }
-            m = input.match(/(\d+(?:\.\d+)?)\s*cm/);
-            if (m) return Math.round(parseFloat(m[1]) * 10);
-            m = input.match(/(\d+(?:\.\d+)?)\s*m/);
-            if (m) return Math.round(parseFloat(m[1]) * 1000);
-            m = input.match(/(\d+(?:\.\d+)?)\s*[""]?$/);
-            if (m && !input.includes('cm') && !input.includes('m')) return Math.round(parseFloat(m[1]) * 25.4);
+            // Check for meters first (e.g. 1.4m, 1.73m) - must come before feet/inches
+            var mMatch = input.match(/^(\d+(?:\.\d+)?)\s*m$/);
+            if (mMatch) return Math.round(parseFloat(mMatch[1]) * 1000);
+            // cm (e.g. 173cm)
+            var cmMatch = input.match(/(\d+(?:\.\d+)?)\s*cm/);
+            if (cmMatch) return Math.round(parseFloat(cmMatch[1]) * 10);
+            // Feet and inches (e.g. 5'8", 5'8, 5 8)
+            var fiMatch = input.match(/(\d+)[''\u2019]?\s*(\d+)?[""\u201D]?/);
+            if (fiMatch) {
+                var feet = parseInt(fiMatch[1]);
+                var inches = fiMatch[2] ? parseInt(fiMatch[2]) : 0;
+                return Math.round((feet * 12 + inches) * 25.4);
+            }
+            // Just inches
+            var inMatch = input.match(/(\d+(?:\.\d+)?)\s*[""\u201D]?$/);
+            if (inMatch && !input.includes('cm') && !input.includes('m')) return Math.round(parseFloat(inMatch[1]) * 25.4);
+            // Plain number -> assume cm
             var num = parseFloat(input);
             return !isNaN(num) ? Math.round(num * 10) : null;
         }
@@ -936,7 +696,6 @@
             document.getElementById('helpButton').style.display = 'none';
         }
 
-        // Batched display update via requestAnimationFrame
         function updateDisplay() {
             if (displayRafId) cancelAnimationFrame(displayRafId);
             displayRafId = requestAnimationFrame(_updateDisplayImpl);
@@ -944,216 +703,205 @@
 
         function _updateDisplayImpl() {
             displayRafId = null;
-            const container = document.getElementById('pokemonRow');
-            const comparisonArea = document.getElementById('comparisonArea');
-            const emptyState = document.getElementById('emptyState');
-            const helpButton = document.getElementById('helpButton');
-
-            container.querySelectorAll('.pokemon-item').forEach(el => el.remove());
+            var container = document.getElementById('pokemonRow');
+            var comparisonArea = document.getElementById('comparisonArea');
+            var emptyState = document.getElementById('emptyState');
+            var helpButton = document.getElementById('helpButton');
+            container.querySelectorAll('.pokemon-item').forEach(function(el){ el.remove(); });
 
             if (selectedPokemon.length === 0) {
                 comparisonArea.classList.add('no-scroll');
-                comparisonArea.querySelectorAll('.alignment-line').forEach(l => l.remove());
+                comparisonArea.querySelectorAll('.alignment-line,.grid-label').forEach(function(l){ l.remove(); });
                 if (!tutorialShown) { emptyState.style.display = 'flex'; helpButton.style.display = 'none'; }
                 else { emptyState.style.display = 'none'; helpButton.style.display = 'flex'; }
                 return;
             }
-
             tutorialShown = true;
             emptyState.style.display = 'none';
             helpButton.style.display = 'none';
 
-            const allScales = [REFERENCES[currentReference].scale].concat(selectedPokemon.map(p => p.visualHeight));
-            const maxScale = Math.max.apply(null, allScales);
-            const maxHeight = (maxScale / BASE_SCALE) * 200;
-            const viewHeight = comparisonArea.clientHeight - BASELINE_OFFSET - 60;
-            let scaleMultiplier = 1;
+            // On mobile, limit to MOBILE_MAX_POKEMON shown
+            var visiblePokemon = selectedPokemon;
+            var showReference = true;
+            if (isMobile && selectedPokemon.length >= MOBILE_MAX_POKEMON) {
+                showReference = false; // hide reference when 2+ pokemon
+                visiblePokemon = selectedPokemon.slice(-MOBILE_MAX_POKEMON);
+            }
+
+            var refScale = showReference ? REFERENCES[currentReference].scale : 0;
+            var allScales = [refScale].concat(visiblePokemon.map(function(p){ return p.visualHeight; }));
+            var maxScale = Math.max.apply(null, allScales);
+            var maxHeight = (maxScale / BASE_SCALE) * 200;
+            var viewHeight = comparisonArea.clientHeight - BASELINE_OFFSET - (isMobile ? 20 : 60);
+            var scaleMultiplier = 1;
             if (useBestFit && maxHeight > viewHeight) scaleMultiplier = viewHeight / maxHeight;
 
             var baselinePosition = BASELINE_OFFSET;
-
             if (!useBestFit) {
                 container.style.minHeight = (maxHeight * scaleMultiplier + BASELINE_OFFSET + 100) + 'px';
             } else {
                 container.style.minHeight = '100%';
             }
 
-            // FIX: enable scroll whenever content exceeds viewport in actual size mode
-            // (was previously hard-coded to 3000mm, cutting off 2.2-2.5m Pokemon)
-            var needsScroll = !useBestFit && (maxHeight > viewHeight);
+            // Check for negative offsets (water pokemon going below ground)
+            var hasNegativeOffset = !useBestFit && visiblePokemon.some(function(p){ return (p.groundOffset||0) < 0; });
+            var needsScroll = (!useBestFit && maxHeight > viewHeight) || hasNegativeOffset;
             comparisonArea.classList.toggle('no-scroll', !needsScroll);
 
-            // Build in fragment to minimize reflows
             var frag = document.createDocumentFragment();
-            var refData = {
-                visualHeight: REFERENCES[currentReference].scale,
-                groundOffset: 0,
-                icon: REFERENCES[currentReference].icon,
-                id: 'reference'
-            };
-            frag.appendChild(createPokemonElement(refData, true, scaleMultiplier));
-            selectedPokemon.forEach(function(pokemon) {
+            if (showReference) {
+                var refData = { visualHeight: REFERENCES[currentReference].scale, groundOffset: 0, icon: REFERENCES[currentReference].icon, id: 'reference' };
+                frag.appendChild(createPokemonElement(refData, true, scaleMultiplier));
+            }
+            visiblePokemon.forEach(function(pokemon) {
                 frag.appendChild(createPokemonElement(pokemon, false, scaleMultiplier));
             });
             container.appendChild(frag);
-
             updateGrid(scaleMultiplier, maxScale, baselinePosition);
 
             if (!useBestFit) {
-                requestAnimationFrame(function() {
+                requestAnimationFrame(function(){
                     comparisonArea.scrollTop = comparisonArea.scrollHeight;
                     comparisonArea.scrollLeft = 0;
                 });
             }
+
+            // Update mobile zoom button state
+            var mzb = document.getElementById('mobileZoomBtn');
+            mzb.textContent = useBestFit ? 'ZOOM' : 'ACTUAL';
+            mzb.classList.toggle('active', useBestFit);
         }
 
         function updateGrid(scaleMultiplier, maxScale, baselinePosition) {
-            var container = document.getElementById('comparisonArea');
-            container.querySelectorAll('.alignment-line').forEach(function(l) { l.remove(); });
+            var ca = document.getElementById('comparisonArea');
+            ca.querySelectorAll('.alignment-line,.grid-label').forEach(function(l){ l.remove(); });
             if (!useBestFit || selectedPokemon.length === 0) return;
 
+            // Baseline
             var baseline = document.createElement('div');
             baseline.className = 'alignment-line baseline';
             baseline.style.bottom = baselinePosition + 'px';
-            var baseTooltip = document.createElement('div');
-            baseTooltip.className = 'line-tooltip';
-            baseTooltip.textContent = '0m';
-            baseline.appendChild(baseTooltip);
-            baseline.addEventListener('mousemove', function(e) {
-                baseTooltip.style.left = (e.clientX - baseline.getBoundingClientRect().left) + 'px';
-            });
-            container.appendChild(baseline);
+            ca.appendChild(baseline);
+            // Baseline label
+            var baseLbl = document.createElement('div');
+            baseLbl.className = 'grid-label major-label';
+            baseLbl.style.bottom = (baselinePosition + 3) + 'px';
+            baseLbl.textContent = useImperial ? "0'" : '0m';
+            ca.appendChild(baseLbl);
 
             if (!showGrid || selectedPokemon.length === 0) return;
-
             if (!maxScale) {
                 var allScales = [REFERENCES[currentReference].scale].concat(selectedPokemon.map(function(p){ return p.visualHeight; }));
                 maxScale = Math.max.apply(null, allScales);
             }
             var actualMaxHeight = (maxScale / BASE_SCALE) * 200 * scaleMultiplier;
             var frag = document.createDocumentFragment();
-            for (var i = 100; i <= actualMaxHeight + 200; i += 100) {
-                var gridLine = document.createElement('div');
-                gridLine.className = 'alignment-line grid';
-                gridLine.style.bottom = (baselinePosition + i) + 'px';
-                var m = (i / scaleMultiplier / 200).toFixed(2);
-                var tooltip = document.createElement('div');
-                tooltip.className = 'line-tooltip';
-                tooltip.textContent = useImperial ? convertToFeetInches(m * 1000) : m + 'm';
-                gridLine.appendChild(tooltip);
-                (function(gl, tt) {
-                    gl.addEventListener('mousemove', function(e) {
-                        tt.style.left = (e.clientX - gl.getBoundingClientRect().left) + 'px';
-                    });
-                })(gridLine, tooltip);
-                frag.appendChild(gridLine);
+
+            // Grid: major lines at 0.5m intervals, minor at 0.1m intervals
+            // In imperial: major at 1ft, minor at 6in (but we'll match metric logic and convert labels)
+            var maxMeters = maxScale / 1000 + 0.5;
+            var minorStep = useImperial ? 0.5 : 0.1; // 0.1m minor in metric, 0.5m in imperial (~1.5ft)
+            var majorStep = useImperial ? 1.0 : 0.5; // 0.5m major in metric, 1.0m in imperial (~3ft)
+
+            // Actually let's keep it simple: always compute in meters, round to 0.1
+            minorStep = 0.1;
+            majorStep = 0.5;
+
+            for (var m = minorStep; m <= maxMeters; m = Math.round((m + minorStep) * 100) / 100) {
+                var pxFromBaseline = (m * 1000 / BASE_SCALE) * 200 * scaleMultiplier;
+                if (pxFromBaseline > actualMaxHeight + 50) break;
+                var isMajor = Math.abs(m % majorStep) < 0.001 || Math.abs(m % majorStep - majorStep) < 0.001;
+
+                var line = document.createElement('div');
+                line.className = 'alignment-line ' + (isMajor ? 'grid-major' : 'grid-minor');
+                line.style.bottom = (baselinePosition + pxFromBaseline) + 'px';
+                frag.appendChild(line);
+
+                // Label on major lines (and every 0.1 on minor for metric)
+                if (isMajor) {
+                    var lbl = document.createElement('div');
+                    lbl.className = 'grid-label major-label';
+                    lbl.style.bottom = (baselinePosition + pxFromBaseline + 2) + 'px';
+                    lbl.textContent = useImperial ? convertToFeetInches(m * 1000) : m.toFixed(1) + 'm';
+                    frag.appendChild(lbl);
+                }
             }
-            container.appendChild(frag);
+            ca.appendChild(frag);
         }
 
         function updateSelectedTags() {
-            var container = document.getElementById('selectedTags');
-            container.innerHTML = '';
+            var c = document.getElementById('selectedTags');
+            c.innerHTML = '';
             selectedPokemon.forEach(function(pokemon) {
                 var tag = document.createElement('div');
                 tag.className = 'selected-tag';
-                var formText = pokemon.form_name !== 'Normal' ? ' (' + pokemon.form_name + ')' : '';
-                var nameSpan = document.createElement('span');
-                nameSpan.textContent = pokemon.pokemon_name + formText;
-                var removeSpan = document.createElement('span');
-                removeSpan.className = 'remove';
-                removeSpan.textContent = '✕';
-                removeSpan.addEventListener('click', function() { removePokemon(pokemon.id); });
-                tag.appendChild(nameSpan);
-                tag.appendChild(removeSpan);
-                container.appendChild(tag);
+                var ft = pokemon.form_name !== 'Normal' ? ' (' + pokemon.form_name + ')' : '';
+                var ns = document.createElement('span');
+                ns.textContent = pokemon.pokemon_name + ft;
+                var rs = document.createElement('span');
+                rs.className = 'remove'; rs.textContent = '✕';
+                rs.addEventListener('click', function(){ removePokemon(pokemon.id); });
+                tag.appendChild(ns); tag.appendChild(rs);
+                c.appendChild(tag);
             });
         }
 
         function addPokemon(pokemon) {
-            if (selectedPokemon.find(function(p) { return p.id === pokemon.id; })) return;
+            if (selectedPokemon.find(function(p){ return p.id===pokemon.id; })) return;
             selectedPokemon.push(pokemon);
-            updateSelectedTags();
-            updateDisplay();
+            updateSelectedTags(); updateDisplay();
             document.getElementById('searchBox').value = '';
             document.getElementById('searchResults').classList.remove('active');
             selectedSearchIndex = -1;
         }
-
         function removePokemon(pokemonId) {
-            selectedPokemon = selectedPokemon.filter(function(p) { return p.id !== pokemonId; });
+            selectedPokemon = selectedPokemon.filter(function(p){ return p.id!==pokemonId; });
             delete measureLines[pokemonId];
-            updateSelectedTags();
-            updateDisplay();
+            updateSelectedTags(); updateDisplay();
         }
 
         function searchPokemon(query) {
-            if (!query) {
-                document.getElementById('searchResults').classList.remove('active');
-                selectedSearchIndex = -1;
-                return;
-            }
+            if (!query) { document.getElementById('searchResults').classList.remove('active'); selectedSearchIndex=-1; return; }
             var lq = query.toLowerCase();
-            var results = pokemonData.filter(function(p) { return p.pokemon_name.toLowerCase().startsWith(lq); });
-            if (results.length === 0) results = pokemonData.filter(function(p) { return p.pokemon_name.toLowerCase().includes(lq); });
+            var results = pokemonData.filter(function(p){ return p.pokemon_name.toLowerCase().startsWith(lq); });
+            if (results.length===0) results = pokemonData.filter(function(p){ return p.pokemon_name.toLowerCase().includes(lq); });
             results = results.slice(0, 50);
-
-            var container = document.getElementById('searchResults');
-            container.innerHTML = '';
+            var c = document.getElementById('searchResults');
+            c.innerHTML = '';
             if (results.length > 0) {
-                container.classList.add('active');
+                c.classList.add('active');
                 results.forEach(function(pokemon, index) {
                     var item = document.createElement('div');
                     item.className = 'search-result-item';
                     item.dataset.index = index;
-                    item.onclick = function() { addPokemon(pokemon); };
+                    item.onclick = function(){ addPokemon(pokemon); };
                     var img = document.createElement('img');
-                    img.src = getIconPath(pokemon);
-                    img.loading = 'lazy';
-                    img.onerror = function() { this.style.display = 'none'; };
+                    img.src = getIconPath(pokemon); img.loading = 'lazy';
+                    img.onerror = function(){ this.style.display='none'; };
                     var name = document.createElement('div');
                     name.className = 'name';
-                    var formText = pokemon.form_name !== 'Normal' ? ' (' + pokemon.form_name + ')' : '';
-                    name.textContent = pokemon.pokemon_name + formText;
-                    item.appendChild(img);
-                    item.appendChild(name);
-                    container.appendChild(item);
+                    var ft = pokemon.form_name !== 'Normal' ? ' (' + pokemon.form_name + ')' : '';
+                    name.textContent = pokemon.pokemon_name + ft;
+                    item.appendChild(img); item.appendChild(name);
+                    c.appendChild(item);
                 });
-            } else {
-                container.classList.remove('active');
-            }
+            } else { c.classList.remove('active'); }
         }
 
         function selectSearchResult(index) {
             var items = document.querySelectorAll('.search-result-item');
-            items.forEach(function(item) { item.classList.remove('selected'); });
-            if (index >= 0 && index < items.length) {
-                items[index].classList.add('selected');
-                items[index].scrollIntoView({ block: 'nearest' });
-            }
+            items.forEach(function(item){ item.classList.remove('selected'); });
+            if (index>=0 && index<items.length) { items[index].classList.add('selected'); items[index].scrollIntoView({block:'nearest'}); }
         }
 
         // Event listeners
-        document.getElementById('searchBox').addEventListener('input', function(e) { searchPokemon(e.target.value); });
-
+        document.getElementById('searchBox').addEventListener('input', function(e){ searchPokemon(e.target.value); });
         document.getElementById('searchBox').addEventListener('keydown', function(e) {
             var results = document.querySelectorAll('.search-result-item');
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                selectedSearchIndex = Math.min(selectedSearchIndex + 1, results.length - 1);
-                selectSearchResult(selectedSearchIndex);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                selectedSearchIndex = Math.max(selectedSearchIndex - 1, -1);
-                selectSearchResult(selectedSearchIndex);
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                if (selectedSearchIndex >= 0) results[selectedSearchIndex].click();
-                else if (results.length > 0) results[0].click();
-            } else if (e.key === 'Escape') {
-                document.getElementById('searchResults').classList.remove('active');
-                selectedSearchIndex = -1;
-            }
+            if (e.key==='ArrowDown') { e.preventDefault(); selectedSearchIndex=Math.min(selectedSearchIndex+1,results.length-1); selectSearchResult(selectedSearchIndex); }
+            else if (e.key==='ArrowUp') { e.preventDefault(); selectedSearchIndex=Math.max(selectedSearchIndex-1,-1); selectSearchResult(selectedSearchIndex); }
+            else if (e.key==='Enter') { e.preventDefault(); if(selectedSearchIndex>=0) results[selectedSearchIndex].click(); else if(results.length>0) results[0].click(); }
+            else if (e.key==='Escape') { document.getElementById('searchResults').classList.remove('active'); selectedSearchIndex=-1; }
         });
 
         document.addEventListener('click', function(e) {
@@ -1162,32 +910,41 @@
                 document.getElementById('searchBox').value = '';
                 selectedSearchIndex = -1;
             }
-            if (!e.target.closest('.scale-btn, .scale-options') && scaleExpanded) {
+            if (!e.target.closest('.scale-btn,.scale-options') && scaleExpanded) {
                 document.getElementById('scaleOptions').classList.remove('active');
                 scaleExpanded = false;
             }
         });
 
+        // Desktop: scale option buttons
         document.querySelectorAll('.scale-option').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 var ref = btn.dataset.ref;
                 if (ref === 'custom') {
                     document.getElementById('customScaleModal').classList.add('active');
-                    document.getElementById('scaleOptions').classList.remove('active');
-                    scaleExpanded = false;
                 } else {
                     currentReference = ref;
                     document.getElementById('scaleEmoji').textContent = REFERENCES[currentReference].icon;
-                    document.getElementById('scaleOptions').classList.remove('active');
-                    scaleExpanded = false;
-                    updateDisplay();
                 }
+                document.getElementById('scaleOptions').classList.remove('active');
+                scaleExpanded = false;
+                if (ref !== 'custom') updateDisplay();
             });
         });
 
         function toggleScale() {
-            scaleExpanded = !scaleExpanded;
-            document.getElementById('scaleOptions').classList.toggle('active', scaleExpanded);
+            if (isMobile) {
+                // Mobile: cycle through references (no popup)
+                var keys = REFERENCE_KEYS;
+                var idx = keys.indexOf(currentReference);
+                idx = (idx + 1) % keys.length;
+                currentReference = keys[idx];
+                document.getElementById('scaleEmoji').textContent = REFERENCES[currentReference].icon;
+                updateDisplay();
+            } else {
+                scaleExpanded = !scaleExpanded;
+                document.getElementById('scaleOptions').classList.toggle('active', scaleExpanded);
+            }
         }
 
         function toggleGrid() {
@@ -1197,24 +954,23 @@
             var maxScale = Math.max.apply(null, allScales);
             var maxHeight = (maxScale / BASE_SCALE) * 200;
             var viewHeight = document.getElementById('comparisonArea').clientHeight - BASELINE_OFFSET - 60;
-            var scaleMultiplier = 1;
-            if (useBestFit && maxHeight > viewHeight) scaleMultiplier = viewHeight / maxHeight;
-            updateGrid(scaleMultiplier, maxScale, BASELINE_OFFSET);
+            var sm = 1;
+            if (useBestFit && maxHeight > viewHeight) sm = viewHeight / maxHeight;
+            updateGrid(sm, maxScale, BASELINE_OFFSET);
         }
 
         document.querySelectorAll('.media-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
-                document.querySelectorAll('.media-btn').forEach(function(b) { b.classList.remove('active'); });
+                // When switching to animated, clear measure lines
+                if (btn.dataset.media === 'animated') { clearAllLines(); }
+                document.querySelectorAll('.media-btn').forEach(function(b){ b.classList.remove('active'); });
                 btn.classList.add('active');
                 currentMediaType = btn.dataset.media;
                 updateDisplay();
             });
         });
 
-        function toggleUnits() {
-            useImperial = !useImperial;
-            updateDisplay();
-        }
+        function toggleUnits() { useImperial = !useImperial; updateDisplay(); }
 
         function toggleZoom() {
             useBestFit = !useBestFit;
@@ -1222,13 +978,8 @@
             var gridBtn = document.getElementById('gridToggle');
             btn.innerHTML = useBestFit ? '🔍 Zoom to Fit' : '🔍 Actual Size';
             btn.classList.toggle('active', useBestFit);
-            if (!useBestFit) {
-                gridBtn.disabled = true;
-                showGrid = false;
-                gridBtn.classList.remove('active');
-            } else {
-                gridBtn.disabled = false;
-            }
+            if (!useBestFit) { gridBtn.disabled = true; showGrid = false; gridBtn.classList.remove('active'); }
+            else { gridBtn.disabled = false; }
             updateDisplay();
         }
     </script>
