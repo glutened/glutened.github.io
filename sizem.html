@@ -106,32 +106,35 @@ h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:6
 .modal-buttons button.primary:hover{background:#333}
 .anim-play-btn{background:#000;color:#fff;border:none;padding:4px 14px;font-size:0.8em;font-family:inherit;cursor:pointer;margin-top:4px;font-weight:600}
 .anim-play-btn:hover{background:#333}
-.scale-btn{background:#000;color:#fff;border:2px solid #000;padding:7px 12px;cursor:pointer;font-size:0.85em;font-weight:600;display:flex;align-items:center;gap:6px;font-family:inherit}
-.scale-btn:hover{background:#333}
+.scale-btn{background:#fff;color:#000;border:2px solid #000;padding:0;cursor:pointer;font-size:0.85em;font-weight:600;display:flex;align-items:stretch;gap:0;font-family:inherit;overflow:hidden}
+.scale-btn:hover{background:#f5f5f5}
 .scale-btn:disabled{opacity:0.3;cursor:not-allowed}
+.scale-btn .scale-text{padding:7px 10px;display:flex;align-items:center}
+.scale-btn .scale-emoji{background:#000;color:#fff;padding:7px 10px;display:flex;align-items:center}
 .scale-options{display:none;position:absolute;bottom:100%;left:0;background:#000;margin-bottom:4px;padding:6px;gap:6px}
 .scale-options.active{display:flex}
-.scale-option{background:transparent;color:#fff;border:1px solid #fff;padding:6px 10px;cursor:pointer;font-size:1.1em}
-.scale-option:hover{background:#fff;color:#000}
+.scale-option{background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.3);padding:6px 10px;cursor:pointer;font-size:1.1em;transition:all 0.15s}
+.scale-option:hover{background:#fff;color:#000;border-color:#fff}
+.scale-option.active-ref{color:#fff;border-color:#fff}
 .view-toggle{display:flex;gap:0;border:2px solid #000}
 .view-btn{background:#fff;border:none;border-right:2px solid #000;padding:7px 12px;cursor:pointer;font-size:0.8em;font-family:inherit;font-weight:600;transition:all 0.15s}
 .view-btn:last-child{border-right:none}
 .view-btn:hover{background:#f0f0f0}
-.view-btn.active{background:#000;color:#fff}
+.view-btn.active{background:#000;color:#fff;cursor:default;pointer-events:none}
 .view-btn.disabled-look{cursor:default;position:relative}
 .view-btn.disabled-look:hover::after{content:'🚫';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.2em}
 .media-toggle{display:flex;gap:0;border:2px solid #000}
 .media-btn{background:#fff;border:none;border-right:2px solid #000;padding:7px 12px;cursor:pointer;font-size:0.8em;font-family:inherit;font-weight:600}
 .media-btn:last-child{border-right:none}
 .media-btn:hover{background:#f0f0f0}
-.media-btn.active{background:#000;color:#fff}
+.media-btn.active{background:#000;color:#fff;cursor:default;pointer-events:none}
 .expand-overlay{display:none;position:fixed;inset:0;background:#fafafa;z-index:2000;flex-direction:column}
 .expand-overlay.active{display:flex}
 .expand-content{flex:1;overflow:auto;display:flex;align-items:flex-end;justify-content:center;padding:20px;position:relative}
 .expand-controls{display:flex;justify-content:center;align-items:center;padding:12px 20px;border-top:2px solid #000;background:#fff;gap:16px;position:relative}
 .expand-media-right{position:absolute;right:20px;top:50%;transform:translateY(-50%)}
 .expand-baseline{position:absolute;left:0;right:0;height:3px;background:#000}
-.expand-bg{position:absolute;inset:0;pointer-events:none;z-index:0;min-width:200vw;min-height:200vh}
+
 .unlock-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:4000}
 .unlock-modal-overlay.active{display:flex}
 .unlock-modal{background:#fff;border:2px solid #000;padding:30px;text-align:center;max-width:360px}
@@ -139,8 +142,8 @@ h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:6
 .unlock-modal p{color:#555;margin-bottom:16px}
 .unlock-modal img{max-width:200px;height:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto}
 .unlock-modal button{padding:8px 20px;border:2px solid #000;background:#000;color:#fff;cursor:pointer;font-family:inherit;font-weight:600}
-.ditto-area{display:flex;align-items:flex-end;gap:12px;cursor:pointer}
-.ditto-label{font-size:1.5em;font-weight:600;color:#999;white-space:nowrap;margin-bottom:8px}
+.ditto-area{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);cursor:pointer;display:flex;flex-direction:column;align-items:center}
+
 @media(max-width:768px){
 .header{padding:18px 12px 10px;margin:0 6px}
 .about-link{top:18px;left:0;font-size:0;width:28px;height:28px;border:2px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none}
@@ -160,7 +163,9 @@ h1{font-size:1.5em;margin-bottom:12px}
 .controls{padding:8px 10px;gap:6px;justify-content:space-between;flex-wrap:nowrap}
 .controls-center{position:static;transform:none}
 .control-btn{padding:8px 12px;font-size:0.85em}
-.scale-btn{padding:8px 12px;font-size:0.85em}
+.scale-btn{font-size:0.85em}
+.scale-btn .scale-text{padding:8px 8px}
+.scale-btn .scale-emoji{padding:8px 8px}
 .scale-options{display:none!important}
 .media-toggle{border:2px solid #000}
 .media-btn{padding:8px 12px;font-size:1em;border-right:2px solid #000}
@@ -169,7 +174,6 @@ h1{font-size:1.5em;margin-bottom:12px}
 .view-btn{padding:8px 12px;font-size:1em;border-right:2px solid #000}
 .view-btn:last-child{border-right:none}
 .expand-content{overflow-y:auto!important;-webkit-overflow-scrolling:touch}
-.ditto-label{font-size:1.1em}
 }
 </style>
 </head>
@@ -200,7 +204,7 @@ h1{font-size:1.5em;margin-bottom:12px}
 <div class="controls">
 <div class="controls-left">
 <div style="position:relative">
-<button class="scale-btn" id="scaleBtn">SCALE <span id="scaleEmoji">👤</span></button>
+<button class="scale-btn" id="scaleBtn"><span class="scale-text">SCALE</span><span class="scale-emoji" id="scaleEmoji">👤</span></button>
 <div class="scale-options" id="scaleOptions">
 <button class="scale-option" data-ref="human">👤</button><button class="scale-option" data-ref="child">🧒</button><button class="scale-option" data-ref="dog">🐕</button><button class="scale-option" data-ref="ball">🏀</button><button class="scale-option" data-ref="car">🚗</button><button class="scale-option" data-ref="door">🚪</button><button class="scale-option" data-ref="custom">⚙️</button>
 </div>
@@ -244,7 +248,7 @@ var selectedPokemon=[],currentReference='human',currentMediaType='static',useImp
 var selectedSearchIndex=-1,scaleExpanded=false,measuringState=null,measureLines={};
 var tutorialShown=false,measureLineIdCounter=0,displayRafId=null;
 var unlockedModes={plush:false,sprite:false,size3:false,vector:false,ditto:false,animated:false};
-var imgFilterState=0; // 0=normal,1=shadow,2=silhouette - for pokemon images only
+var imgFilterState=0; // 0=normal, 1=silhouette
 
 var isTouchDevice=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
 var isMobile=window.matchMedia('(max-width:768px)').matches;
@@ -286,9 +290,9 @@ function initializeApp(){
     $('cheatInput').addEventListener('keydown',function(e){if(e.key==='Enter')handleCheat();});
     $('unlockClose').addEventListener('click',function(){$('unlockModal').classList.remove('active');});
     function closeTut(n){$('tutorialModal'+n).classList.remove('active');var v=$('tutorialVideo'+n);v.pause();v.currentTime=0;}
-    $('tutorialLink1').addEventListener('click',function(){$('tutorialModal1').classList.add('active');});
-    $('tutorialLink2').addEventListener('click',function(){$('tutorialModal2').classList.add('active');});
-    [1,2].forEach(function(n){$('closeTutorial'+n+'b').addEventListener('click',function(){closeTut(n);});$('tutorialModal'+n).addEventListener('click',function(e){if(e.target===e.currentTarget)closeTut(n);});});
+    $('tutorialLink1').addEventListener('click',function(){$('tutorialModal1').classList.add('active');updateDisplay();});
+    $('tutorialLink2').addEventListener('click',function(){$('tutorialModal2').classList.add('active');updateDisplay();});
+    [1,2].forEach(function(n){$('closeTutorial'+n+'b').addEventListener('click',function(){closeTut(n);updateDisplay();});$('tutorialModal'+n).addEventListener('click',function(e){if(e.target===e.currentTarget){closeTut(n);updateDisplay();}});});
 
     // View toggle
     document.querySelectorAll('.controls .view-btn').forEach(function(btn){
@@ -315,11 +319,13 @@ function initializeApp(){
 
     if(isMobile){
         $('gridToggle').style.display='none';
-        // Hide animated button on mobile unless unlocked
+        // Hide animated/static buttons on mobile (both main AND expand) unless cheat activated
         document.querySelectorAll('#mediaToggle .media-btn[data-media="animated"]').forEach(function(b){b.style.display='none';});
-        // Hide static label too on mobile (just show nothing until cheats)
         document.querySelectorAll('#mediaToggle .media-btn[data-media="static"]').forEach(function(b){b.style.display='none';});
         document.getElementById('mediaToggle').style.display='none';
+        document.querySelectorAll('#expandMediaToggle .media-btn[data-media="animated"]').forEach(function(b){b.style.display='none';});
+        document.querySelectorAll('#expandMediaToggle .media-btn[data-media="static"]').forEach(function(b){b.style.display='none';});
+        document.querySelector('.expand-media-right').style.display='none';
         document.querySelectorAll('.view-btn').forEach(function(b){b.textContent=b.dataset.view==='fit'?'⛶':'⤢';});
     }
 
@@ -345,8 +351,12 @@ function initializeApp(){
     });
     if(!isTouchDevice)setTimeout(function(){$('searchBox').focus();},100);
     updateExpandBtn();
-    // Firefox mobile fix: force a reflow after initial paint
-    if(isFirefox&&isMobile){setTimeout(function(){updateDisplay();},200);setTimeout(function(){updateDisplay();},600);}
+    // Firefox mobile fix: dimensions may not be ready on first paint
+    if(isFirefox&&isMobile){
+        setTimeout(function(){updateDisplay();},100);
+        setTimeout(function(){updateDisplay();},300);
+        setTimeout(function(){updateDisplay();},800);
+    }
     updateDisplay();
 }
 
@@ -377,9 +387,10 @@ function unlockAnimated(){
         mt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.textContent='🎨';});
         mt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.textContent='🎬';});
         // Also show in expand
+        document.querySelector('.expand-media-right').style.display='';
         var emt=document.getElementById('expandMediaToggle');
-        emt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.textContent='🎨';});
-        emt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.textContent='🎬';});
+        emt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.textContent='🎨';});
+        emt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.textContent='🎬';});
     }
     var um=document.getElementById('unlockModal');
     document.getElementById('unlockTitle').textContent='🎬 Animated Mode Unlocked!';
@@ -455,7 +466,7 @@ function createPokemonElement(pokemon,isRef,sm){
     var go=pokemon.groundOffset||0,container=document.createElement('div');
     container.className='pokemon-item'+(isRef?' reference':'');
     container.dataset.pokemonId=pokemon.id||'reference';
-    if(go!==0){var goPx=(go/BASE_SCALE)*sm*200;if(go>0)container.style.marginBottom=goPx+'px';else container.style.marginBottom=(goPx-hPx)+'px';}
+    if(go!==0&&!useBestFit){var goPx=(go/BASE_SCALE)*sm*200;if(go>0)container.style.marginBottom=goPx+'px';else container.style.marginBottom=(goPx-hPx)+'px';}
     var ic=document.createElement('div');ic.className='pokemon-image';ic.style.height=hPx+'px';
     var isVid=(currentMediaType==='animated'||currentMediaType==='sprite'||currentMediaType==='size3')&&!isRef;
 
@@ -489,14 +500,13 @@ function createPokemonElement(pokemon,isRef,sm){
         }else{
             img.src=getImagePath(pokemon);img.style.height=hPx+'px';img.style.width='auto';
             // Apply filter to pokemon images only
-            if(imgFilterState===1)img.style.filter='drop-shadow(2px 4px 6px rgba(0,0,0,0.4))';
-            else if(imgFilterState===2){img.style.filter='brightness(0)';img.style.opacity='0.3';}
+            if(imgFilterState===1){img.style.filter='brightness(0)';img.style.opacity='0.3';}
             img.onerror=function(){var fn3=getImageFilename(pokemon.id);
                 if(currentMediaType==='vector'){this.src=STATIC_FOLDER+fn3+'.svg';return;}
                 if(this.src.endsWith('.svg'))this.src=STATIC_FOLDER+fn3+'.webp';};
         }
-        // Click reference to cycle filter on POKEMON images
-        if(isRef){img.style.cursor='pointer';img.addEventListener('click',function(e){e.stopPropagation();imgFilterState=(imgFilterState+1)%3;updateDisplay();});}
+        // Click reference to toggle silhouette on POKEMON images
+        if(isRef){img.style.cursor='pointer';img.addEventListener('click',function(e){e.stopPropagation();imgFilterState=(imgFilterState+1)%2;updateDisplay();});}
         ic.appendChild(img);container.appendChild(ic);
     }
     if(!isRef&&!isTouchDevice&&!isVid){
@@ -532,12 +542,6 @@ function exitExpand(){useBestFit=true;updateViewButtons();document.getElementByI
 function renderExpand(){
     var ec=document.getElementById('expandContent');ec.innerHTML='';
     if(!selectedPokemon.length)return;
-    // Background (desktop only)
-    if(!isMobile){
-        var bg=document.createElement('div');bg.className='expand-bg';
-        bg.style.background='linear-gradient(180deg,#87CEEB 0%,#B0E0FF 30%,#8BC34A 50%,#6B8E23 55%,#556B2F 60%,#1E90FF 70%,#003366 100%)';
-        ec.appendChild(bg);
-    }
     var row=document.createElement('div');row.style.cssText='display:flex;align-items:flex-end;gap:30px;position:relative;padding-bottom:20px;z-index:1;';
     selectedPokemon.forEach(function(poke){
         var hPx=(poke.visualHeight/BASE_SCALE)*200;var go=poke.groundOffset||0;
@@ -564,8 +568,7 @@ function renderExpand(){
             img.onerror=function(){this.src=STATIC_FOLDER+getImageFilename(poke.id)+'.svg';};ic.appendChild(img);
         }else{
             var img=document.createElement('img');img.src=getImagePath(poke);img.style.height=hPx+'px';img.style.width='auto';
-            if(imgFilterState===1)img.style.filter='drop-shadow(2px 4px 6px rgba(0,0,0,0.4))';
-            else if(imgFilterState===2){img.style.filter='brightness(0)';img.style.opacity='0.3';}
+            if(imgFilterState===1){img.style.filter='brightness(0)';img.style.opacity='0.3';}
             img.onerror=function(){var fn3=getImageFilename(poke.id);if(this.src.endsWith('.svg'))this.src=STATIC_FOLDER+fn3+'.webp';};
             ic.appendChild(img);
         }
@@ -599,11 +602,14 @@ function _updateDisplayImpl(){
     var allS=[refS].concat(visPoke.map(function(p){return p.visualHeight;}));
     var maxS=Math.max.apply(null,allS),maxH=(maxS/BASE_SCALE)*200;
     var vH=ca.clientHeight-BASELINE_OFFSET-TOP_PADDING;
+    // Guard against zero/tiny container (Firefox mobile first paint)
+    if(vH<50){vH=300;}
     var sm=1;if(maxH>vH)sm=vH/maxH;
     // Mobile width constraint
     if(isMobile&&visPoke.length>0){
         var numItems=visPoke.length+(showRef?1:0);
-        var availW=ca.clientWidth-16;var maxItemW=availW/numItems-8;
+        var availW=ca.clientWidth-16;if(availW<50)availW=300;
+        var maxItemW=availW/numItems-8;
         var tallestH=(maxS/BASE_SCALE)*sm*200;var estW=tallestH*0.85;
         if(estW>maxItemW)sm=sm*(maxItemW/(tallestH*0.85));
     }
@@ -621,32 +627,30 @@ function _updateDisplayImpl(){
 
 function showDittoTransform(container){
     if(typeof svgPokemonIds==='undefined'||!svgPokemonIds.length)return;
+    // Hide if tutorial modal is open
+    if(document.getElementById('tutorialModal1').classList.contains('active')||document.getElementById('tutorialModal2').classList.contains('active'))return;
     var area=document.createElement('div');area.className='ditto-area';
-    var label=document.createElement('div');label.className='ditto-label';label.textContent='Use Transform';
-    var dittoWrap=document.createElement('div');dittoWrap.style.cssText='display:flex;align-items:flex-end;';
     var dittoImg=document.createElement('img');dittoImg.src=SVG_FOLDER+'132.svg';
     dittoImg.style.cssText='height:80px;width:auto;';
-    dittoWrap.appendChild(dittoImg);area.appendChild(label);area.appendChild(dittoWrap);
+    area.appendChild(dittoImg);
+    var nameLabel=document.createElement('div');
+    nameLabel.style.cssText='font-size:0.8em;color:#999;margin-top:4px;font-weight:500;';
+    area.appendChild(nameLabel);
     var transformed=false,targetPoke=null;
     area.addEventListener('click',function(e){
         e.stopPropagation();
         if(!transformed){
-            // Pick random from svgPokemonIds, find matching pokemonData
             var randId=svgPokemonIds[Math.floor(Math.random()*svgPokemonIds.length)];
-            var padded=randId<10?'#000'+randId:randId<100?'#00'+randId:'#0'+randId;
             targetPoke=pokemonData.find(function(p){return parseInt(getImageFilename(p.id),10)===randId;});
             if(!targetPoke)return;
-            // Find the first SVG file for this number
             var svgFile=null;
-            if(typeof svgFileList!=='undefined') svgFile=svgFileList.find(function(f){var m=f.match(/^(\d+)/);return m&&parseInt(m[1],10)===randId;});
+            if(typeof svgFileList!=='undefined')svgFile=svgFileList.find(function(f){var m=f.match(/^(\d+)/);return m&&parseInt(m[1],10)===randId;});
             dittoImg.src=SVG_FOLDER+(svgFile||randId+'.svg');
-            // Scale to fit, max 200px
             var newH=Math.min((targetPoke.visualHeight/BASE_SCALE)*200,200);
             dittoImg.style.height=newH+'px';
-            label.textContent='Search '+targetPoke.pokemon_name;label.style.color='#000';
+            nameLabel.textContent='Search '+targetPoke.pokemon_name;nameLabel.style.color='#000';
             transformed=true;
         }else if(targetPoke){
-            // Search and add this pokemon
             addPokemon(targetPoke);
         }
     });
@@ -723,11 +727,12 @@ document.addEventListener('click',function(e){
     if(!e.target.closest('.scale-btn,.scale-options')&&scaleExpanded){document.getElementById('scaleOptions').classList.remove('active');scaleExpanded=false;}
 });
 document.querySelectorAll('.scale-option').forEach(function(btn){
-    btn.addEventListener('click',function(){var ref=btn.dataset.ref;if(ref==='custom')document.getElementById('customScaleModal').classList.add('active');else{currentReference=ref;document.getElementById('scaleEmoji').textContent=REFERENCES[currentReference].icon;}document.getElementById('scaleOptions').classList.remove('active');scaleExpanded=false;if(ref!=='custom')updateDisplay();});
+    btn.addEventListener('click',function(){var ref=btn.dataset.ref;if(ref==='custom')document.getElementById('customScaleModal').classList.add('active');else{currentReference=ref;document.getElementById('scaleEmoji').textContent=REFERENCES[currentReference].icon;}document.getElementById('scaleOptions').classList.remove('active');scaleExpanded=false;updateScaleActive();if(ref!=='custom')updateDisplay();});
 });
+function updateScaleActive(){document.querySelectorAll('.scale-option').forEach(function(b){b.classList.toggle('active-ref',b.dataset.ref===currentReference);});}
 function toggleScale(){
-    if(isMobile){var k=REFERENCE_KEYS,i=k.indexOf(currentReference);i=(i+1)%k.length;currentReference=k[i];document.getElementById('scaleEmoji').textContent=REFERENCES[currentReference].icon;updateDisplay();}
-    else{scaleExpanded=!scaleExpanded;document.getElementById('scaleOptions').classList.toggle('active',scaleExpanded);}
+    if(isMobile){var k=REFERENCE_KEYS,i=k.indexOf(currentReference);i=(i+1)%k.length;currentReference=k[i];document.getElementById('scaleEmoji').textContent=REFERENCES[currentReference].icon;updateScaleActive();updateDisplay();}
+    else{scaleExpanded=!scaleExpanded;document.getElementById('scaleOptions').classList.toggle('active',scaleExpanded);updateScaleActive();}
 }
 function toggleGrid(){
     showGrid=!showGrid;document.getElementById('gridToggle').classList.toggle('active',showGrid);
