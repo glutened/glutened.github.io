@@ -12,8 +12,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Ar
 .about-link{position:absolute;top:20px;left:0;font-size:0.85em;font-weight:600;color:#000;cursor:pointer;text-decoration:underline;text-underline-offset:3px;user-select:none}
 .about-link:hover{opacity:0.55}
 h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:600;letter-spacing:-0.5px}
-#dittoLogo{height:28px;vertical-align:middle;margin-left:8px;cursor:pointer;opacity:0.6;transition:opacity 0.2s}
-#dittoLogo:hover{opacity:1}
+#dittoLogo {
+  height: 60px;
+  cursor: pointer;
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+#dittoLogo:hover {
+  opacity: 1;
+  animation: wiggle 0.3s infinite;
+}
+@keyframes wiggle {
+  0% { transform: translateX(-50%) rotate(0deg); }
+  25% { transform: translateX(-50%) rotate(3deg); }
+  50% { transform: translateX(-50%) rotate(0deg); }
+  75% { transform: translateX(-50%) rotate(-3deg); }
+  100% { transform: translateX(-50%) rotate(0deg); }
+}
 .search-section{max-width:600px;margin:0 auto 15px;position:relative}
 .search-box{width:100%;padding:12px 14px;border:2px solid #000;border-radius:0;font-size:1em;background:#fff;transition:box-shadow 0.2s;font-family:inherit}
 .search-box:focus{outline:none;box-shadow:0 0 0 3px rgba(0,0,0,0.1)}
@@ -116,13 +137,12 @@ h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:6
 .scale-option{background:#fff;color:#000;border:2px solid #000;padding:6px 10px;cursor:pointer;font-size:1.1em;transition:all 0.15s}
 .scale-option:hover{background:#e0e0e0}
 .scale-option.active-ref{background:#000;color:#fff}
-.view-toggle{display:flex;gap:0;border:2px solid #000}
-.view-btn{background:#fff;border:none;border-right:2px solid #000;padding:7px 12px;cursor:pointer;font-size:0.8em;font-family:inherit;font-weight:600;transition:all 0.15s}
-.view-btn:last-child{border-right:none}
-.view-btn:hover{background:#f0f0f0}
-.view-btn.active{background:#000;color:#fff;cursor:default;pointer-events:none}
-.view-btn.disabled-look{cursor:default;position:relative}
-.view-btn.disabled-look:hover::after{content:'🚫';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.2em}
+.btn-icon{width:14px;height:14px;display:inline-block;vertical-align:middle;margin-top:-1px}
+.media-toggle .btn-icon,.scale-option .btn-icon,.scale-emoji .btn-icon{width:16px;height:16px}
+.expand-standalone{background:#fff;color:#000;border:2px solid #000;padding:7px 14px;cursor:pointer;font-size:0.85em;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.15s}
+.expand-standalone:hover{background:#f0f0f0}
+.expand-standalone.disabled-look{cursor:default;position:relative}
+.expand-standalone.disabled-look:hover{background:#fff}
 .media-toggle{display:flex;gap:0;border:2px solid #000}
 .media-btn{background:#fff;border:none;border-right:2px solid #000;padding:7px 12px;cursor:pointer;font-size:0.8em;font-family:inherit;font-weight:600}
 .media-btn:last-child{border-right:none}
@@ -159,10 +179,11 @@ h1{font-size:1.5em;margin-bottom:12px}
 .pokemon-height{font-size:0.85em}
 .pokemon-labels{bottom:-28px}
 .grid-label{font-size:0.6em;left:2px}
-.empty-state{padding:12px 16px}
+.empty-state{padding:8px 16px}
 .controls{padding:8px 10px;gap:6px;justify-content:space-between;flex-wrap:nowrap}
 .controls-center{position:static;transform:none}
-.control-btn{padding:8px 12px;font-size:0.85em}
+.control-btn{padding:8px 10px;font-size:0.85em}
+.expand-standalone{padding:8px 10px;font-size:0.85em}
 .scale-btn{font-size:0.85em}
 .scale-text{padding:8px 8px}
 .scale-emoji{padding:8px 8px}
@@ -170,10 +191,12 @@ h1{font-size:1.5em;margin-bottom:12px}
 .media-toggle{border:2px solid #000}
 .media-btn{padding:8px 12px;font-size:1em;border-right:2px solid #000}
 .media-btn:last-child{border-right:none}
-.view-toggle{border:2px solid #000}
-.view-btn{padding:8px 12px;font-size:1em;border-right:2px solid #000}
-.view-btn:last-child{border-right:none}
-.expand-content{overflow-y:auto!important;-webkit-overflow-scrolling:touch}
+.help-button{top:4px;right:4px;z-index:50}
+.ditto-area{flex-direction:column;align-items:center;gap:4px}
+.ditto-area .ditto-label-side{display:none}
+.ditto-area .ditto-label-below{display:block!important}
+.expand-content{overflow:auto!important;-webkit-overflow-scrolling:touch}
+#dittoLogo{height:22px;bottom:20px}
 }
 </style>
 </head>
@@ -181,7 +204,7 @@ h1{font-size:1.5em;margin-bottom:12px}
 <div id="mainContent" style="display:flex;height:100%;flex-direction:column">
 <div class="header">
 <span class="about-link" id="aboutLink"><span class="about-text">About</span></span>
-<h1>Pokemon Size Comparison<img id="dittoLogo" src="images/logo.png" onerror="this.style.display='none'"></h1>
+<h1>Pokemon Size Comparison</h1>
 <div class="search-section">
 <input type="text" id="searchBox" class="search-box" placeholder="Search Pokemon..." autocomplete="off">
 <div id="searchResults" class="search-results"></div>
@@ -189,14 +212,15 @@ h1{font-size:1.5em;margin-bottom:12px}
 <div class="selected-pokemon-area"><div id="selectedTags" class="selected-pokemon-tags"></div></div>
 </div>
 <div class="comparison-area no-scroll" id="comparisonArea">
+<img id="dittoLogo" src="images/logo.svg">
 <button class="help-button" id="helpButton">?</button>
 <div id="pokemonRow" class="pokemon-row">
 <div class="empty-state" id="emptyState" style="display:none">
 <h2>Pokemon Size Comparison</h2>
 <p>Search for any Pokemon to add them to the canvas. Toggle <strong>Grid Lines</strong> for scale reference, swap the <strong>Scale</strong> object, hit <strong>Expand</strong> for true-to-screen scale, and switch between <strong>Static</strong> and <strong>Animated</strong> modes.</p>
 <div class="tutorial-links">
-<span class="tutorial-link" id="tutorialLink1">▶ How to measure</span>
-<span class="tutorial-link" id="tutorialLink2">▶ How to adjust scale</span>
+<span class="tutorial-link" id="tutorialLink1"><img src="icons/play.svg" class="btn-icon" alt=""> How to measure</span>
+<span class="tutorial-link" id="tutorialLink2"><img src="icons/play.svg" class="btn-icon" alt=""> How to adjust scale</span>
 </div>
 </div>
 </div>
@@ -204,19 +228,16 @@ h1{font-size:1.5em;margin-bottom:12px}
 <div class="controls">
 <div class="controls-left">
 <div style="position:relative">
-<button class="scale-btn" id="scaleBtn"><span class="scale-text" id="scaleText">SCALE</span><span class="scale-emoji" id="scaleEmoji">👤</span></button>
+<button class="scale-btn" id="scaleBtn"><span class="scale-text" id="scaleText">SCALE</span><span class="scale-emoji" id="scaleEmoji"><img src="icons/ref-human.svg" class="btn-icon" alt=""></span></button>
 <div class="scale-options" id="scaleOptions">
-<button class="scale-option" data-ref="human">👤</button><button class="scale-option" data-ref="child">🧒</button><button class="scale-option" data-ref="dog">🐕</button><button class="scale-option" data-ref="ball">🏀</button><button class="scale-option" data-ref="car">🚗</button><button class="scale-option" data-ref="door">🚪</button><button class="scale-option" data-ref="custom">⚙️</button>
+<button class="scale-option" data-ref="human"><img src="icons/ref-human.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="child"><img src="icons/ref-child.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="dog"><img src="icons/ref-dog.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="ball"><img src="icons/ref-ball.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="car"><img src="icons/ref-car.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="door"><img src="icons/ref-door.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="custom"><img src="icons/ref-custom.svg" class="btn-icon" alt=""></button>
 </div>
 </div>
-<button class="control-btn" id="gridToggle">Grid Lines</button>
-<button class="control-btn" id="clearLinesBtn" style="display:none">Clear Lines</button>
+<button class="control-btn" id="gridToggle"><img src="icons/grid.svg" class="btn-icon" alt=""> GRID</button>
+<button class="control-btn" id="clearLinesBtn" style="display:none">CLEAR LINES</button>
 </div>
 <div class="controls-center">
-<div class="view-toggle">
-<button class="view-btn active" data-view="fit">Fit ⛶</button>
-<button class="view-btn" data-view="expand" id="expandBtn">Expand ⤢</button>
-</div>
+<button class="expand-standalone" data-view="expand" id="expandBtn">EXPAND <img src="icons/expand.svg" class="btn-icon" alt=""></button>
 </div>
 <div class="controls-right">
 <div class="media-toggle" id="mediaToggle">
@@ -229,7 +250,7 @@ h1{font-size:1.5em;margin-bottom:12px}
 <div class="expand-overlay" id="expandOverlay">
 <div class="expand-content" id="expandContent"></div>
 <div class="expand-controls">
-<button class="control-btn" id="expandCloseBtn" style="font-size:1em;padding:10px 28px">✕ Close</button>
+<button class="control-btn" id="expandCloseBtn" style="font-size:1em;padding:10px 28px"><img src="icons/close.svg" class="btn-icon" alt=""> Close</button>
 <div class="expand-media-right"><div id="expandMediaToggle" class="media-toggle">
 <button class="media-btn active" data-media="static">Static</button>
 <button class="media-btn" data-media="animated">Animated</button>
@@ -238,7 +259,7 @@ h1{font-size:1.5em;margin-bottom:12px}
 </div>
 <div class="tutorial-modal-overlay" id="tutorialModal1"><div class="tutorial-modal"><h3>How to Measure</h3><video id="tutorialVideo1" preload="metadata" muted playsinline controls><source src="tutorials/measuring-tool.mp4" type="video/mp4"><source src="tutorials/measuring-tool.webm" type="video/webm"></video><div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial1b">Close</button></div></div></div>
 <div class="tutorial-modal-overlay" id="tutorialModal2"><div class="tutorial-modal"><h3>How to Adjust Scale</h3><video id="tutorialVideo2" preload="metadata" muted playsinline controls><source src="tutorials/basic-usage.mp4" type="video/mp4"><source src="tutorials/basic-usage.webm" type="video/webm"></video><div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial2b">Close</button></div></div></div>
-<div class="tutorial-modal-overlay" id="aboutModal"><div class="tutorial-modal"><h3>About Pokemon Size Comparison</h3><p>Compare the real-world sizes of any Pokemon side by side. All heights are sourced from official Pokemon Home data.</p><p><strong>How to use:</strong> Type a Pokemon name to add it. Use <strong>Scale</strong> to change the reference figure. Toggle <strong>Grid Lines</strong> for reference. Click <strong>Expand</strong> for true-to-screen scale.</p><p><strong>Measuring:</strong> On desktop, click and drag on any Pokemon to draw a measurement line. Click the line to remove it.</p><p><strong>Units:</strong> Click any height label to toggle metric/imperial.</p><p style="font-size:0.82em;color:#888;margin-top:8px">Best experienced on Chrome or Safari.</p><span class="cheat-truck" id="cheatTruck">🚚<span class="cheat-tooltip">Cheats</span></span><div class="cheat-input-area" id="cheatInputArea"><input type="text" id="cheatInput" placeholder="Enter code..."><button id="cheatSubmit">GO</button></div><div class="tutorial-modal-footer"><button class="close-btn" id="closeAbout">Close</button></div></div></div>
+<div class="tutorial-modal-overlay" id="aboutModal"><div class="tutorial-modal"><h3>About Pokemon Size Comparison</h3><p>Compare the real-world sizes of any Pokemon side by side. All heights are sourced from official Pokemon Home data.</p><p><strong>How to use:</strong> Type a Pokemon name to add it. Use <strong>Scale</strong> to change the reference figure. Toggle <strong>Grid Lines</strong> for reference. Click <strong>Expand</strong> for true-to-screen scale.</p><p><strong>Measuring:</strong> On desktop, click and drag on any Pokemon to draw a measurement line. Click the line to remove it.</p><p><strong>Units:</strong> Click any height label to toggle metric/imperial.</p><p style="font-size:0.82em;color:#888;margin-top:8px">Best experienced on Chrome or Safari.</p><span class="cheat-truck" id="cheatTruck"><img src="icons/truck.svg" class="btn-icon" style="width:20px;height:20px" alt=""><span class="cheat-tooltip">Cheats</span></span><div class="cheat-input-area" id="cheatInputArea"><input type="text" id="cheatInput" placeholder="Enter code..."><button id="cheatSubmit">GO</button></div><div class="tutorial-modal-footer"><button class="close-btn" id="closeAbout">Close</button></div></div></div>
 <div class="unlock-modal-overlay" id="unlockModal"><div class="unlock-modal"><h3 id="unlockTitle"></h3><p id="unlockText"></p><img id="unlockImg" src="" style="display:none"><button id="unlockClose">Let's go!</button></div></div>
 <div class="modal-overlay" id="customScaleModal"><div class="modal"><h3>Custom Reference Scale</h3><div class="modal-field"><label for="customHeight">Height</label><input type="text" id="customHeight" placeholder="e.g., 5'8&quot; or 1.73m"></div><div class="modal-field"><label>Gender</label><div class="modal-gender"><button class="modal-gender-btn active" id="genderMale" type="button">Male</button><button class="modal-gender-btn" id="genderFemale" type="button">Female</button></div></div><div class="modal-buttons"><button id="cancelCustomScale">Cancel</button><button class="primary" id="saveCustomScale">Apply</button></div></div></div>
 <script src="height-data.js"></script>
@@ -248,6 +269,8 @@ var selectedPokemon=[],currentReference='human',currentMediaType='static',useImp
 var selectedSearchIndex=-1,scaleExpanded=false,measuringState=null,measureLines={};
 var tutorialShown=false,measureLineIdCounter=0,displayRafId=null;
 var unlockedModes={plush:false,sprite:false,size3:false,vector:false,ditto:false,animated:false};
+var dittoClicked=false; // once clicked, stays hidden for entire session
+var dittoClicked=false;
 var imgFilterState=0; // 0=normal, 1=silhouette
 
 var isTouchDevice=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
@@ -262,10 +285,10 @@ var BASE_SCALE=1000,BASELINE_OFFSET=isMobile?50:100,TOP_PADDING=20,MOBILE_MAX_PO
 
 var REFERENCE_KEYS=['human','child','dog','ball','car','door'];
 var REFERENCES={
-    human:{scale:1750,icon:'👤',file:'human.png'},child:{scale:1200,icon:'🧒',file:'child.png'},
-    dog:{scale:600,icon:'🐕',file:'dog.png'},ball:{scale:240,icon:'🏀',file:'ball.png'},
-    car:{scale:1500,icon:'🚗',file:'car.png'},door:{scale:2000,icon:'🚪',file:'door.png'},
-    custom:{scale:1750,icon:'⚙️',file:'custom-male.png',gender:'male'}
+    human:{scale:1750,icon:'icons/ref-human.svg',file:'human.png'},child:{scale:1200,icon:'icons/ref-child.svg',file:'child.png'},
+    dog:{scale:600,icon:'icons/ref-dog.svg',file:'dog.png'},ball:{scale:240,icon:'icons/ref-ball.svg',file:'ball.png'},
+    car:{scale:1500,icon:'icons/ref-car.svg',file:'car.png'},door:{scale:2000,icon:'icons/ref-door.svg',file:'door.png'},
+    custom:{scale:1750,icon:'icons/ref-custom.svg',file:'custom-male.png',gender:'male'}
 };
 
 document.addEventListener('DOMContentLoaded',function(){
@@ -294,13 +317,8 @@ function initializeApp(){
     $('tutorialLink2').addEventListener('click',function(){$('tutorialModal2').classList.add('active');updateDisplay();});
     [1,2].forEach(function(n){$('closeTutorial'+n+'b').addEventListener('click',function(){closeTut(n);updateDisplay();});$('tutorialModal'+n).addEventListener('click',function(e){if(e.target===e.currentTarget){closeTut(n);updateDisplay();}});});
 
-    // View toggle
-    document.querySelectorAll('.controls .view-btn').forEach(function(btn){
-        btn.addEventListener('click',function(){
-            if(btn.dataset.view==='expand'){if(!selectedPokemon.length)return;enterExpand();}
-            else{useBestFit=true;updateViewButtons();updateDisplay();}
-        });
-    });
+    // Expand button
+    $('expandBtn').addEventListener('click',function(){if(!selectedPokemon.length)return;enterExpand();});
     $('expandCloseBtn').addEventListener('click',exitExpand);
     $('expandContent').addEventListener('click',function(e){if(!e.target.closest('img,video,button'))exitExpand();});
 
@@ -318,7 +336,6 @@ function initializeApp(){
     setupMediaToggle($('expandMediaToggle'));
 
     if(isMobile){
-        $('gridToggle').style.display='none';
         // Hide animated/static buttons on mobile (both main AND expand) unless cheat activated
         document.querySelectorAll('#mediaToggle .media-btn[data-media="animated"]').forEach(function(b){b.style.display='none';});
         document.querySelectorAll('#mediaToggle .media-btn[data-media="static"]').forEach(function(b){b.style.display='none';});
@@ -326,20 +343,23 @@ function initializeApp(){
         document.querySelectorAll('#expandMediaToggle .media-btn[data-media="animated"]').forEach(function(b){b.style.display='none';});
         document.querySelectorAll('#expandMediaToggle .media-btn[data-media="static"]').forEach(function(b){b.style.display='none';});
         document.querySelector('.expand-media-right').style.display='none';
-        document.querySelectorAll('.view-btn').forEach(function(b){b.textContent=b.dataset.view==='fit'?'⛶':'⤢';});
     }
 
     // Ditto logo
     var dittoLogo=$('dittoLogo');
     if(dittoLogo)dittoLogo.addEventListener('click',function(){
-        if(!unlockedModes.ditto){
-            unlockedModes.ditto=true;
-            var um=$('unlockModal');
-            $('unlockTitle').textContent='Huh!? You found Ditto!';
-            $('unlockText').textContent='Use Transform for search suggestions.';
-            $('unlockImg').src=SVG_FOLDER+'132.svg';$('unlockImg').style.display='block';
-            um.classList.add('active');
-            $('unlockClose').addEventListener('click',function(){um.classList.remove('active');updateDisplay();},{once:true});
+        if(!dittoClicked){
+            dittoClicked=true;
+            dittoLogo.style.display='none';
+            if(!unlockedModes.ditto){
+                unlockedModes.ditto=true;
+                var um=$('unlockModal');
+                $('unlockTitle').textContent='Huh?! You found Ditto!';
+                $('unlockText').textContent='Better lookups enabled. See you soon!';
+                $('unlockImg').src=SVG_FOLDER+'132.svg';$('unlockImg').style.display='block';
+                um.classList.add('active');
+                $('unlockClose').addEventListener('click',function(){um.classList.remove('active');updateDisplay();},{once:true});
+            }
         }
     });
 
@@ -384,16 +404,15 @@ function unlockAnimated(){
     if(isMobile){
         document.getElementById('mediaToggle').style.display='flex';
         var mt=document.getElementById('mediaToggle');
-        mt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.textContent='🎨';});
-        mt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.textContent='🎬';});
-        // Also show in expand
+        mt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.innerHTML='<img src="icons/static.svg" class="btn-icon" alt="">';});
+        mt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.innerHTML='<img src="icons/animated.svg" class="btn-icon" alt="">';});
         document.querySelector('.expand-media-right').style.display='';
         var emt=document.getElementById('expandMediaToggle');
-        emt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.textContent='🎨';});
-        emt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.textContent='🎬';});
+        emt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.innerHTML='<img src="icons/static.svg" class="btn-icon" alt="">';});
+        emt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.innerHTML='<img src="icons/animated.svg" class="btn-icon" alt="">';});
     }
     var um=document.getElementById('unlockModal');
-    document.getElementById('unlockTitle').textContent='🎬 Animated Mode Unlocked!';
+    document.getElementById('unlockTitle').textContent='Animated Mode Unlocked!';
     document.getElementById('unlockText').textContent='3D animated sprites now available!';
     document.getElementById('unlockImg').style.display='none';
     um.classList.add('active');
@@ -404,10 +423,10 @@ function unlockAnimated(){
 function unlockMode(mode){
     unlockedModes[mode]=true;
     var um=document.getElementById('unlockModal'),t=document.getElementById('unlockTitle'),tx=document.getElementById('unlockText'),im=document.getElementById('unlockImg');
-    if(mode==='plush'){t.textContent='🧸 Plush Mode Unlocked!';tx.textContent='You found the hidden plush gallery!';im.src=PLUSH_FOLDER+'151.webp';im.style.display='block';currentMediaType='plush';}
-    else if(mode==='sprite'){t.textContent='👾 Sprite Mode Unlocked!';tx.textContent='Retro sprite animations enabled!';im.style.display='none';currentMediaType='sprite';}
-    else if(mode==='size3'){t.textContent='📡 Size3 Mode Unlocked!';tx.textContent='Enhanced animated models for #1-386!';im.style.display='none';currentMediaType='size3';}
-    else if(mode==='vector'){t.textContent='🔷 Vector Mode Unlocked!';tx.textContent='Clean vector art (where available)!';im.style.display='none';currentMediaType='vector';}
+    if(mode==='plush'){t.textContent='Plush Mode Unlocked!';tx.textContent='You found the hidden plush gallery!';im.src=PLUSH_FOLDER+'151.webp';im.style.display='block';currentMediaType='plush';}
+    else if(mode==='sprite'){t.textContent='Sprite Mode Unlocked!';tx.textContent='Retro sprite animations enabled!';im.style.display='none';currentMediaType='sprite';}
+    else if(mode==='size3'){t.textContent='Size3 Mode Unlocked!';tx.textContent='Enhanced animated models for #1-386!';im.style.display='none';currentMediaType='size3';}
+    else if(mode==='vector'){t.textContent='Vector Mode Unlocked!';tx.textContent='Clean vector art (where available)!';im.style.display='none';currentMediaType='vector';}
     um.classList.add('active');addMediaButton(mode);syncMediaButtons();
     document.getElementById('aboutModal').classList.remove('active');
     document.getElementById('unlockClose').addEventListener('click',function(){um.classList.remove('active');if(useBestFit)updateDisplay();else renderExpand();},{once:true});
@@ -415,13 +434,14 @@ function unlockMode(mode){
 
 function addMediaButton(mode){
     var labels={plush:'Plush',sprite:'Sprite',size3:'Size3',vector:'Vector'};
-    var emojis={plush:'🧸',sprite:'👾',size3:'📡',vector:'🔷'};
+    var icons={plush:'icons/plush.svg',sprite:'icons/sprite.svg',size3:'icons/size3.svg',vector:'icons/vector.svg'};
     [document.getElementById('mediaToggle'),document.getElementById('expandMediaToggle')].forEach(function(mt){
         if(mt.querySelector('[data-media="'+mode+'"]'))return;
         var btns=mt.querySelectorAll('.media-btn');
         if(btns.length)btns[btns.length-1].style.borderRight='2px solid #000';
         var b=document.createElement('button');b.className='media-btn';b.dataset.media=mode;
-        b.textContent=isMobile?(emojis[mode]||mode):(labels[mode]||mode);
+        if(isMobile)b.innerHTML='<img src="'+(icons[mode]||'')+'" class="btn-icon" alt="">';
+        else b.textContent=labels[mode]||mode;
         mt.appendChild(b);
         b.addEventListener('click',function(){
             mt.querySelectorAll('.media-btn').forEach(function(x){x.classList.remove('active');});
@@ -431,7 +451,7 @@ function addMediaButton(mode){
     });
 }
 function syncMediaButtons(){document.querySelectorAll('.media-btn').forEach(function(b){b.classList.toggle('active',b.dataset.media===currentMediaType);});}
-function updateViewButtons(){document.querySelectorAll('.view-btn').forEach(function(b){b.classList.toggle('active',(b.dataset.view==='fit')===useBestFit);});}
+function setScaleIcon(ref){document.getElementById('scaleEmoji').innerHTML='<img src="'+REFERENCES[ref].icon+'" class="btn-icon" alt="">';}
 function updateExpandBtn(){
     var eb=document.getElementById('expandBtn');
     if(!eb)return;
@@ -482,9 +502,9 @@ function createPokemonElement(pokemon,isRef,sm){
         v.onerror=fb;v.addEventListener('stalled',function(){setTimeout(function(){if(v.readyState<2&&!fell)fb();},3000);});
         ic.appendChild(v);
         if(isSafari||isTouchDevice){
-            var pb=document.createElement('button');pb.textContent='▶';pb.className='anim-play-btn';
-            pb.addEventListener('click',function(e){e.stopPropagation();if(fell)return;if(v.paused){v.play().catch(fb);pb.textContent='⏸';}else{v.pause();v.currentTime=0;pb.textContent='▶';}});
-            v.addEventListener('ended',function(){pb.textContent='▶';v.currentTime=0;});
+            var pb=document.createElement('button');pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';pb.className='anim-play-btn';
+            pb.addEventListener('click',function(e){e.stopPropagation();if(fell)return;if(v.paused){v.play().catch(fb);pb.innerHTML='<img src="icons/pause.svg" class="btn-icon" alt="">';}else{v.pause();v.currentTime=0;pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';}});
+            v.addEventListener('ended',function(){pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';v.currentTime=0;});
             container.appendChild(ic);container.appendChild(pb);
         }else{
             v.loop=true;v.addEventListener('mouseenter',function(){if(!fell)v.play().catch(fb);});
@@ -496,7 +516,7 @@ function createPokemonElement(pokemon,isRef,sm){
         if(isRef){
             img.src=REFERENCE_FOLDER+REFERENCES[currentReference].file;
             img.style.height=hPx+'px';img.style.width='auto';img.style.opacity='0.5';
-            img.onerror=function(){var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('width',60);svg.setAttribute('height',hPx);svg.innerHTML='<text x="30" y="'+(hPx/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="28" fill="#000" opacity="0.5">'+pokemon.icon+'</text>';this.replaceWith(svg);};
+            img.onerror=function(){var fallback=document.createElement('img');fallback.src=pokemon.icon;fallback.style.height=hPx+'px';fallback.style.width='auto';fallback.style.opacity='0.5';this.replaceWith(fallback);};
         }else{
             img.src=getImagePath(pokemon);img.style.height=hPx+'px';img.style.width='auto';
             // Apply filter to pokemon images only
@@ -533,12 +553,12 @@ function removeMeasureLine(pid,ld){if(ld.element)ld.element.remove();if(ld.hitar
 function clearAllLines(){Object.values(measureLines).forEach(function(ls){ls.forEach(function(ld){if(ld.element)ld.element.remove();if(ld.hitarea)ld.hitarea.remove();if(ld.label)ld.label.remove();});});measureLines={};updateClearLinesButton();}
 function updateClearLinesButton(){document.getElementById('clearLinesBtn').style.display=Object.keys(measureLines).length?'block':'none';}
 
-function saveCustomScale(){var hi=document.getElementById('customHeight').value.trim();var g=document.getElementById('genderMale').classList.contains('active')?'male':'female';if(!hi){alert('Please enter a height');return;}var hmm=parseHeightToMm(hi);if(!hmm||hmm<100||hmm>50000){alert('Please enter a valid height (min 0.1m / 4")');return;}REFERENCES.custom.scale=hmm;REFERENCES.custom.gender=g;REFERENCES.custom.file='custom-'+g+'.png';currentReference='custom';document.getElementById('scaleEmoji').textContent='⚙️';document.getElementById('customScaleModal').classList.remove('active');updateDisplay();}
+function saveCustomScale(){var hi=document.getElementById('customHeight').value.trim();var g=document.getElementById('genderMale').classList.contains('active')?'male':'female';if(!hi){alert('Please enter a height');return;}var hmm=parseHeightToMm(hi);if(!hmm||hmm<100||hmm>50000){alert('Please enter a valid height (min 0.1m / 4")');return;}REFERENCES.custom.scale=hmm;REFERENCES.custom.gender=g;REFERENCES.custom.file='custom-'+g+'.png';currentReference='custom';setScaleIcon('custom');document.getElementById('customScaleModal').classList.remove('active');updateDisplay();}
 function parseHeightToMm(input){input=input.toLowerCase().trim();var m=input.match(/^(\d+(?:\.\d+)?)\s*m$/);if(m)return Math.round(parseFloat(m[1])*1000);m=input.match(/(\d+(?:\.\d+)?)\s*cm/);if(m)return Math.round(parseFloat(m[1])*10);m=input.match(/(\d+)[''\u2019]\s*(\d+)?[""\u201D]?/);if(m)return Math.round((parseInt(m[1])*12+(m[2]?parseInt(m[2]):0))*25.4);m=input.match(/(\d+(?:\.\d+)?)\s*[""\u201D]$/);if(m)return Math.round(parseFloat(m[1])*25.4);var n=parseFloat(input);return!isNaN(n)?Math.round(n*10):null;}
 
 // Expand mode
-function enterExpand(){if(!selectedPokemon.length)return;useBestFit=false;updateViewButtons();document.getElementById('expandOverlay').classList.add('active');renderExpand();}
-function exitExpand(){useBestFit=true;updateViewButtons();document.getElementById('expandOverlay').classList.remove('active');updateDisplay();}
+function enterExpand(){if(!selectedPokemon.length)return;useBestFit=false;document.getElementById('expandOverlay').classList.add('active');renderExpand();}
+function exitExpand(){useBestFit=true;document.getElementById('expandOverlay').classList.remove('active');updateDisplay();}
 function renderExpand(){
     var ec=document.getElementById('expandContent');ec.innerHTML='';
     if(!selectedPokemon.length)return;
@@ -558,9 +578,9 @@ function renderExpand(){
             v.style.height=hPx+'px';v.style.width='auto';v.style.clipPath='inset(0 0 1px 0)';
             v.muted=true;v.playsInline=true;v.loop=true;v.preload='auto';v.setAttribute('muted','');v.setAttribute('playsinline','');
             if(isMobile){
-                var pb=document.createElement('button');pb.textContent='▶';pb.className='anim-play-btn';
+                var pb=document.createElement('button');pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';pb.className='anim-play-btn';
                 pb.style.cssText='position:absolute;bottom:4px;left:50%;transform:translateX(-50%);z-index:5;';
-                pb.addEventListener('click',function(e){e.stopPropagation();if(v.paused){v.play().catch(function(){});pb.textContent='⏸';}else{v.pause();v.currentTime=0;pb.textContent='▶';}});
+                pb.addEventListener('click',function(e){e.stopPropagation();if(v.paused){v.play().catch(function(){});pb.innerHTML='<img src="icons/pause.svg" class="btn-icon" alt="">';}else{v.pause();v.currentTime=0;pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';}});
                 ic.appendChild(v);ic.appendChild(pb);
             }else{v.addEventListener('mouseenter',function(){v.play().catch(function(){});});v.addEventListener('mouseleave',function(){v.pause();v.currentTime=0;});ic.appendChild(v);}
         }else if(currentMediaType==='vector'){
@@ -587,16 +607,20 @@ function _updateDisplayImpl(){
     var es=document.getElementById('emptyState'),hb=document.getElementById('helpButton');
     container.querySelectorAll('.pokemon-item,.ditto-area').forEach(function(el){el.remove();});
     updateExpandBtn();
+    var logo=document.getElementById('dittoLogo');
     if(!selectedPokemon.length){
         ca.classList.add('no-scroll');ca.querySelectorAll('.alignment-line,.grid-label').forEach(function(l){l.remove();});
         container.style.position='relative';container.style.bottom='';container.style.minHeight='100%';
         if(!tutorialShown){es.style.display='flex';hb.style.display='none';}
         else{es.style.display='none';hb.style.display='flex';}
+        // Show logo only when no pokemon and not yet clicked
+        if(logo)logo.style.display=dittoClicked?'none':'block';
         var anyModalOpen=document.getElementById('tutorialModal1').classList.contains('active')||document.getElementById('tutorialModal2').classList.contains('active');
         if(unlockedModes.ditto&&tutorialShown&&!anyModalOpen) showDittoTransform(container);
         return;
     }
     tutorialShown=true;es.style.display='none';hb.style.display='none';
+    if(logo)logo.style.display='none';
     container.style.position='absolute';container.style.minHeight='';
     var visPoke=selectedPokemon,showRef=true;
     if(isMobile&&selectedPokemon.length>=MOBILE_MAX_POKEMON){showRef=false;visPoke=selectedPokemon.slice(-MOBILE_MAX_POKEMON);}
@@ -631,12 +655,17 @@ function _updateDisplayImpl(){
 function showDittoTransform(container){
     if(typeof svgPokemonIds==='undefined'||!svgPokemonIds.length)return;
     var area=document.createElement('div');area.className='ditto-area';
-    var nameLabel=document.createElement('div');
-    nameLabel.style.cssText='font-size:1.4em;font-weight:600;color:#999;white-space:nowrap;margin-bottom:6px;';
-    area.appendChild(nameLabel);
+    // Side label (desktop) - hidden on mobile via CSS
+    var sideLabel=document.createElement('div');sideLabel.className='ditto-label-side';
+    sideLabel.style.cssText='font-size:1.4em;font-weight:600;color:#999;white-space:nowrap;margin-bottom:6px;';
+    area.appendChild(sideLabel);
     var dittoImg=document.createElement('img');dittoImg.src=SVG_FOLDER+'132.svg';
     dittoImg.style.cssText='height:80px;width:auto;';
     area.appendChild(dittoImg);
+    // Below label (mobile) - hidden on desktop via CSS
+    var belowLabel=document.createElement('div');belowLabel.className='ditto-label-below';
+    belowLabel.style.cssText='font-size:1em;font-weight:600;color:#999;white-space:nowrap;display:none;';
+    area.appendChild(belowLabel);
     var transformed=false,targetPoke=null;
     area.addEventListener('click',function(e){
         e.stopPropagation();
@@ -649,7 +678,9 @@ function showDittoTransform(container){
             dittoImg.src=SVG_FOLDER+(svgFile||randId+'.svg');
             var newH=Math.min((targetPoke.visualHeight/BASE_SCALE)*200,200);
             dittoImg.style.height=newH+'px';
-            nameLabel.textContent='Search '+targetPoke.pokemon_name;nameLabel.style.color='#000';
+            var txt='Search '+targetPoke.pokemon_name;
+            sideLabel.textContent=txt;sideLabel.style.color='#000';
+            belowLabel.textContent=txt;belowLabel.style.color='#000';
             transformed=true;
         }else if(targetPoke){
             addPokemon(targetPoke);
@@ -662,7 +693,7 @@ function updateGrid(sm,maxS,basePos){
     var ca=document.getElementById('comparisonArea');ca.querySelectorAll('.alignment-line,.grid-label').forEach(function(l){l.remove();});
     if(!selectedPokemon.length)return;
     var bl=document.createElement('div');bl.className='alignment-line baseline';bl.style.bottom=basePos+'px';ca.appendChild(bl);
-    if(!showGrid||isMobile)return;
+    if(!showGrid)return;
     if(!maxS){var aS=[REFERENCES[currentReference].scale].concat(selectedPokemon.map(function(p){return p.visualHeight;}));maxS=Math.max.apply(null,aS);}
     var maxM=maxS/1000+0.5,step=0.5,frag=document.createDocumentFragment();
     for(var m=step;m<=maxM;m=Math.round((m+step)*10)/10){
@@ -680,7 +711,7 @@ function updateSelectedTags(){
         var tag=document.createElement('div');tag.className='selected-tag';
         var ft=p.form_name!=='Normal'?' ('+p.form_name+')':'';
         var ns=document.createElement('span');ns.textContent=p.pokemon_name+ft;
-        var rs=document.createElement('span');rs.textContent=' ✕';rs.style.opacity='0.7';rs.style.marginLeft='4px';
+        var rs=document.createElement('span');rs.innerHTML='<img src="icons/close.svg" class="btn-icon" style="width:10px;height:10px;filter:invert(1)" alt="">';rs.style.opacity='0.7';rs.style.marginLeft='4px';
         tag.appendChild(ns);tag.appendChild(rs);
         tag.addEventListener('click',function(){removePokemon(p.id);});c.appendChild(tag);
     });
@@ -728,11 +759,11 @@ document.addEventListener('click',function(e){
     if(!e.target.closest('.scale-btn,.scale-options,.scale-text')&&scaleExpanded){document.getElementById('scaleOptions').classList.remove('active');scaleExpanded=false;}
 });
 document.querySelectorAll('.scale-option').forEach(function(btn){
-    btn.addEventListener('click',function(){var ref=btn.dataset.ref;if(ref==='custom')document.getElementById('customScaleModal').classList.add('active');else{currentReference=ref;document.getElementById('scaleEmoji').textContent=REFERENCES[currentReference].icon;}document.getElementById('scaleOptions').classList.remove('active');scaleExpanded=false;updateScaleActive();if(ref!=='custom')updateDisplay();});
+    btn.addEventListener('click',function(){var ref=btn.dataset.ref;if(ref==='custom')document.getElementById('customScaleModal').classList.add('active');else{currentReference=ref;setScaleIcon(currentReference);}document.getElementById('scaleOptions').classList.remove('active');scaleExpanded=false;updateScaleActive();if(ref!=='custom')updateDisplay();});
 });
 function updateScaleActive(){document.querySelectorAll('.scale-option').forEach(function(b){b.classList.toggle('active-ref',b.dataset.ref===currentReference);});}
 function toggleScale(){
-    if(isMobile){var k=REFERENCE_KEYS,i=k.indexOf(currentReference);i=(i+1)%k.length;currentReference=k[i];document.getElementById('scaleEmoji').textContent=REFERENCES[currentReference].icon;updateScaleActive();updateDisplay();}
+    if(isMobile){var k=REFERENCE_KEYS,i=k.indexOf(currentReference);i=(i+1)%k.length;currentReference=k[i];setScaleIcon(currentReference);updateScaleActive();updateDisplay();}
     else{scaleExpanded=!scaleExpanded;document.getElementById('scaleOptions').classList.toggle('active',scaleExpanded);updateScaleActive();}
 }
 function toggleGrid(){
