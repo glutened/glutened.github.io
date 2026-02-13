@@ -38,7 +38,7 @@
         .pokemon-row { display: flex; align-items: flex-end; gap: 40px; position: relative; min-height: 100%; padding-bottom: 80px; z-index: 10; }
         .pokemon-item { display: flex; flex-direction: column; align-items: center; position: relative; }
         .pokemon-item.reference { order: -1; }
-        .pokemon-image { display: flex; align-items: flex-end; justify-content: center; position: relative; margin-bottom: 4px; }
+        .pokemon-image { display: flex; align-items: flex-end; justify-content: center; position: relative; margin-bottom: 8px; }
         .pokemon-image img, .pokemon-image video { display: block; }
         .pokemon-image.clickable { overflow: hidden; }
         .measure-line { position: absolute; background: #f00; transform-origin: top left; pointer-events: auto; z-index: 20; cursor: pointer; height: 2px; }
@@ -106,6 +106,7 @@
         .anim-play-btn:hover { background: #333; }
         .scale-btn { background: #000; color: #fff; border: 2px solid #000; padding: 7px 12px; cursor: pointer; font-size: 0.85em; font-weight: 600; display: flex; align-items: center; gap: 6px; font-family: inherit; }
         .scale-btn:hover { background: #333; }
+        .scale-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .scale-options { display: none; position: absolute; bottom: 100%; left: 0; background: #000; margin-bottom: 4px; padding: 6px; gap: 6px; }
         .scale-options.active { display: flex; }
         .scale-option { background: transparent; color: #fff; border: 1px solid #fff; padding: 6px 10px; cursor: pointer; font-size: 1.1em; }
@@ -125,8 +126,9 @@
         .expand-overlay.active { display: flex; }
         .expand-content { flex: 1; overflow: auto; display: flex; align-items: flex-end; justify-content: center; padding: 20px; position: relative; }
         .expand-controls { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 2px solid #000; background: #fff; }
-        .expand-controls > div:first-child, .expand-controls > .media-toggle { flex: 1; }
-        .expand-controls > .media-toggle { display: flex; justify-content: flex-end; }
+        .expand-controls > div:first-child { flex: 1; }
+        .expand-controls > #expandCloseBtn { flex: 0 0 auto; }
+        .expand-controls > .media-toggle { flex: 0 0 auto; }
         .expand-baseline { position: absolute; left: 0; right: 0; height: 3px; background: #000; }
         .mobile-zoom-btn { display: none; }
         /* Unlock modal */
@@ -165,6 +167,7 @@
             .view-btn { padding: 8px 12px; font-size: 1em; border-right: 2px solid #000; }
             .view-btn:last-child { border-right: none; }
             .mobile-zoom-btn { display: none; }
+            .expand-content { overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
         }
     </style>
 </head>
@@ -172,7 +175,7 @@
 <div id="mainContent" style="display:flex;height:100%;flex-direction:column">
     <div class="header">
         <span class="about-link" id="aboutLink"><span class="about-text">About</span></span>
-        <h1>Pokemon Size Comparison</h1>
+        <h1>Pokemon Size Comparison<img id="dittoLogo" src="images/logo.png" style="height:28px;vertical-align:middle;margin-left:8px;cursor:pointer;opacity:0.6;" onerror="this.style.display='none'"></h1>
         <div class="search-section">
             <input type="text" id="searchBox" class="search-box" placeholder="Search Pokemon..." autocomplete="off">
             <div id="searchResults" class="search-results"></div>
@@ -238,7 +241,7 @@
 <!-- Modals -->
 <div class="tutorial-modal-overlay" id="tutorialModal1"><div class="tutorial-modal"><h3>How to Measure</h3><video id="tutorialVideo1" preload="metadata" muted playsinline controls><source src="tutorials/measuring-tool.mp4" type="video/mp4"><source src="tutorials/measuring-tool.webm" type="video/webm"></video><div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial1b">Close</button></div></div></div>
 <div class="tutorial-modal-overlay" id="tutorialModal2"><div class="tutorial-modal"><h3>How to Adjust Scale</h3><video id="tutorialVideo2" preload="metadata" muted playsinline controls><source src="tutorials/basic-usage.mp4" type="video/mp4"><source src="tutorials/basic-usage.webm" type="video/webm"></video><div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial2b">Close</button></div></div></div>
-<div class="tutorial-modal-overlay" id="aboutModal"><div class="tutorial-modal"><h3>About Pokemon Size Comparison</h3><p>Compare the real-world sizes of any Pokemon side by side. All heights are sourced from official Pokemon Home data.</p><p><strong>How to use:</strong> Type a Pokemon name to add it. Use <strong>Scale</strong> to change the reference figure. Toggle <strong>Grid Lines</strong> for reference. Click <strong>Expand</strong> for true-to-screen scale.</p><p><strong>Measuring:</strong> On desktop, click and drag on any Pokemon to draw a measurement line. Click the line to remove it.</p><p><strong>Units:</strong> Click any height label to toggle metric/imperial.</p><span class="cheat-truck" id="cheatTruck">🚚<span class="cheat-tooltip">Cheats</span></span><div class="cheat-input-area" id="cheatInputArea"><input type="text" id="cheatInput" placeholder="Enter code..."><button id="cheatSubmit">GO</button></div><div class="tutorial-modal-footer"><button class="close-btn" id="closeAbout">Close</button></div></div></div>
+<div class="tutorial-modal-overlay" id="aboutModal"><div class="tutorial-modal"><h3>About Pokemon Size Comparison</h3><p>Compare the real-world sizes of any Pokemon side by side. All heights are sourced from official Pokemon Home data.</p><p><strong>How to use:</strong> Type a Pokemon name to add it. Use <strong>Scale</strong> to change the reference figure. Toggle <strong>Grid Lines</strong> for reference. Click <strong>Expand</strong> for true-to-screen scale.</p><p><strong>Measuring:</strong> On desktop, click and drag on any Pokemon to draw a measurement line. Click the line to remove it.</p><p><strong>Units:</strong> Click any height label to toggle metric/imperial.</p><p style="font-size:0.82em;color:#888;margin-top:8px;">Best experienced on Chrome or Safari.</p><span class="cheat-truck" id="cheatTruck">🚚<span class="cheat-tooltip">Cheats</span></span><div class="cheat-input-area" id="cheatInputArea"><input type="text" id="cheatInput" placeholder="Enter code..."><button id="cheatSubmit">GO</button></div><div class="tutorial-modal-footer"><button class="close-btn" id="closeAbout">Close</button></div></div></div>
 <div class="unlock-modal-overlay" id="unlockModal"><div class="unlock-modal"><h3 id="unlockTitle"></h3><p id="unlockText"></p><img id="unlockImg" src="" style="display:none"><button id="unlockClose">Let's go!</button></div></div>
 <div class="modal-overlay" id="customScaleModal"><div class="modal"><h3>Custom Reference Scale</h3><div class="modal-field"><label for="customHeight">Height</label><input type="text" id="customHeight" placeholder="e.g., 5'8&quot; or 1.73m"></div><div class="modal-field"><label>Gender</label><div class="modal-gender"><button class="modal-gender-btn active" id="genderMale" type="button">Male</button><button class="modal-gender-btn" id="genderFemale" type="button">Female</button></div></div><div class="modal-buttons"><button id="cancelCustomScale">Cancel</button><button class="primary" id="saveCustomScale">Apply</button></div></div></div>
 <script src="height-data.js"></script>
@@ -246,14 +249,16 @@
 var selectedPokemon=[], currentReference='human', currentMediaType='static', useImperial=true, useBestFit=true, showGrid=false;
 var selectedSearchIndex=-1, scaleExpanded=false, measuringState=null, measureLines={};
 var tutorialShown=false, measureLineIdCounter=0, displayRafId=null;
-var unlockedModes = { plush: false, sprite: false };
+var unlockedModes = { plush: false, sprite: false, size3: false, vector: false, ditto: false };
+var refFilterState = 0; // 0=normal, 1=shadow, 2=silhouette
 
 var isTouchDevice=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
 var isMobile=window.matchMedia('(max-width:768px)').matches;
 var isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 var STATIC_FOLDER='images/', ANIMATED_FOLDER='images/size/', THREED_FOLDER='images/3d/';
-var PLUSH_FOLDER='images/card/', SPRITE_FOLDER='images/xgif/';
+var PLUSH_FOLDER='images/card/', SPRITE_FOLDER='images/xgif/', SIZE3_FOLDER='images/size3/';
+var SVG_FOLDER='svgs/', VECTOR_FOLDER='svgs/';
 var ICON_FOLDER='icons/poke/', REFERENCE_FOLDER='images/reference/';
 var BASE_SCALE=1000, BASELINE_OFFSET=isMobile?70:120, TOP_PADDING=30, MOBILE_MAX_POKEMON=2;
 
@@ -335,7 +340,7 @@ function initializeApp(){
     setupMediaToggle($('expandMediaToggle'));
 
     if(isMobile){
-        $('gridToggle').textContent='GRID';
+        $('gridToggle').style.display='none';
         // Mobile view/media: use symbols
         document.querySelectorAll('.view-btn').forEach(function(b){ b.textContent = b.dataset.view==='fit'?'⛶':'⤢'; });
         document.querySelectorAll('.media-btn').forEach(function(b){
@@ -345,6 +350,21 @@ function initializeApp(){
             else if(b.dataset.media==='sprite') b.textContent='👾';
         });
     }
+
+    // Ditto logo click (the logo file in header)
+    var dittoLogo=document.getElementById('dittoLogo');
+    if(dittoLogo) dittoLogo.addEventListener('click',function(){
+        if(!unlockedModes.ditto){
+            unlockedModes.ditto=true;
+            var um=document.getElementById('unlockModal');
+            document.getElementById('unlockTitle').textContent='Huh!? You found Ditto!';
+            document.getElementById('unlockText').textContent='Use Transform for search suggestions.';
+            document.getElementById('unlockImg').src=SVG_FOLDER+'132.svg';
+            document.getElementById('unlockImg').style.display='block';
+            um.classList.add('active');
+            document.getElementById('unlockClose').addEventListener('click',function(){um.classList.remove('active');updateDisplay();},{once:true});
+        }
+    });
 
     // Type anywhere to search
     document.addEventListener('keydown',function(e){
@@ -363,6 +383,8 @@ function handleCheat(){
     document.getElementById('cheatInput').value='';
     if(code==='USESTRENGTH'&&!unlockedModes.plush){ unlockMode('plush'); }
     else if(code==='PORTABLEPOWER'&&!unlockedModes.sprite){ unlockMode('sprite'); }
+    else if(code==='DATAINTEGRITY'&&!unlockedModes.size3){ unlockMode('size3'); }
+    else if(code==='PORYGON'&&!unlockedModes.vector){ unlockMode('vector'); }
     else if(code==='HIREME'){ window.open('https://daviddot.com','_blank'); }
 }
 
@@ -382,6 +404,21 @@ function unlockMode(mode){
         text.textContent='Retro sprite animations enabled!';
         img.style.display='none';
         currentMediaType='sprite';
+    } else if(mode==='size3'){
+        title.textContent='📡 Enhanced Animated Unlocked!';
+        text.textContent='New animated models for #1-386!';
+        img.style.display='none';
+        // size3 replaces animated for 1-386, no new button needed
+        um.classList.add('active');
+        document.getElementById('aboutModal').classList.remove('active');
+        document.getElementById('unlockClose').addEventListener('click',function(){um.classList.remove('active');
+            if(useBestFit) updateDisplay(); else renderExpand();},{once:true});
+        return;
+    } else if(mode==='vector'){
+        title.textContent='🔷 Vector Mode Unlocked!';
+        text.textContent='Clean vector art (where available)!';
+        img.style.display='none';
+        currentMediaType='vector';
     }
     um.classList.add('active');
     addMediaButton(mode);
@@ -394,8 +431,8 @@ function unlockMode(mode){
 }
 
 function addMediaButton(mode){
-    var label=mode==='plush'?'Plush':'Sprite';
-    var emoji=mode==='plush'?'🧸':'👾';
+    var label=mode==='plush'?'Plush':mode==='sprite'?'Sprite':mode==='vector'?'Vector':'';
+    var emoji=mode==='plush'?'🧸':mode==='sprite'?'👾':mode==='vector'?'🔷':'';
     [document.getElementById('mediaToggle'),document.getElementById('expandMediaToggle')].forEach(function(mt){
         if(mt.querySelector('[data-media="'+mode+'"]'))return;
         // fix border on previous last child
@@ -429,9 +466,15 @@ function convertToMeters(s){ return (s/1000).toFixed(2)+'m'; }
 function getImageFilename(id){ if(!id)return''; var c=id.startsWith('#')?id.slice(1):id; return c.includes('.')?c:String(parseInt(c,10)); }
 function getImagePath(pokemon,mediaOverride){
     var fn=getImageFilename(pokemon.id), mt=mediaOverride||currentMediaType;
-    if(mt==='animated') return ANIMATED_FOLDER+fn+'.webm';
+    var num=parseInt(fn,10);
+    if(mt==='animated'){
+        // size3 unlocked: use size3 folder for 1-386
+        if(unlockedModes.size3&&num>=1&&num<=386) return SIZE3_FOLDER+fn+'.webm';
+        return ANIMATED_FOLDER+fn+'.webm';
+    }
     if(mt==='plush') return PLUSH_FOLDER+fn+'.webp';
     if(mt==='sprite') return SPRITE_FOLDER+fn+'.webm';
+    if(mt==='vector') return VECTOR_FOLDER+fn+'.svg';
     return STATIC_FOLDER+fn+'.svg';
 }
 function getIconPath(p){ return ICON_FOLDER+getImageFilename(p.id)+'.png'; }
@@ -483,13 +526,27 @@ function createPokemonElement(pokemon,isRef,sm){
         if(isRef){
             img.src=REFERENCE_FOLDER+REFERENCES[currentReference].file;
             img.style.height=hPx+'px';img.style.width='auto';img.style.opacity='0.5';
+            // Apply filter state
+            if(refFilterState===1) img.style.filter='drop-shadow(2px 4px 6px rgba(0,0,0,0.4))';
+            else if(refFilterState===2){ img.style.filter='brightness(0)'; img.style.opacity='0.3'; }
+            img.style.cursor='pointer';
+            img.addEventListener('click',function(e){
+                e.stopPropagation();
+                refFilterState=(refFilterState+1)%3;
+                updateDisplay();
+            });
             img.onerror=function(){var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
                 svg.setAttribute('width',60);svg.setAttribute('height',hPx);
                 svg.innerHTML='<text x="30" y="'+(hPx/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="28" fill="#000" opacity="0.5">'+pokemon.icon+'</text>';
                 this.replaceWith(svg);};
         } else {
             img.src=getImagePath(pokemon);img.style.height=hPx+'px';img.style.width='auto';
-            img.onerror=function(){var fn3=getImageFilename(pokemon.id);if(this.src.endsWith('.svg'))this.src=STATIC_FOLDER+fn3+'.webp';};
+            img.onerror=function(){
+                var fn3=getImageFilename(pokemon.id);
+                // Vector mode fallback to static
+                if(currentMediaType==='vector'){this.src=STATIC_FOLDER+fn3+'.svg';return;}
+                if(this.src.endsWith('.svg'))this.src=STATIC_FOLDER+fn3+'.webp';
+            };
         }
         ic.appendChild(img); container.appendChild(ic);
     }
@@ -609,34 +666,73 @@ function renderExpand(){
     var ec=document.getElementById('expandContent');
     ec.innerHTML='';
     if(!selectedPokemon.length)return;
-    // Use 3d folder for webm in expand mode
+    // Background layers
+    var bgContainer=document.createElement('div');
+    bgContainer.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden;';
+    // Sky gradient (top)
+    var sky=document.createElement('div');
+    sky.style.cssText='position:absolute;top:0;left:0;right:0;bottom:50%;background:linear-gradient(180deg,#87CEEB 0%,#B0E0FF 60%,#d4edfc 100%);';
+    bgContainer.appendChild(sky);
+    // Land (middle band)
+    var land=document.createElement('div');
+    land.style.cssText='position:absolute;left:0;right:0;bottom:15%;height:35%;background:linear-gradient(180deg,#8BC34A 0%,#6B8E23 40%,#556B2F 100%);';
+    bgContainer.appendChild(land);
+    // Ocean (below ground)
+    var ocean=document.createElement('div');
+    ocean.style.cssText='position:absolute;left:0;right:0;bottom:0;height:15%;background:linear-gradient(180deg,#1E90FF 0%,#0066CC 50%,#003366 100%);';
+    bgContainer.appendChild(ocean);
+    ec.appendChild(bgContainer);
+
     var row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:flex-end;gap:30px;position:relative;padding-bottom:20px;';
+    row.style.cssText='display:flex;align-items:flex-end;gap:30px;position:relative;padding-bottom:20px;z-index:1;';
     selectedPokemon.forEach(function(poke){
-        var hPx=(poke.visualHeight/BASE_SCALE)*200; // 1:1 scale (1m=200px)
+        var hPx=(poke.visualHeight/BASE_SCALE)*200;
         var go=poke.groundOffset||0;
         var item=document.createElement('div');
         item.style.cssText='display:flex;flex-direction:column;align-items:center;position:relative;';
         if(go>0) item.style.marginBottom=(go/BASE_SCALE)*200+'px';
-        else if(go<0){ item.style.marginBottom=((go/BASE_SCALE)*200-hPx)+'px'; }
+        else if(go<0) item.style.marginBottom=((go/BASE_SCALE)*200-hPx)+'px';
 
         var ic=document.createElement('div');
-        ic.style.cssText='display:flex;align-items:flex-end;justify-content:center;height:'+hPx+'px;';
+        ic.style.cssText='display:flex;align-items:flex-end;justify-content:center;height:'+hPx+'px;position:relative;';
         var isVid=(currentMediaType==='animated'||currentMediaType==='sprite');
         if(isVid){
             var v=document.createElement('video');
-            // In expand mode, use 3d folder for animated
-            var fn=getImageFilename(poke.id);
-            if(currentMediaType==='animated') v.src=THREED_FOLDER+fn+'.webm';
-            else v.src=SPRITE_FOLDER+fn+'.webm';
+            var fn=getImageFilename(poke.id), num=parseInt(fn,10);
+            // 3d folder only for animated #1-251
+            if(currentMediaType==='animated'){
+                if(num>=1&&num<=251) v.src=THREED_FOLDER+fn+'.webm';
+                else if(unlockedModes.size3&&num>=1&&num<=386) v.src=SIZE3_FOLDER+fn+'.webm';
+                else v.src=ANIMATED_FOLDER+fn+'.webm';
+            } else v.src=SPRITE_FOLDER+fn+'.webm';
             v.style.height=hPx+'px';v.style.width='auto';
-            v.style.clipPath='inset(0 0 1px 0)'; // crop bottom black bar
-            v.muted=true;v.playsInline=true;v.loop=true;v.autoplay=true;v.preload='auto';
+            v.style.clipPath='inset(0 0 1px 0)';
+            v.muted=true;v.playsInline=true;v.loop=true;v.preload='auto';
             v.setAttribute('muted','');v.setAttribute('playsinline','');
-            ic.appendChild(v);
+            // Do NOT autoplay
+            if(isMobile){
+                // Play button for mobile
+                var pb=document.createElement('button');pb.textContent='▶';pb.className='anim-play-btn';
+                pb.style.cssText='position:absolute;bottom:4px;left:50%;transform:translateX(-50%);z-index:5;';
+                pb.addEventListener('click',function(e){e.stopPropagation();
+                    if(v.paused){v.play().catch(function(){});pb.textContent='⏸';}
+                    else{v.pause();v.currentTime=0;pb.textContent='▶';}});
+                v.addEventListener('ended',function(){pb.textContent='▶';v.currentTime=0;});
+                ic.appendChild(v);ic.appendChild(pb);
+            } else {
+                // Desktop: hover to play
+                v.addEventListener('mouseenter',function(){v.play().catch(function(){});});
+                v.addEventListener('mouseleave',function(){v.pause();v.currentTime=0;});
+                ic.appendChild(v);
+            }
         } else if(currentMediaType==='plush'){
             var img=document.createElement('img');img.src=getImagePath(poke);
             img.style.height=hPx+'px';img.style.width='auto';ic.appendChild(img);
+        } else if(currentMediaType==='vector'){
+            var img=document.createElement('img');img.src=VECTOR_FOLDER+getImageFilename(poke.id)+'.svg';
+            img.style.height=hPx+'px';img.style.width='auto';
+            img.onerror=function(){this.src=STATIC_FOLDER+getImageFilename(poke.id)+'.svg';};
+            ic.appendChild(img);
         } else {
             var img=document.createElement('img');img.src=getImagePath(poke);
             img.style.height=hPx+'px';img.style.width='auto';
@@ -647,7 +743,7 @@ function renderExpand(){
     });
     ec.appendChild(row);
     // Baseline
-    var bl=document.createElement('div');bl.className='expand-baseline';bl.style.bottom='20px';
+    var bl=document.createElement('div');bl.className='expand-baseline';bl.style.bottom='20px';bl.style.zIndex='2';
     ec.appendChild(bl);
     // Scroll to bottom
     requestAnimationFrame(function(){ec.scrollTop=ec.scrollHeight;});
@@ -707,6 +803,53 @@ function _updateDisplayImpl(){
         frag.appendChild(createPokemonElement(rd,true,sm));
     }
     visPoke.forEach(function(p){frag.appendChild(createPokemonElement(p,false,sm));});
+    // Ditto transform feature
+    if(unlockedModes.ditto){
+        var dittoItem=document.createElement('div');
+        dittoItem.className='pokemon-item';
+        dittoItem.style.cssText='order:999;cursor:pointer;';
+        var dittoIc=document.createElement('div');
+        dittoIc.className='pokemon-image';
+        var dittoH=calculateScale(600)*sm*200; // Ditto is ~0.3m = 300mm, display at 600mm
+        dittoIc.style.height=dittoH+'px';
+        var dittoImg=document.createElement('img');
+        dittoImg.src=SVG_FOLDER+'132.svg';
+        dittoImg.style.height=dittoH+'px';dittoImg.style.width='auto';dittoImg.style.opacity='0.7';
+        dittoIc.appendChild(dittoImg);
+        dittoItem.appendChild(dittoIc);
+        var dittoLabel=document.createElement('div');dittoLabel.className='pokemon-labels';
+        var dittoText=document.createElement('div');dittoText.className='pokemon-height';
+        dittoText.textContent='Use Transform';dittoText.style.fontSize='0.75em';dittoText.style.color='#999';dittoText.style.whiteSpace='nowrap';
+        dittoLabel.appendChild(dittoText);dittoItem.appendChild(dittoLabel);
+        dittoItem.addEventListener('click',function(e){
+            e.stopPropagation();
+            // Pick random SVG, load it, then search for the pokemon
+            var svgFiles=null;
+            // Use pokemonData to pick a random pokemon
+            var randPoke=pokemonData[Math.floor(Math.random()*Math.min(pokemonData.length,898))];
+            var randFn=getImageFilename(randPoke.id);
+            // Transform ditto to that pokemon's SVG
+            dittoImg.src=SVG_FOLDER+randFn+'.svg';
+            dittoText.textContent='Search '+randPoke.pokemon_name;
+            dittoText.style.color='#000';
+            dittoImg.style.opacity='1';
+            // Scale to actual pokemon height
+            var newH=calculateScale(randPoke.visualHeight)*sm*200;
+            dittoIc.style.height=newH+'px';dittoImg.style.height=newH+'px';
+            // Second click adds the actual pokemon
+            dittoItem.onclick=function(e2){
+                e2.stopPropagation();
+                addPokemon(randPoke);
+                // Reset ditto
+                dittoImg.src=SVG_FOLDER+'132.svg';
+                dittoText.textContent='Use Transform';dittoText.style.color='#999';
+                dittoImg.style.opacity='0.7';
+                dittoIc.style.height=dittoH+'px';dittoImg.style.height=dittoH+'px';
+                dittoItem.onclick=arguments.callee;
+            };
+        });
+        frag.appendChild(dittoItem);
+    }
     container.appendChild(frag);
     updateGrid(sm,maxS,BASELINE_OFFSET);
 }
@@ -745,15 +888,25 @@ function updateSelectedTags(){
 }
 function addPokemon(p){
     if(selectedPokemon.find(function(x){return x.id===p.id;}))return;
-    selectedPokemon.push(p);updateSelectedTags();
+    // Mobile: if adding 3rd, remove first and clear its filter label
+    if(isMobile&&selectedPokemon.length>=MOBILE_MAX_POKEMON){
+        var removed=selectedPokemon.shift();
+        delete measureLines[removed.id];
+    }
+    selectedPokemon.push(p);updateSelectedTags();updateMobileScaleBtn();
     if(useBestFit)updateDisplay();else renderExpand();
     document.getElementById('searchBox').value='';
     document.getElementById('searchResults').classList.remove('active');selectedSearchIndex=-1;
 }
 function removePokemon(pid){
     selectedPokemon=selectedPokemon.filter(function(x){return x.id!==pid;});
-    delete measureLines[pid];updateSelectedTags();
+    delete measureLines[pid];updateSelectedTags();updateMobileScaleBtn();
     if(useBestFit)updateDisplay();else renderExpand();
+}
+function updateMobileScaleBtn(){
+    if(!isMobile)return;
+    var sb=document.getElementById('scaleBtn');
+    sb.disabled=selectedPokemon.length>=MOBILE_MAX_POKEMON;
 }
 function searchPokemon(q){
     if(!q){document.getElementById('searchResults').classList.remove('active');selectedSearchIndex=-1;return;}
