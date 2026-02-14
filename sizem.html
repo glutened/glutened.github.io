@@ -13,14 +13,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Ar
 .about-link:hover{opacity:0.55}
 h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:600;letter-spacing:-0.5px}
 #dittoLogo {
-  height: 60px;
+  height: 20px;
   cursor: pointer;
   display: none;
   position: absolute;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 8;
+  z-index: 20;
   opacity: 0.7;
   transition: opacity 0.2s;
 }
@@ -83,9 +83,23 @@ h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:6
 .control-btn:hover{background:#f0f0f0}
 .control-btn.active{background:#000;color:#fff}
 .control-btn:disabled{opacity:0.4;cursor:not-allowed}
-.empty-state{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;height:100%;padding:30px 80px 40px;text-align:left}
+.empty-state{display:flex;flex-direction:column;align-items: flex-start;    /* Keeps text aligned left */
+  justify-content: flex-start; /* Pushes content to the top */height:100%;padding:30px 80px 40px;text-align:left}
 .empty-state h2{font-size:1.5em;margin-bottom:10px;color:#333}
-.empty-state p{font-size:0.95em;color:#666;margin-bottom:20px;max-width:680px;line-height:1.6}
+.empty-state p {
+  font-size: 0.95em;
+  color: #666;
+  margin-top: -30%; /* Your current desktop value */
+  max-width: 680px;
+  line-height: 1.6;
+}
+
+/* Mobile styles (Typically screens smaller than 768px) */
+@media (max-width: 768px) {
+  .empty-state p {
+    margin-top: -150%; /* Pulls it much higher on small screens */
+  }
+}
 .tutorial-links{display:flex;gap:20px}
 .tutorial-link{color:#000;font-size:0.9em;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px;user-select:none}
 .tutorial-link:hover{opacity:0.55}
@@ -150,7 +164,7 @@ h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:6
 .media-btn.active{background:#000;color:#fff;cursor:default;pointer-events:none}
 .expand-overlay{display:none;position:fixed;inset:0;background:#fafafa;z-index:2000;flex-direction:column}
 .expand-overlay.active{display:flex}
-.expand-content{flex:1;overflow:auto;display:flex;align-items:flex-end;justify-content:center;padding:20px;position:relative}
+.expand-content{flex:1;overflow:auto;padding:0;position:relative}
 .expand-controls{display:flex;justify-content:center;align-items:center;padding:12px 20px;border-top:2px solid #000;background:#fff;gap:16px;position:relative}
 .expand-media-right{position:absolute;right:20px;top:50%;transform:translateY(-50%)}
 .expand-baseline{position:absolute;left:0;right:0;height:3px;background:#000}
@@ -170,7 +184,6 @@ h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:6
 .about-link::after{content:'i';font-size:16px;font-weight:700;font-style:italic;font-family:Georgia,serif}
 .about-link .about-text{display:none}
 h1{font-size:1.5em;margin-bottom:12px}
-#dittoLogo{height:22px}
 .search-box{padding:10px 12px;font-size:16px}
 .selected-pokemon-area{margin-bottom:6px;min-height:28px}
 .selected-tag{padding:5px 8px;font-size:0.78em}
@@ -179,7 +192,7 @@ h1{font-size:1.5em;margin-bottom:12px}
 .pokemon-height{font-size:0.85em}
 .pokemon-labels{bottom:-28px}
 .grid-label{font-size:0.6em;left:2px}
-.empty-state{padding:8px 16px}
+.empty-state{padding:16px 16px;justify-content:center}
 .controls{padding:8px 10px;gap:6px;justify-content:space-between;flex-wrap:nowrap}
 .controls-center{position:static;transform:none}
 .control-btn{padding:8px 10px;font-size:0.85em}
@@ -196,7 +209,7 @@ h1{font-size:1.5em;margin-bottom:12px}
 .ditto-area .ditto-label-side{display:none}
 .ditto-area .ditto-label-below{display:block!important}
 .expand-content{overflow:auto!important;-webkit-overflow-scrolling:touch}
-#dittoLogo{height:22px;bottom:20px}
+#dittoLogo{height:40px;bottom:20px;padding:10px;z-index:20}
 }
 </style>
 </head>
@@ -216,7 +229,6 @@ h1{font-size:1.5em;margin-bottom:12px}
 <button class="help-button" id="helpButton">?</button>
 <div id="pokemonRow" class="pokemon-row">
 <div class="empty-state" id="emptyState" style="display:none">
-<h2>Pokemon Size Comparison</h2>
 <p>Search for any Pokemon to add them to the canvas. Toggle <strong>Grid Lines</strong> for scale reference, swap the <strong>Scale</strong> object, hit <strong>Expand</strong> for true-to-screen scale, and switch between <strong>Static</strong> and <strong>Animated</strong> modes.</p>
 <div class="tutorial-links">
 <span class="tutorial-link" id="tutorialLink1"><img src="icons/play.svg" class="btn-icon" alt=""> How to measure</span>
@@ -562,6 +574,9 @@ function exitExpand(){useBestFit=true;document.getElementById('expandOverlay').c
 function renderExpand(){
     var ec=document.getElementById('expandContent');ec.innerHTML='';
     if(!selectedPokemon.length)return;
+    // Wrapper that fills at least 100% height and aligns items at bottom
+    var wrapper=document.createElement('div');
+    wrapper.style.cssText='min-height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;position:relative;';
     var row=document.createElement('div');row.style.cssText='display:flex;align-items:flex-end;gap:30px;position:relative;padding-bottom:20px;z-index:1;';
     selectedPokemon.forEach(function(poke){
         var hPx=(poke.visualHeight/BASE_SCALE)*200;var go=poke.groundOffset||0;
@@ -594,8 +609,9 @@ function renderExpand(){
         }
         item.appendChild(ic);row.appendChild(item);
     });
-    ec.appendChild(row);
-    var bl=document.createElement('div');bl.className='expand-baseline';bl.style.bottom='20px';bl.style.zIndex='2';ec.appendChild(bl);
+    wrapper.appendChild(row);
+    var bl=document.createElement('div');bl.className='expand-baseline';bl.style.bottom='20px';bl.style.zIndex='2';wrapper.appendChild(bl);
+    ec.appendChild(wrapper);
     requestAnimationFrame(function(){ec.scrollTop=ec.scrollHeight;});
 }
 
@@ -768,10 +784,7 @@ function toggleScale(){
 }
 function toggleGrid(){
     showGrid=!showGrid;document.getElementById('gridToggle').classList.toggle('active',showGrid);
-    var aS=[REFERENCES[currentReference].scale].concat(selectedPokemon.map(function(p){return p.visualHeight;}));
-    var maxS=Math.max.apply(null,aS),maxH=(maxS/BASE_SCALE)*200;
-    var vH=document.getElementById('comparisonArea').clientHeight-BASELINE_OFFSET-TOP_PADDING;
-    var sm=1;if(maxH>vH)sm=vH/maxH;updateGrid(sm,maxS,BASELINE_OFFSET);
+    updateDisplay();
 }
 </script>
 </body>
