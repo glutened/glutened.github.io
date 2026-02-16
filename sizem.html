@@ -7,11 +7,27 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:#fff;color:#000;display:flex;flex-direction:column}
-.header{flex-shrink:0;padding:20px 20px 15px;background:#fff;border-bottom:2px solid #000;margin:0 20px;position:relative}
-.about-link{position:absolute;top:20px;left:0;font-size:0.85em;font-weight:600;color:#000;cursor:pointer;text-decoration:underline;text-underline-offset:3px;user-select:none}
+:root{
+--bg:#fff;--bg-alt:#fafafa;--fg:#000;--fg-muted:#555;--fg-dim:#666;--fg-faint:#999;--fg-fainter:#777;
+--border:#000;--hover:#f0f0f0;--hover-strong:#d0d0d0;--search-even:#f5f5f5;--search-sel:#b0b0b0;
+--search-border:#e0e0e0;--tag-bg:#000;--tag-fg:#fff;--modal-overlay:rgba(0,0,0,0.5);
+--modal-overlay-strong:rgba(0,0,0,0.55);--btn-active-bg:#000;--btn-active-fg:#fff;
+--grid-line:#bbb;--grid-label:#999;--grid-label-major:#777;--help-bg:#e0e0e0;--help-fg:#666;
+--focus-ring:rgba(0,0,0,0.1);--expand-bg:#fafafa;--icon-invert:0;
+}
+body.dark{
+--bg:#1a1a1a;--bg-alt:#222;--fg:#e0e0e0;--fg-muted:#aaa;--fg-dim:#999;--fg-faint:#777;--fg-fainter:#888;
+--border:#555;--hover:#333;--hover-strong:#444;--search-even:#252525;--search-sel:#444;
+--search-border:#333;--tag-bg:#e0e0e0;--tag-fg:#1a1a1a;--modal-overlay:rgba(0,0,0,0.7);
+--modal-overlay-strong:rgba(0,0,0,0.75);--btn-active-bg:#e0e0e0;--btn-active-fg:#1a1a1a;
+--grid-line:#555;--grid-label:#666;--grid-label-major:#888;--help-bg:#333;--help-fg:#aaa;
+--focus-ring:rgba(255,255,255,0.15);--expand-bg:#1a1a1a;--icon-invert:1;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--fg);display:flex;flex-direction:column;transition:background 0.3s,color 0.3s}
+.header{flex-shrink:0;padding:20px 20px 15px;background:var(--bg);border-bottom:2px solid var(--border);margin:0 20px;position:relative}
+.about-link{position:absolute;top:20px;left:0;font-size:0.85em;font-weight:600;color:var(--fg);cursor:pointer;text-decoration:underline;text-underline-offset:3px;user-select:none}
 .about-link:hover{opacity:0.55}
-h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:600;letter-spacing:-0.5px}
+h1{text-align:center;color:var(--fg);margin-bottom:20px;font-size:1.8em;font-weight:600;letter-spacing:-0.5px}
 #dittoLogo {
   height: 20px;
   cursor: pointer;
@@ -34,30 +50,29 @@ h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:6
   50% { transform: translateX(-50%) rotate(0deg); }
   75% { transform: translateX(-50%) rotate(-3deg); }
   100% { transform: translateX(-50%) rotate(0deg); }
-}
-.search-section{max-width:600px;margin:0 auto 15px;position:relative}
-.search-box{width:100%;padding:12px 14px;border:2px solid #000;border-radius:0;font-size:1em;background:#fff;transition:box-shadow 0.2s;font-family:inherit}
-.search-box:focus{outline:none;box-shadow:0 0 0 3px rgba(0,0,0,0.1)}
-.search-results{position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid #000;border-top:none;max-height:74vh;overflow-y:auto;display:none;z-index:100}
+}.search-section{max-width:600px;margin:0 auto 15px;position:relative}
+.search-box{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:0;font-size:1em;background:var(--bg);color:var(--fg);transition:box-shadow 0.2s;font-family:inherit}
+.search-box:focus{outline:none;box-shadow:0 0 0 3px var(--focus-ring)}
+.search-results{position:absolute;top:100%;left:0;right:0;background:var(--bg);border:2px solid var(--border);border-top:none;max-height:74vh;overflow-y:auto;display:none;z-index:100}
 .search-results.active{display:block}
-.search-result-item{display:flex;align-items:center;gap:8px;padding:2px 8px;cursor:pointer;border-bottom:1px solid #e0e0e0;transition:background 0.02s;line-height:1}
-.search-result-item:nth-child(even){background:#f5f5f5}
-.search-result-item:hover{background:#d0d0d0}
-.search-result-item.selected{background:#b0b0b0}
+.search-result-item{display:flex;align-items:center;gap:8px;padding:2px 8px;cursor:pointer;border-bottom:1px solid var(--search-border);transition:background 0.02s;line-height:1}
+.search-result-item:nth-child(even){background:var(--search-even)}
+.search-result-item:hover{background:var(--hover-strong)}
+.search-result-item.selected{background:var(--search-sel)}
 .search-result-item:last-child{border-bottom:none}
 .search-result-item img{width:40px;height:40px;display:block;margin-top:-4px}
-.search-result-item .name{font-weight:500;color:#000;font-size:0.9em;line-height:1}
+.search-result-item .name{font-weight:500;color:var(--fg);font-size:0.9em;line-height:1}
 .selected-pokemon-area{margin-bottom:15px;min-height:35px}
 .selected-pokemon-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.selected-tag{background:#000;color:#fff;padding:6px 10px;border-radius:0;display:flex;align-items:center;gap:6px;font-size:0.85em;font-weight:500;cursor:pointer}
-.selected-tag:hover{background:#333}
-.comparison-area{flex:1;background:#fafafa;border:2px solid #000;border-top:none;margin:0 20px 20px;padding:40px 40px 40px 50px;position:relative;overflow-y:auto;overflow-x:auto}
+.selected-tag{background:var(--tag-bg);color:var(--tag-fg);padding:6px 10px;border-radius:0;display:flex;align-items:center;gap:6px;font-size:0.85em;font-weight:500;cursor:pointer}
+.selected-tag:hover{opacity:0.8}
+.comparison-area{flex:1;background:var(--bg-alt);border:2px solid var(--border);border-top:none;margin:0 20px 20px;padding:40px 40px 40px 50px;position:relative;overflow-y:auto;overflow-x:auto}
 .comparison-area.no-scroll{overflow-y:hidden}
-.alignment-line{position:absolute;left:0;right:0;height:3px;background:#000;z-index:5}
+.alignment-line{position:absolute;left:0;right:0;height:3px;background:var(--fg);z-index:5}
 .alignment-line.baseline{z-index:5}
-.alignment-line.grid-major{height:1px;background:#bbb}
-.grid-label{position:absolute;left:6px;font-size:0.8em;color:#999;font-family:'SF Mono','Monaco','Courier New',monospace;white-space:nowrap;pointer-events:none;z-index:6}
-.grid-label.major-label{color:#777;font-weight:500;font-size:0.82em}
+.alignment-line.grid-major{height:1px;background:var(--grid-line)}
+.grid-label{position:absolute;left:6px;font-size:0.8em;color:var(--grid-label);font-family:'SF Mono','Monaco','Courier New',monospace;white-space:nowrap;pointer-events:none;z-index:6}
+.grid-label.major-label{color:var(--grid-label-major);font-weight:500;font-size:0.82em}
 .pokemon-row{display:flex;align-items:flex-end;gap:40px;position:relative;left:0;right:0;padding-left:50px;padding-right:20px;z-index:10;min-height:100%}
 .pokemon-item{display:flex;flex-direction:column;align-items:center;position:relative}
 .pokemon-item.reference{order:-1}
@@ -74,21 +89,21 @@ h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:6
 .measure-line-hitarea:hover+.measure-line::before,.measure-line-hitarea:hover+.measure-line::after,.measure-line:hover::before,.measure-line:hover::after{display:block;background:#c00}
 .measure-label{position:absolute;background:#f00;color:#fff;padding:3px 8px;font-size:0.9em;white-space:nowrap;pointer-events:none;z-index:21;border-radius:2px;display:none;transform:translate(-50%,-100%);margin-top:-5px}
 .pokemon-labels{display:flex;flex-direction:column;align-items:center;position:absolute;bottom:-35px;left:50%;transform:translateX(-50%)}
-.pokemon-height{font-size:1em;color:#555;cursor:pointer;user-select:none;font-family:'SF Mono','Monaco','Courier New',monospace;text-align:center;font-weight:600}
-.pokemon-height:hover{color:#000}
-.controls{flex-shrink:0;background:#fff;border-top:2px solid #000;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:relative}
+.pokemon-height{font-size:1em;color:var(--fg-muted);cursor:pointer;user-select:none;font-family:'SF Mono','Monaco','Courier New',monospace;text-align:center;font-weight:600}
+.pokemon-height:hover{color:var(--fg)}
+.controls{flex-shrink:0;background:var(--bg);border-top:2px solid var(--border);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:relative}
 .controls-left,.controls-center,.controls-right{display:flex;gap:10px;align-items:center}
 .controls-center{position:absolute;left:50%;transform:translateX(-50%)}
-.control-btn{background:#fff;color:#000;border:2px solid #000;padding:7px 14px;cursor:pointer;font-size:0.85em;font-weight:600;font-family:inherit;transition:all 0.2s;display:flex;align-items:center;gap:6px}
-.control-btn:hover{background:#f0f0f0}
-.control-btn.active{background:#000;color:#fff}
+.control-btn{background:var(--bg);color:var(--fg);border:2px solid var(--border);padding:7px 14px;cursor:pointer;font-size:0.85em;font-weight:600;font-family:inherit;transition:all 0.2s;display:flex;align-items:center;gap:6px;height:38px;box-sizing:border-box}
+.control-btn:hover{background:var(--hover)}
+.control-btn.active{background:var(--btn-active-bg);color:var(--btn-active-fg)}
 .control-btn:disabled{opacity:0.4;cursor:not-allowed}
 .empty-state{display:flex;flex-direction:column;align-items: flex-start;    /* Keeps text aligned left */
   justify-content: flex-start; /* Pushes content to the top */height:100%;padding:30px 80px 40px;text-align:left}
-.empty-state h2{font-size:1.5em;margin-bottom:10px;color:#333}
+.empty-state h2{font-size:1.5em;margin-bottom:10px;color:var(--fg)}
 .empty-state p {
   font-size: 0.95em;
-  color: #666;
+  color: var(--fg-dim);
   margin-top: -37%; /* Your current desktop value */
   max-width: 680px;
   line-height: 1.6;
@@ -101,87 +116,95 @@ h1{text-align:center;color:#000;margin-bottom:20px;font-size:1.8em;font-weight:6
   }
 }
 .tutorial-links{display:flex;gap:20px}
-.tutorial-link{color:#000;font-size:0.9em;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px;user-select:none}
+.tutorial-link{color:var(--fg);font-size:0.9em;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px;user-select:none}
 .tutorial-link:hover{opacity:0.55}
-.tutorial-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:3000}
+.tutorial-modal-overlay{position:fixed;inset:0;background:var(--modal-overlay-strong);display:none;align-items:center;justify-content:center;z-index:3000}
 .tutorial-modal-overlay.active{display:flex}
-.tutorial-modal{background:#fff;border:2px solid #000;padding:24px;position:relative;max-width:90vw;max-height:90vh;overflow-y:auto}
-.tutorial-modal h3{margin:0 0 14px;font-size:1.1em}
+.tutorial-modal{background:var(--bg);border:2px solid var(--border);padding:24px;position:relative;max-width:90vw;max-height:90vh;overflow-y:auto}
+.tutorial-modal h3{margin:0 0 14px;font-size:1.1em;color:var(--fg)}
 .tutorial-modal video{display:block;max-width:700px;width:70vw;height:auto;background:#000}
-.tutorial-modal p{font-size:0.92em;color:#444;line-height:1.6;margin-bottom:10px}
+.tutorial-modal p{font-size:0.92em;color:var(--fg-dim);line-height:1.6;margin-bottom:10px}
 .tutorial-modal-footer{margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:flex-end}
-.tutorial-modal-footer .close-btn{padding:7px 18px;border:2px solid #000;background:#fff;color:#000;cursor:pointer;font-family:inherit;font-size:0.9em;font-weight:600}
-.tutorial-modal-footer .close-btn:hover{background:#f0f0f0}
+.tutorial-modal-footer .close-btn{padding:7px 18px;border:2px solid var(--border);background:var(--bg);color:var(--fg);cursor:pointer;font-family:inherit;font-size:0.9em;font-weight:600;height:38px;box-sizing:border-box}
+.tutorial-modal-footer .close-btn:hover{background:var(--hover)}
 .cheat-truck{position:absolute;bottom:10px;left:10px;font-size:1.4em;cursor:pointer;opacity:0.3;transition:opacity 0.2s}
 .cheat-truck:hover{opacity:0.8}
-.cheat-truck .cheat-tooltip{position:absolute;bottom:100%;left:0;background:#333;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;white-space:nowrap;display:none;pointer-events:none;margin-bottom:4px}
+.cheat-truck .cheat-tooltip{position:absolute;bottom:100%;left:0;background:var(--fg);color:var(--bg);padding:3px 8px;border-radius:3px;font-size:11px;white-space:nowrap;display:none;pointer-events:none;margin-bottom:4px}
 .cheat-truck:hover .cheat-tooltip{display:block}
 .cheat-input-area{display:none;margin-top:14px}
 .cheat-input-area.active{display:flex;gap:8px}
-.cheat-input-area input{flex:1;padding:6px 10px;border:2px solid #000;font-family:inherit;font-size:0.9em;text-transform:uppercase}
-.cheat-input-area button{padding:6px 14px;border:2px solid #000;background:#000;color:#fff;cursor:pointer;font-family:inherit;font-weight:600}
-.help-button{position:absolute;top:60px;right:60px;width:32px;height:32px;border-radius:50%;background:#e0e0e0;border:none;cursor:pointer;font-size:18px;color:#666;display:none;align-items:center;justify-content:center;z-index:100}
-.help-button:hover{background:#d0d0d0}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000}
+.cheat-input-area input{flex:1;padding:6px 10px;border:2px solid var(--border);background:var(--bg);color:var(--fg);font-family:inherit;font-size:0.9em;text-transform:uppercase}
+.cheat-input-area button{padding:6px 14px;border:2px solid var(--border);background:var(--btn-active-bg);color:var(--btn-active-fg);cursor:pointer;font-family:inherit;font-weight:600;height:38px;box-sizing:border-box}
+.help-button{position:absolute;top:60px;right:60px;width:32px;height:32px;border-radius:50%;background:var(--help-bg);border:none;cursor:pointer;font-size:18px;color:var(--help-fg);display:none;align-items:center;justify-content:center;z-index:100}
+.help-button:hover{background:var(--hover-strong)}
+.modal-overlay{position:fixed;inset:0;background:var(--modal-overlay);display:none;align-items:center;justify-content:center;z-index:1000}
 .modal-overlay.active{display:flex}
-.modal{background:#fff;border:2px solid #000;padding:30px;max-width:400px;width:90%}
-.modal h3{margin:0 0 20px;font-size:1.3em}
+.modal{background:var(--bg);border:2px solid var(--border);padding:30px;max-width:400px;width:90%}
+.modal h3{margin:0 0 20px;font-size:1.3em;color:var(--fg)}
 .modal-field{margin-bottom:20px}
-.modal-field label{display:block;margin-bottom:5px;font-weight:500;color:#333}
-.modal-field input{width:100%;padding:8px;border:2px solid #000;font-family:inherit;font-size:1em}
-.modal-field input:focus{outline:none;box-shadow:0 0 0 3px rgba(0,0,0,0.1)}
+.modal-field label{display:block;margin-bottom:5px;font-weight:500;color:var(--fg-dim)}
+.modal-field input{width:100%;padding:8px;border:2px solid var(--border);background:var(--bg);color:var(--fg);font-family:inherit;font-size:1em}
+.modal-field input:focus{outline:none;box-shadow:0 0 0 3px var(--focus-ring)}
 .modal-gender{display:flex;gap:10px}
-.modal-gender-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px;border:2px solid #000;cursor:pointer;font-weight:500;font-family:inherit;font-size:1em;background:#fff;color:#000}
-.modal-gender-btn:hover{background:#f0f0f0}
-.modal-gender-btn.active{background:#000;color:#fff}
+.modal-gender-btn{flex:1;display:flex;align-items:center;justify-content:center;padding:10px;border:2px solid var(--border);cursor:pointer;font-weight:500;font-family:inherit;font-size:1em;background:var(--bg);color:var(--fg)}
+.modal-gender-btn:hover{background:var(--hover)}
+.modal-gender-btn.active{background:var(--btn-active-bg);color:var(--btn-active-fg)}
 .modal-buttons{display:flex;gap:10px;margin-top:25px}
-.modal-buttons button{flex:1;padding:10px;border:2px solid #000;background:#fff;cursor:pointer;font-family:inherit;font-size:1em;font-weight:500}
-.modal-buttons button:hover{background:#f0f0f0}
-.modal-buttons button.primary{background:#000;color:#fff}
-.modal-buttons button.primary:hover{background:#333}
-.anim-play-btn{background:#000;color:#fff;border:none;padding:4px 14px;font-size:0.8em;font-family:inherit;cursor:pointer;margin-top:4px;font-weight:600}
-.anim-play-btn:hover{background:#333}
-.scale-btn{background:#fff;color:#000;border:2px solid #000;padding:0;font-size:0.85em;font-weight:600;display:flex;align-items:stretch;gap:0;font-family:inherit;overflow:hidden}
+.modal-buttons button{flex:1;padding:10px;border:2px solid var(--border);background:var(--bg);cursor:pointer;font-family:inherit;font-size:1em;font-weight:500;color:var(--fg)}
+.modal-buttons button:hover{background:var(--hover)}
+.modal-buttons button.primary{background:var(--btn-active-bg);color:var(--btn-active-fg)}
+.modal-buttons button.primary:hover{opacity:0.85}
+.anim-play-btn{background:var(--btn-active-bg);color:var(--btn-active-fg);border:none;padding:4px 14px;font-size:0.8em;font-family:inherit;cursor:pointer;margin-top:4px;font-weight:600;height:38px;box-sizing:border-box}
+.anim-play-btn:hover{opacity:0.85}
+.scale-btn{background:var(--bg);color:var(--fg);border:2px solid var(--border);padding:0;font-size:0.85em;font-weight:600;display:flex;align-items:stretch;gap:0;font-family:inherit;overflow:hidden;height:38px}
 .scale-btn:disabled{opacity:0.3;cursor:not-allowed}
 .scale-text{padding:7px 10px;display:flex;align-items:center;cursor:pointer}
-.scale-text:hover{background:#f0f0f0}
-.scale-emoji{background:#000;color:#fff;padding:7px 10px;display:flex;align-items:center;pointer-events:none}
-.scale-options{display:none;position:absolute;bottom:100%;left:0;background:#fff;border:2px solid #000;margin-bottom:4px;padding:4px;gap:4px}
+.scale-text:hover{background:var(--hover)}
+.scale-emoji{background:var(--btn-active-bg);color:var(--btn-active-fg);padding:7px 10px;display:flex;align-items:center;pointer-events:none}
+.scale-options{display:none;position:absolute;bottom:100%;left:0;background:var(--bg);border:2px solid var(--border);margin-bottom:4px;padding:4px;gap:4px}
 .scale-options.active{display:flex}
-.scale-option{background:#fff;color:#000;border:2px solid #000;padding:6px 10px;cursor:pointer;font-size:1.1em;transition:all 0.15s}
-.scale-option:hover{background:#e0e0e0}
-.scale-option.active-ref{background:#000;color:#fff}
-.btn-icon{width:14px;height:14px;display:inline-block;vertical-align:middle;margin-top:-1px}
-.media-toggle .btn-icon,.scale-option .btn-icon,.scale-emoji .btn-icon{width:16px;height:16px}
-.expand-standalone{background:#fff;color:#000;border:2px solid #000;padding:7px 14px;cursor:pointer;font-size:0.85em;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.15s}
-.expand-standalone:hover{background:#f0f0f0}
+.scale-option{background:var(--bg);color:var(--fg);border:2px solid var(--border);padding:6px 10px;cursor:pointer;font-size:1.1em;transition:all 0.15s}
+.scale-option:hover{background:var(--hover)}
+.scale-option.active-ref{background:var(--btn-active-bg);color:var(--btn-active-fg)}
+.btn-icon{width:14px;height:14px;display:inline-block;vertical-align:middle;margin-top:-1px;filter:invert(var(--icon-invert))}
+.media-toggle .btn-icon,.scale-option .btn-icon,.scale-emoji .btn-icon{width:20px;height:20px}
+.scale-emoji .btn-icon{filter:invert(0)}
+.scale-option.active-ref .btn-icon{filter:invert(0)}
+body.dark .svg-folder-img{filter:invert(1)}
+body.dark .btn-icon{filter:invert(1)}
+body.dark .scale-emoji .btn-icon{filter:invert(1)}
+body.dark .scale-option.active-ref .btn-icon{filter:invert(0)}
+.expand-standalone{background:var(--bg);color:var(--fg);border:2px solid var(--border);padding:7px 14px;cursor:pointer;font-size:0.85em;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.15s;height:38px;box-sizing:border-box}
+.expand-standalone:hover{background:var(--hover)}
 .expand-standalone.disabled-look{cursor:default;position:relative}
-.expand-standalone.disabled-look:hover{background:#fff}
-.media-toggle{display:flex;gap:0;border:2px solid #000}
-.media-btn{background:#fff;border:none;border-right:2px solid #000;padding:7px 12px;cursor:pointer;font-size:0.8em;font-family:inherit;font-weight:600}
+.expand-standalone.disabled-look:hover{background:var(--bg)}
+.media-toggle{display:flex;gap:0;border:2px solid var(--border);height:38px}
+.media-btn{background:var(--bg);border:none;border-right:2px solid var(--border);padding:7px 12px;cursor:pointer;font-size:0.8em;font-family:inherit;font-weight:600;color:var(--fg)}
 .media-btn:last-child{border-right:none}
-.media-btn:hover{background:#f0f0f0}
-.media-btn.active{background:#000;color:#fff;cursor:default;pointer-events:none}
-.expand-overlay{display:none;position:fixed;inset:0;background:#fafafa;z-index:2000;flex-direction:column}
+.media-btn:hover{background:var(--hover)}
+.media-btn.active{background:var(--btn-active-bg);color:var(--btn-active-fg);cursor:default;pointer-events:none}
+.expand-overlay{display:none;position:fixed;inset:0;background:var(--expand-bg);z-index:2000;flex-direction:column}
 .expand-overlay.active{display:flex}
 .expand-content{flex:1;overflow:auto;padding:0;position:relative}
-.expand-controls{display:flex;justify-content:center;align-items:center;padding:12px 20px;border-top:2px solid #000;background:#fff;gap:16px;position:relative}
+.expand-controls{display:flex;justify-content:center;align-items:center;padding:12px 20px;border-top:2px solid var(--border);background:var(--bg);gap:16px;position:relative}
 .expand-media-right{position:absolute;right:20px;top:50%;transform:translateY(-50%)}
-.expand-baseline{position:absolute;left:0;right:0;height:3px;background:#000}
+.expand-baseline{position:absolute;left:0;right:0;height:3px;background:var(--fg)}
 
-.unlock-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:4000}
+.unlock-modal-overlay{position:fixed;inset:0;background:var(--modal-overlay-strong);display:none;align-items:center;justify-content:center;z-index:4000}
 .unlock-modal-overlay.active{display:flex}
-.unlock-modal{background:#fff;border:2px solid #000;padding:30px;text-align:center;max-width:360px}
-.unlock-modal h3{margin:0 0 10px}
-.unlock-modal p{color:#555;margin-bottom:16px}
+.unlock-modal{background:var(--bg);border:2px solid var(--border);padding:30px;text-align:center;max-width:360px}
+.unlock-modal h3{margin:0 0 10px;color:var(--fg)}
+.unlock-modal p{color:var(--fg-dim);margin-bottom:16px}
 .unlock-modal img{max-width:200px;height:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto}
-.unlock-modal button{padding:8px 20px;border:2px solid #000;background:#000;color:#fff;cursor:pointer;font-family:inherit;font-weight:600}
+.unlock-modal button{padding:8px 20px;border:2px solid var(--border);background:var(--btn-active-bg);color:var(--btn-active-fg);cursor:pointer;font-family:inherit;font-weight:600;height:38px;box-sizing:border-box}
 .ditto-area{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);cursor:pointer;display:flex;align-items:flex-end;gap:10px}
+.dark-toggle{background:none;border:2px solid var(--border);width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all 0.2s;position:absolute;top:20px;right:0;font-size:16px;color:var(--fg)}
+.dark-toggle:hover{background:var(--hover)}
 
 @media(max-width:768px){
 .header{padding:18px 12px 10px;margin:0 6px}
-.about-link{top:18px;left:0;font-size:0;width:28px;height:28px;border:2px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none}
-.about-link::after{content:'i';font-size:16px;font-weight:700;font-style:italic;font-family:Georgia,serif}
+.about-link{top:18px;left:0;font-size:0;width:28px;height:28px;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none}
+.about-link::after{content:'i';font-size:16px;font-weight:700;font-style:italic;font-family:Georgia,serif;color:var(--fg)}
 .about-link .about-text{display:none}
 h1{font-size:1.5em;margin-bottom:12px}
 .search-box{padding:10px 12px;font-size:16px}
@@ -201,8 +224,9 @@ h1{font-size:1.5em;margin-bottom:12px}
 .scale-text{padding:8px 8px}
 .scale-emoji{padding:8px 8px}
 .scale-options{display:none!important}
-.media-toggle{border:2px solid #000}
-.media-btn{padding:8px 12px;font-size:1em;border-right:2px solid #000}
+
+.media-toggle{border:2px solid var(--border)}
+.media-btn{padding:8px 12px;font-size:1em;border-right:2px solid var(--border)}
 .media-btn:last-child{border-right:none}
 .help-button{top:4px;right:4px;z-index:50}
 .ditto-area{flex-direction:column;align-items:center;gap:4px}
@@ -217,6 +241,7 @@ h1{font-size:1.5em;margin-bottom:12px}
 <div id="mainContent" style="display:flex;height:100%;flex-direction:column">
 <div class="header">
 <span class="about-link" id="aboutLink"><span class="about-text">About</span></span>
+<button class="dark-toggle" id="darkToggle" title="Toggle dark mode"><span id="darkToggleIcon">☾</span></button>
 <h1>Pokemon Size Comparison</h1>
 <div class="search-section">
 <input type="text" id="searchBox" class="search-box" placeholder="Search Pokemon..." autocomplete="off">
@@ -225,14 +250,14 @@ h1{font-size:1.5em;margin-bottom:12px}
 <div class="selected-pokemon-area"><div id="selectedTags" class="selected-pokemon-tags"></div></div>
 </div>
 <div class="comparison-area no-scroll" id="comparisonArea">
-<img id="dittoLogo" src="images/logo.svg">
+<img id="dittoLogo" class="svg-folder-img" src="images/logo.svg">
 <button class="help-button" id="helpButton">?</button>
 <div id="pokemonRow" class="pokemon-row">
 <div class="empty-state" id="emptyState" style="display:none">
-<p>Search for any Pokemon to add them to the canvas. Toggle <strong>Grid Lines</strong> for scale reference, swap the <strong>Scale</strong> object, hit <strong>Expand</strong> for true-to-screen scale, and switch between <strong>Static</strong> and <strong>Animated</strong> modes.</p>
+<p>Type to search any Pokemon.  Toggle <strong>GUIDES</strong> for scale reference, swap the <strong>SCALE</strong> object, hit <strong>EXPAND</strong> for true-to-screen scale, and switch between <strong>Static</strong> and <strong>Animated</strong> modes.</p>
 <div class="tutorial-links">
-<span class="tutorial-link" id="tutorialLink1"><img src="icons/play.svg" class="btn-icon" alt=""> How to measure</span>
-<span class="tutorial-link" id="tutorialLink2"><img src="icons/play.svg" class="btn-icon" alt=""> How to adjust scale</span>
+<span class="tutorial-link" id="tutorialLink1">▶ How to search</span>
+<span class="tutorial-link" id="tutorialLink2">▶ How to measure</span>
 </div>
 </div>
 </div>
@@ -242,14 +267,14 @@ h1{font-size:1.5em;margin-bottom:12px}
 <div style="position:relative">
 <button class="scale-btn" id="scaleBtn"><span class="scale-text" id="scaleText">SCALE</span><span class="scale-emoji" id="scaleEmoji"><img src="icons/ref-human.svg" class="btn-icon" alt=""></span></button>
 <div class="scale-options" id="scaleOptions">
-<button class="scale-option" data-ref="human"><img src="icons/ref-human.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="child"><img src="icons/ref-child.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="dog"><img src="icons/ref-dog.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="ball"><img src="icons/ref-ball.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="car"><img src="icons/ref-car.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="door"><img src="icons/ref-door.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="custom"><img src="icons/ref-custom.svg" class="btn-icon" alt=""></button>
+<button class="scale-option" data-ref="human"><img src="icons/ref-human.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="ball"><img src="icons/ref-ball.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="child"><img src="icons/ref-child.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="dog"><img src="icons/ref-dog.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="car"><img src="icons/ref-car.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="door"><img src="icons/ref-door.svg" class="btn-icon" alt=""></button><button class="scale-option" data-ref="custom"><img src="icons/ref-custom.svg" class="btn-icon" alt=""></button>
 </div>
 </div>
-<button class="control-btn" id="gridToggle"><img src="icons/grid.svg" class="btn-icon" alt=""> GRID</button>
+<button class="control-btn" id="gridToggle">GUIDES</button>
 <button class="control-btn" id="clearLinesBtn" style="display:none">CLEAR LINES</button>
 </div>
 <div class="controls-center">
-<button class="expand-standalone" data-view="expand" id="expandBtn">EXPAND <img src="icons/expand.svg" class="btn-icon" alt=""></button>
+<button class="expand-standalone" data-view="expand" id="expandBtn">EXPAND ⛶</button>
 </div>
 <div class="controls-right">
 <div class="media-toggle" id="mediaToggle">
@@ -262,7 +287,7 @@ h1{font-size:1.5em;margin-bottom:12px}
 <div class="expand-overlay" id="expandOverlay">
 <div class="expand-content" id="expandContent"></div>
 <div class="expand-controls">
-<button class="control-btn" id="expandCloseBtn" style="font-size:1em;padding:10px 28px"><img src="icons/close.svg" class="btn-icon" alt=""> Close</button>
+<button class="control-btn" id="expandCloseBtn" style="font-size:1em;padding:10px 28px">✕ Close</button>
 <div class="expand-media-right"><div id="expandMediaToggle" class="media-toggle">
 <button class="media-btn active" data-media="static">Static</button>
 <button class="media-btn" data-media="animated">Animated</button>
@@ -271,7 +296,7 @@ h1{font-size:1.5em;margin-bottom:12px}
 </div>
 <div class="tutorial-modal-overlay" id="tutorialModal1"><div class="tutorial-modal"><h3>How to Measure</h3><video id="tutorialVideo1" preload="metadata" muted playsinline controls><source src="tutorials/measuring-tool.mp4" type="video/mp4"><source src="tutorials/measuring-tool.webm" type="video/webm"></video><div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial1b">Close</button></div></div></div>
 <div class="tutorial-modal-overlay" id="tutorialModal2"><div class="tutorial-modal"><h3>How to Adjust Scale</h3><video id="tutorialVideo2" preload="metadata" muted playsinline controls><source src="tutorials/basic-usage.mp4" type="video/mp4"><source src="tutorials/basic-usage.webm" type="video/webm"></video><div class="tutorial-modal-footer"><button class="close-btn" id="closeTutorial2b">Close</button></div></div></div>
-<div class="tutorial-modal-overlay" id="aboutModal"><div class="tutorial-modal"><h3>About Pokemon Size Comparison</h3><p>Compare the real-world sizes of any Pokemon side by side. All heights are sourced from official Pokemon Home data.</p><p><strong>How to use:</strong> Type a Pokemon name to add it. Use <strong>Scale</strong> to change the reference figure. Toggle <strong>Grid Lines</strong> for reference. Click <strong>Expand</strong> for true-to-screen scale.</p><p><strong>Measuring:</strong> On desktop, click and drag on any Pokemon to draw a measurement line. Click the line to remove it.</p><p><strong>Units:</strong> Click any height label to toggle metric/imperial.</p><p style="font-size:0.82em;color:#888;margin-top:8px">Best experienced on Chrome or Safari.</p><span class="cheat-truck" id="cheatTruck"><img src="icons/truck.svg" class="btn-icon" style="width:20px;height:20px" alt=""><span class="cheat-tooltip">Cheats</span></span><div class="cheat-input-area" id="cheatInputArea"><input type="text" id="cheatInput" placeholder="Enter code..."><button id="cheatSubmit">GO</button></div><div class="tutorial-modal-footer"><button class="close-btn" id="closeAbout">Close</button></div></div></div>
+<div class="tutorial-modal-overlay" id="aboutModal"><div class="tutorial-modal"><h3>Note on Data Accuracy:</h3><p>These are not official Pokémon heights. The measurements presented are based on 3D model heights used in the games. While inconsistencies do occur when comparing mediums, especially with regards to many of the smallest and largest species, an effort has been made to account for technical limitations and art direction. There is no public record of internal measurement standards for every species regarding wingspans, ears, and poses. In summary, this is a fictional animated series, if realism were required, Magcargo wouldn’t be hotter than the surface of the sun. </p><p>May the information presented prove useful in inspiring convenient authorized reference tools for software planners, artists, product merchandisers, marketers, and fans worldwide.</p><p><strong>Credits:</strong>Fan sprites by mbcmechachu and National Pokédex Version Delta. Pokémon © 1995-2026 Nintendo. Used for commentary and informational purposes only. © David Taylor 2026</p><p style="font-size:0.82em;color:#888;margin-top:8px">Best experienced on Chrome or Firefox.</p><span class="cheat-truck" id="cheatTruck">🚚<span class="cheat-tooltip">Cheats</span></span><div class="cheat-input-area" id="cheatInputArea"><input type="text" id="cheatInput" placeholder="Enter code..."><button id="cheatSubmit">GO</button></div><div class="tutorial-modal-footer"><button class="close-btn" id="closeAbout">Close</button></div></div></div>
 <div class="unlock-modal-overlay" id="unlockModal"><div class="unlock-modal"><h3 id="unlockTitle"></h3><p id="unlockText"></p><img id="unlockImg" src="" style="display:none"><button id="unlockClose">Let's go!</button></div></div>
 <div class="modal-overlay" id="customScaleModal"><div class="modal"><h3>Custom Reference Scale</h3><div class="modal-field"><label for="customHeight">Height</label><input type="text" id="customHeight" placeholder="e.g., 5'8&quot; or 1.73m"></div><div class="modal-field"><label>Gender</label><div class="modal-gender"><button class="modal-gender-btn active" id="genderMale" type="button">Male</button><button class="modal-gender-btn" id="genderFemale" type="button">Female</button></div></div><div class="modal-buttons"><button id="cancelCustomScale">Cancel</button><button class="primary" id="saveCustomScale">Apply</button></div></div></div>
 <script src="height-data.js"></script>
@@ -295,11 +320,11 @@ var PLUSH_FOLDER='images/card/',SPRITE_FOLDER='images/xgif/',SIZE3_FOLDER='image
 var SVG_FOLDER='svgs/',ICON_FOLDER='icons/poke/',REFERENCE_FOLDER='images/reference/';
 var BASE_SCALE=1000,BASELINE_OFFSET=isMobile?50:100,TOP_PADDING=20,MOBILE_MAX_POKEMON=2;
 
-var REFERENCE_KEYS=['human','child','dog','ball','car','door'];
+var REFERENCE_KEYS=['human', 'ball','child','dog','car','door'];
 var REFERENCES={
-    human:{scale:1750,icon:'icons/ref-human.svg',file:'human.png'},child:{scale:1200,icon:'icons/ref-child.svg',file:'child.png'},
-    dog:{scale:600,icon:'icons/ref-dog.svg',file:'dog.png'},ball:{scale:240,icon:'icons/ref-ball.svg',file:'ball.png'},
-    car:{scale:1500,icon:'icons/ref-car.svg',file:'car.png'},door:{scale:2000,icon:'icons/ref-door.svg',file:'door.png'},
+    human:{scale:1400,icon:'icons/ref-human.svg',file:'human.png'},ball:{scale:500,icon:'icons/ref-ball.svg',file:'ball.png'},child:{scale:900,icon:'icons/ref-child.svg',file:'child.png'},
+    dog:{scale:2000,icon:'icons/ref-dog.svg',file:'dog.png'},
+    car:{scale:3000,icon:'icons/ref-car.svg',file:'car.png'},door:{scale:7000,icon:'icons/ref-door.svg',file:'door.png'},
     custom:{scale:1750,icon:'icons/ref-custom.svg',file:'custom-male.png',gender:'male'}
 };
 
@@ -357,6 +382,28 @@ function initializeApp(){
         document.querySelector('.expand-media-right').style.display='none';
     }
 
+    // Safari: disable animated mode and hide tutorial video links
+    if(isSafari){
+        document.getElementById('mediaToggle').style.display='none';
+        document.querySelector('.expand-media-right').style.display='none';
+        $('tutorialLink1').style.display='none';
+        $('tutorialLink2').style.display='none';
+    }
+
+    // Dark mode toggle
+    var isDark=localStorage.getItem('darkMode')==='true'||(localStorage.getItem('darkMode')===null&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+    if(isDark)document.body.classList.add('dark');
+    updateDarkIcon();
+    $('darkToggle').addEventListener('click',function(){
+        document.body.classList.toggle('dark');
+        localStorage.setItem('darkMode',document.body.classList.contains('dark'));
+        updateDarkIcon();
+    });
+    function updateDarkIcon(){
+        var icon=$('darkToggleIcon');
+        if(icon)icon.textContent=document.body.classList.contains('dark')?'☀':'☾';
+    }
+
     // Ditto logo
     var dittoLogo=$('dittoLogo');
     if(dittoLogo)dittoLogo.addEventListener('click',function(){
@@ -368,7 +415,7 @@ function initializeApp(){
                 var um=$('unlockModal');
                 $('unlockTitle').textContent='Huh?! You found Ditto!';
                 $('unlockText').textContent='Better lookups enabled. See you soon!';
-                $('unlockImg').src=SVG_FOLDER+'132.svg';$('unlockImg').style.display='block';
+                $('unlockImg').src=SVG_FOLDER+'132.svg';$('unlockImg').style.display='block';$('unlockImg').classList.add('svg-folder-img');
                 um.classList.add('active');
                 $('unlockClose').addEventListener('click',function(){um.classList.remove('active');updateDisplay();},{once:true});
             }
@@ -416,12 +463,12 @@ function unlockAnimated(){
     if(isMobile){
         document.getElementById('mediaToggle').style.display='flex';
         var mt=document.getElementById('mediaToggle');
-        mt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.innerHTML='<img src="icons/static.svg" class="btn-icon" alt="">';});
-        mt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.innerHTML='<img src="icons/animated.svg" class="btn-icon" alt="">';});
+        mt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.textContent='🎨';});
+        mt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.textContent='🎬';});
         document.querySelector('.expand-media-right').style.display='';
         var emt=document.getElementById('expandMediaToggle');
-        emt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.innerHTML='<img src="icons/static.svg" class="btn-icon" alt="">';});
-        emt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.innerHTML='<img src="icons/animated.svg" class="btn-icon" alt="">';});
+        emt.querySelectorAll('.media-btn[data-media="static"]').forEach(function(b){b.style.display='';b.textContent='🎨';});
+        emt.querySelectorAll('.media-btn[data-media="animated"]').forEach(function(b){b.style.display='';b.textContent='🎬';});
     }
     var um=document.getElementById('unlockModal');
     document.getElementById('unlockTitle').textContent='Animated Mode Unlocked!';
@@ -437,7 +484,7 @@ function unlockMode(mode){
     var um=document.getElementById('unlockModal'),t=document.getElementById('unlockTitle'),tx=document.getElementById('unlockText'),im=document.getElementById('unlockImg');
     if(mode==='plush'){t.textContent='Plush Mode Unlocked!';tx.textContent='You found the hidden plush gallery!';im.src=PLUSH_FOLDER+'151.webp';im.style.display='block';currentMediaType='plush';}
     else if(mode==='sprite'){t.textContent='Sprite Mode Unlocked!';tx.textContent='Retro sprite animations enabled!';im.style.display='none';currentMediaType='sprite';}
-    else if(mode==='size3'){t.textContent='Size3 Mode Unlocked!';tx.textContent='Enhanced animated models for #1-386!';im.style.display='none';currentMediaType='size3';}
+    else if(mode==='size3'){t.textContent='Upgrade Mode Unlocked!';tx.textContent='Uniform animated models for nerds!';im.style.display='none';currentMediaType='size3';}
     else if(mode==='vector'){t.textContent='Vector Mode Unlocked!';tx.textContent='Clean vector art (where available)!';im.style.display='none';currentMediaType='vector';}
     um.classList.add('active');addMediaButton(mode);syncMediaButtons();
     document.getElementById('aboutModal').classList.remove('active');
@@ -445,15 +492,14 @@ function unlockMode(mode){
 }
 
 function addMediaButton(mode){
-    var labels={plush:'Plush',sprite:'Sprite',size3:'Size3',vector:'Vector'};
-    var icons={plush:'icons/plush.svg',sprite:'icons/sprite.svg',size3:'icons/size3.svg',vector:'icons/vector.svg'};
+    var labels={plush:'Plush',sprite:'Sprite',size3:'Upgrade',vector:'Vector'};
+    var icons={plush:'🧸',sprite:'👾',size3:'📡',vector:'🔷'};
     [document.getElementById('mediaToggle'),document.getElementById('expandMediaToggle')].forEach(function(mt){
         if(mt.querySelector('[data-media="'+mode+'"]'))return;
         var btns=mt.querySelectorAll('.media-btn');
-        if(btns.length)btns[btns.length-1].style.borderRight='2px solid #000';
+        if(btns.length)btns[btns.length-1].style.borderRight='2px solid var(--border)';
         var b=document.createElement('button');b.className='media-btn';b.dataset.media=mode;
-        if(isMobile)b.innerHTML='<img src="'+(icons[mode]||'')+'" class="btn-icon" alt="">';
-        else b.textContent=labels[mode]||mode;
+        b.textContent=isMobile?(icons[mode]||mode):(labels[mode]||mode);
         mt.appendChild(b);
         b.addEventListener('click',function(){
             mt.querySelectorAll('.media-btn').forEach(function(x){x.classList.remove('active');});
@@ -514,9 +560,9 @@ function createPokemonElement(pokemon,isRef,sm){
         v.onerror=fb;v.addEventListener('stalled',function(){setTimeout(function(){if(v.readyState<2&&!fell)fb();},3000);});
         ic.appendChild(v);
         if(isSafari||isTouchDevice){
-            var pb=document.createElement('button');pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';pb.className='anim-play-btn';
-            pb.addEventListener('click',function(e){e.stopPropagation();if(fell)return;if(v.paused){v.play().catch(fb);pb.innerHTML='<img src="icons/pause.svg" class="btn-icon" alt="">';}else{v.pause();v.currentTime=0;pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';}});
-            v.addEventListener('ended',function(){pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';v.currentTime=0;});
+            var pb=document.createElement('button');pb.textContent='▶';pb.className='anim-play-btn';
+            pb.addEventListener('click',function(e){e.stopPropagation();if(fell)return;if(v.paused){v.play().catch(fb);pb.textContent='⏸';}else{v.pause();v.currentTime=0;pb.textContent='▶';}});
+            v.addEventListener('ended',function(){pb.textContent='▶';v.currentTime=0;});
             container.appendChild(ic);container.appendChild(pb);
         }else{
             v.loop=true;v.addEventListener('mouseenter',function(){if(!fell)v.play().catch(fb);});
@@ -531,8 +577,9 @@ function createPokemonElement(pokemon,isRef,sm){
             img.onerror=function(){var fallback=document.createElement('img');fallback.src=pokemon.icon;fallback.style.height=hPx+'px';fallback.style.width='auto';fallback.style.opacity='0.5';this.replaceWith(fallback);};
         }else{
             img.src=getImagePath(pokemon);img.style.height=hPx+'px';img.style.width='auto';
-            // Apply filter to pokemon images only
-            if(imgFilterState===1){img.style.filter='brightness(0)';img.style.opacity='0.3';}
+            if(img.src.indexOf('/svgs/')!==-1||currentMediaType==='vector')img.classList.add('svg-folder-img');
+            // Apply filter to pokemon images only - match reference opacity
+            if(imgFilterState===1){var dk=document.body.classList.contains('dark');img.style.filter=dk?'grayscale(1) brightness(100)':'grayscale(1) brightness(0)';img.style.opacity='0.5';}
             img.onerror=function(){var fn3=getImageFilename(pokemon.id);
                 if(currentMediaType==='vector'){this.src=STATIC_FOLDER+fn3+'.svg';return;}
                 if(this.src.endsWith('.svg'))this.src=STATIC_FOLDER+fn3+'.webp';};
@@ -593,17 +640,18 @@ function renderExpand(){
             v.style.height=hPx+'px';v.style.width='auto';v.style.clipPath='inset(0 0 1px 0)';
             v.muted=true;v.playsInline=true;v.loop=true;v.preload='auto';v.setAttribute('muted','');v.setAttribute('playsinline','');
             if(isMobile){
-                var pb=document.createElement('button');pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';pb.className='anim-play-btn';
+                var pb=document.createElement('button');pb.textContent='▶';pb.className='anim-play-btn';
                 pb.style.cssText='position:absolute;bottom:4px;left:50%;transform:translateX(-50%);z-index:5;';
-                pb.addEventListener('click',function(e){e.stopPropagation();if(v.paused){v.play().catch(function(){});pb.innerHTML='<img src="icons/pause.svg" class="btn-icon" alt="">';}else{v.pause();v.currentTime=0;pb.innerHTML='<img src="icons/play.svg" class="btn-icon" alt="">';}});
+                pb.addEventListener('click',function(e){e.stopPropagation();if(v.paused){v.play().catch(function(){});pb.textContent='⏸';}else{v.pause();v.currentTime=0;pb.textContent='▶';}});
                 ic.appendChild(v);ic.appendChild(pb);
             }else{v.addEventListener('mouseenter',function(){v.play().catch(function(){});});v.addEventListener('mouseleave',function(){v.pause();v.currentTime=0;});ic.appendChild(v);}
         }else if(currentMediaType==='vector'){
             var img=document.createElement('img');img.src=SVG_FOLDER+getImageFilename(poke.id)+'.svg';img.style.height=hPx+'px';img.style.width='auto';
+            img.classList.add('svg-folder-img');
             img.onerror=function(){this.src=STATIC_FOLDER+getImageFilename(poke.id)+'.svg';};ic.appendChild(img);
         }else{
             var img=document.createElement('img');img.src=getImagePath(poke);img.style.height=hPx+'px';img.style.width='auto';
-            if(imgFilterState===1){img.style.filter='brightness(0)';img.style.opacity='0.3';}
+            if(imgFilterState===1){var dk=document.body.classList.contains('dark');img.style.filter=dk?'grayscale(1) brightness(100)':'grayscale(1) brightness(0)';img.style.opacity='0.5';}
             img.onerror=function(){var fn3=getImageFilename(poke.id);if(this.src.endsWith('.svg'))this.src=STATIC_FOLDER+fn3+'.webp';};
             ic.appendChild(img);
         }
@@ -673,14 +721,14 @@ function showDittoTransform(container){
     var area=document.createElement('div');area.className='ditto-area';
     // Side label (desktop) - hidden on mobile via CSS
     var sideLabel=document.createElement('div');sideLabel.className='ditto-label-side';
-    sideLabel.style.cssText='font-size:1.4em;font-weight:600;color:#999;white-space:nowrap;margin-bottom:6px;';
+    sideLabel.style.cssText='font-size:1.4em;font-weight:600;color:var(--fg-faint);white-space:nowrap;margin-bottom:6px;';
     area.appendChild(sideLabel);
-    var dittoImg=document.createElement('img');dittoImg.src=SVG_FOLDER+'132.svg';
+    var dittoImg=document.createElement('img');dittoImg.src=SVG_FOLDER+'132.svg';dittoImg.className='svg-folder-img';
     dittoImg.style.cssText='height:80px;width:auto;';
     area.appendChild(dittoImg);
     // Below label (mobile) - hidden on desktop via CSS
     var belowLabel=document.createElement('div');belowLabel.className='ditto-label-below';
-    belowLabel.style.cssText='font-size:1em;font-weight:600;color:#999;white-space:nowrap;display:none;';
+    belowLabel.style.cssText='font-size:1em;font-weight:600;color:var(--fg-faint);white-space:nowrap;display:none;';
     area.appendChild(belowLabel);
     var transformed=false,targetPoke=null;
     area.addEventListener('click',function(e){
@@ -695,8 +743,8 @@ function showDittoTransform(container){
             var newH=Math.min((targetPoke.visualHeight/BASE_SCALE)*200,200);
             dittoImg.style.height=newH+'px';
             var txt='Search '+targetPoke.pokemon_name;
-            sideLabel.textContent=txt;sideLabel.style.color='#000';
-            belowLabel.textContent=txt;belowLabel.style.color='#000';
+            sideLabel.textContent=txt;sideLabel.style.color='var(--fg)';
+            belowLabel.textContent=txt;belowLabel.style.color='var(--fg)';
             transformed=true;
         }else if(targetPoke){
             addPokemon(targetPoke);
@@ -727,7 +775,7 @@ function updateSelectedTags(){
         var tag=document.createElement('div');tag.className='selected-tag';
         var ft=p.form_name!=='Normal'?' ('+p.form_name+')':'';
         var ns=document.createElement('span');ns.textContent=p.pokemon_name+ft;
-        var rs=document.createElement('span');rs.innerHTML='<img src="icons/close.svg" class="btn-icon" style="width:10px;height:10px;filter:invert(1)" alt="">';rs.style.opacity='0.7';rs.style.marginLeft='4px';
+        var rs=document.createElement('span');rs.textContent=' ✕';rs.style.opacity='0.7';rs.style.marginLeft='4px';
         tag.appendChild(ns);tag.appendChild(rs);
         tag.addEventListener('click',function(){removePokemon(p.id);});c.appendChild(tag);
     });
