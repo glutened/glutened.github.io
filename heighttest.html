@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Height Comparison Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .mode-btn {
+            background: white;
+            border: 3px solid #667eea;
+            color: #667eea;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .mode-btn:hover {
+            background: #f0f7ff;
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .mode-content {
+            display: none;
+        }
+        
+        .mode-content.active {
+            display: block;
+        }
+        
+        .pokemon-selector {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .selector-group {
+            margin-bottom: 15px;
+        }
+        
+        .selector-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .comparison-area {
+            background: #f0f0f0;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            min-height: 600px;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .baseline {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #ff4444;
+            z-index: 1;
+        }
+        
+        .baseline-label {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: #ff4444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .pokemon-display {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 40px;
+            min-height: 500px;
+            position: relative;
+        }
+        
+        .pokemon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .pokemon-image {
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .pokemon-image img, .pokemon-image video {
+            display: block;
+        }
+        
+        .pokemon-label {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .pokemon-label .name {
+            font-size: 1.1em;
+            color: #667eea;
+        }
+        
+        .pokemon-label .form {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        .pokemon-label .scale {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 3px;
+        }
+        
+        .row-display {
+            display: flex;
+            align-items: flex-end;
+            gap: 30px;
+            padding: 20px;
+            overflow-x: auto;
+            min-height: 400px;
+        }
+        
+        .search-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .search-result-item {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .search-result-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .search-result-item img, .search-result-item video {
+            max-width: 100%;
+            height: 80px;
+            object-fit: contain;
+        }
+        
+        .search-result-item .name {
+            font-weight: 600;
+            color: #333;
+            margin-top: 8px;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: #ff4444;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .info-box {
+            background: #e8f4f8;
+            border: 2px solid #4fc3f7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            color: #0277bd;
+            margin-bottom: 10px;
+        }
+        
+        .multi-select-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .selected-pokemon-tag {
+            background: #667eea;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+        
+        .selected-pokemon-tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+        
+        .selected-pokemon-tag .remove:hover {
+            opacity: 1;
+        }
+        
+        .animation-controls {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .animation-controls h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .animation-controls button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Pokemon Height Comparison Tool</h1>
+        <p class="subtitle">Compare Pokemon sizes with static or animated models</p>
+        
+        <!-- File Upload Area -->
+        <div id="uploadSection" class="pokemon-selector">
+            <h3 style="color: #667eea; margin-bottom: 15px;">📁 Load Pokemon Data</h3>
+            <p style="margin-bottom: 15px; color: #666;">
+                Click below to load the <strong>pokemon-home-height-with-names.csv</strong> file:
+            </p>
+            <input type="file" id="csvFileInput" accept=".csv" style="display: block; margin-bottom: 10px;">
+            <button onclick="loadFromFile()" style="display: block;">Load CSV File</button>
+        </div>
+        
+        <div id="mainContent" style="display: none;">
+        
+        <div class="mode-selector">
+            <button class="mode-btn active" onclick="switchMode('direct')">👥 Direct Comparison</button>
+            <button class="mode-btn" onclick="switchMode('human')">🧍 Human Comparison</button>
+            <button class="mode-btn" onclick="switchMode('row')">📊 Row Display</button>
+        </div>
+        
+        <!-- Media Type Selector & Animation Controls -->
+        <div class="animation-controls">
+            <h3>🎬 Media Settings</h3>
+            <div style="margin-bottom: 15px;">
+                <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-right: 20px;">
+                    <input type="radio" name="mediaType" value="static" checked onchange="switchMediaType()">
+                    <span>Static (SVG/WEBP from images/)</span>
+                </label>
+                <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="radio" name="mediaType" value="animated" onchange="switchMediaType()">
+                    <span>Animated (WEBM from images/3d/)</span>
+                </label>
+            </div>
+            <div id="animationButtons" style="display: none;">
+                <button class="btn-success" onclick="playAllAnimations()">▶️ Play All</button>
+                <button class="btn-danger" onclick="pauseAllAnimations()">⏸️ Pause All</button>
+                <button onclick="restartAllAnimations()">🔄 Restart All</button>
+            </div>
+        </div>
+        
+        <!-- Scale Options -->
+        <div class="pokemon-selector" style="margin-bottom: 20px;">
+            <h3 style="color: #667eea; margin-bottom: 15px;">⚙️ Scale Options</h3>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="useLayoutScale" onchange="refreshAllDisplays()">
+                    <span>Use Layout Scale (compareLayoutScaleFix)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="useOffsetY" checked onchange="refreshAllDisplays()">
+                    <span>Use Y Offset (compareOffsetYFix)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="useOffsetX" checked onchange="refreshAllDisplays()">
+                    <span>Use X Offset (compareOffsetXFix)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="useBestFit" checked onchange="refreshAllDisplays()">
+                    <span>🔍 Best Fit (auto-scale to fit tall Pokemon)</span>
+                </label>
+            </div>
+            <p style="margin-top: 10px; color: #999; font-size: 0.9em;">
+                <strong>Best Fit:</strong> When enabled, automatically shrinks the display so giant Pokemon fit in the view. When disabled, uses true scale (may require scrolling).
+            </p>
+        </div>
+        
+        <!-- Direct Comparison Mode -->
+        <div id="mode-direct" class="mode-content active">
+            <div class="info-box">
+                <h3>👥 Direct Comparison Mode</h3>
+                <p>Compare two Pokemon side by side with accurate scale</p>
+            </div>
+            
+            <div class="pokemon-selector">
+                <div class="selector-group">
+                    <label>Pokemon 1:</label>
+                    <select id="pokemon1Select" onchange="updateComparison()">
+                        <option value="">Select Pokemon...</option>
+                    </select>
+                </div>
+                
+                <div class="selector-group">
+                    <label>Pokemon 2:</label>
+                    <select id="pokemon2Select" onchange="updateComparison()">
+                        <option value="">Select Pokemon...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="comparison-area">
+                <div class="baseline"></div>
+                <div class="baseline-label">Ground Level</div>
+                <div id="directDisplay" class="pokemon-display"></div>
+            </div>
+        </div>
+        
+        <!-- Human Comparison Mode -->
+        <div id="mode-human" class="mode-content">
+            <div class="info-box">
+                <h3>🧍 Human Comparison Mode</h3>
+                <p>Compare Pokemon to Machoke (1.5m tall, human reference)</p>
+            </div>
+            
+            <div class="pokemon-selector">
+                <div class="selector-group">
+                    <label>Select Pokemon:</label>
+                    <select id="humanPokemonSelect" onchange="updateHumanComparison()">
+                        <option value="">Select Pokemon...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="comparison-area">
+                <div class="baseline"></div>
+                <div class="baseline-label">Ground Level</div>
+                <div id="humanDisplay" class="pokemon-display"></div>
+            </div>
+        </div>
+        
+        <!-- Row Display Mode -->
+        <div id="mode-row" class="mode-content">
+            <div class="info-box">
+                <h3>📊 Row Display Mode</h3>
+                <p>Display multiple Pokemon in a row with proportional scaling</p>
+            </div>
+            
+            <div class="pokemon-selector">
+                <div class="selector-group">
+                    <label>Search Pokemon:</label>
+                    <input type="text" id="searchInput" placeholder="Type to search..." oninput="filterPokemon()">
+                </div>
+                
+                <div id="searchResults" class="search-results"></div>
+                
+                <div class="selector-group" style="margin-top: 20px;">
+                    <label>Selected Pokemon:</label>
+                    <div id="selectedPokemonTags" class="multi-select-area"></div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn-danger" onclick="clearRowDisplay()">Clear All</button>
+                </div>
+            </div>
+            
+            <div class="comparison-area">
+                <div class="baseline"></div>
+                <div class="baseline-label">Ground Level</div>
+                <div id="rowDisplay" class="row-display"></div>
+            </div>
+        </div>
+        
+        </div><!-- End mainContent -->
+        
+    </div><!-- End container -->
+
+    <script>
+        let pokemonData = [];
+        let selectedRowPokemon = [];
+        let currentMediaType = 'static'; // 'static' or 'animated'
+        const BASE_SCALE = 1000;
+        const STATIC_FOLDER = 'images/';
+        const ANIMATED_FOLDER = 'images/3d/';
+        
+        const HUMAN_DATA = {
+            dictionaryId: 67,
+            pokemon_name: 'Machoke (Human Reference)',
+            form_name: '1.5m tall',
+            compareSizeScaleFix: 1560,
+            compareLayoutScaleFix: 875,
+            compareOffsetYFix: -50,
+            compareOffsetXFix: 0
+        };
+
+        function switchMediaType() {
+            const selected = document.querySelector('input[name="mediaType"]:checked').value;
+            currentMediaType = selected;
+            
+            // Show/hide animation controls
+            document.getElementById('animationButtons').style.display = 
+                selected === 'animated' ? 'block' : 'none';
+            
+            // Refresh all displays
+            refreshAllDisplays();
+        }
+
+        function getImagePath(dictionaryId) {
+            if (currentMediaType === 'animated') {
+                return `${ANIMATED_FOLDER}${dictionaryId}.webm`;
+            } else {
+                // Try SVG first for static
+                return `${STATIC_FOLDER}${dictionaryId}.svg`;
+            }
+        }
+
+        function calculateScale(pokemon) {
+            const useLayoutScale = document.getElementById('useLayoutScale')?.checked ?? false;
+            
+            if (useLayoutScale && pokemon.compareLayoutScaleFix) {
+                const scale = (pokemon.compareSizeScaleFix / BASE_SCALE) * (pokemon.compareLayoutScaleFix / BASE_SCALE);
+                return scale;
+            } else {
+                const scale = pokemon.compareSizeScaleFix / BASE_SCALE;
+                return scale;
+            }
+        }
+
+        function createPokemonElement(pokemon, customScale = null) {
+            const scale = customScale !== null ? customScale : calculateScale(pokemon);
+            
+            const useOffsetY = document.getElementById('useOffsetY')?.checked ?? true;
+            const useOffsetX = document.getElementById('useOffsetX')?.checked ?? true;
+            
+            const container = document.createElement('div');
+            container.className = 'pokemon-item';
+            container.dataset.scale = scale; // Store original scale for best-fit calculations
+            container.dataset.compareSizeScaleFix = pokemon.compareSizeScaleFix;
+            
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'pokemon-image';
+            
+            // Apply offsets if enabled
+            const offsetY = useOffsetY ? pokemon.compareOffsetYFix : 0;
+            const offsetX = useOffsetX ? pokemon.compareOffsetXFix : 0;
+            imageContainer.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            
+            if (currentMediaType === 'animated') {
+                // Create video element
+                const video = document.createElement('video');
+                video.src = getImagePath(pokemon.dictionaryId);
+                video.style.height = `${scale * 200}px`;
+                video.style.width = 'auto';
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.dataset.baseHeight = scale * 200; // Store base height
+                
+                video.onerror = function() {
+                    // Fallback to static if animated fails
+                    this.style.display = 'none';
+                    const img = document.createElement('img');
+                    img.src = `${STATIC_FOLDER}${pokemon.dictionaryId}.svg`;
+                    img.style.height = `${scale * 200}px`;
+                    img.style.width = 'auto';
+                    img.dataset.baseHeight = scale * 200;
+                    img.onerror = function() {
+                        this.src = `${STATIC_FOLDER}${pokemon.dictionaryId}.webp`;
+                    };
+                    imageContainer.appendChild(img);
+                };
+                
+                imageContainer.appendChild(video);
+            } else {
+                // Create img element
+                const img = document.createElement('img');
+                img.src = getImagePath(pokemon.dictionaryId);
+                img.style.height = `${scale * 200}px`;
+                img.style.width = 'auto';
+                img.dataset.baseHeight = scale * 200; // Store base height
+                
+                img.onerror = function() {
+                    // Try WEBP if SVG fails
+                    this.src = `${STATIC_FOLDER}${pokemon.dictionaryId}.webp`;
+                };
+                
+                imageContainer.appendChild(img);
+            }
+            
+            const label = document.createElement('div');
+            label.className = 'pokemon-label';
+            label.innerHTML = `
+                <div class="name">${pokemon.pokemon_name}</div>
+                <div class="form">${pokemon.form_name}</div>
+                <div class="scale">Size: ${pokemon.compareSizeScaleFix}${customScale !== null ? ` (scaled ${(customScale/calculateScale(pokemon)*100).toFixed(0)}%)` : ''}</div>
+            `;
+            
+            container.appendChild(imageContainer);
+            container.appendChild(label);
+            
+            return container;
+        }
+
+        function createHumanElement() {
+            return createPokemonElement(HUMAN_DATA);
+        }
+
+        function updateComparison() {
+            const pokemon1Index = document.getElementById('pokemon1Select').value;
+            const pokemon2Index = document.getElementById('pokemon2Select').value;
+            const display = document.getElementById('directDisplay');
+            const useBestFit = document.getElementById('useBestFit')?.checked ?? true;
+            
+            display.innerHTML = '';
+            
+            const pokemonToDisplay = [];
+            if (pokemon1Index !== '') pokemonToDisplay.push(pokemonData[pokemon1Index]);
+            if (pokemon2Index !== '') pokemonToDisplay.push(pokemonData[pokemon2Index]);
+            
+            if (pokemonToDisplay.length === 0) return;
+            
+            // Calculate best-fit scale
+            let scaleMultiplier = 1;
+            if (useBestFit) {
+                const maxScale = Math.max(...pokemonToDisplay.map(p => calculateScale(p)));
+                const maxHeight = maxScale * 200; // Base height of 200px
+                const viewHeight = 500; // Target max height
+                if (maxHeight > viewHeight) {
+                    scaleMultiplier = viewHeight / maxHeight;
+                }
+            }
+            
+            // Create elements with adjusted scale
+            pokemonToDisplay.forEach(pokemon => {
+                const adjustedScale = calculateScale(pokemon) * scaleMultiplier;
+                display.appendChild(createPokemonElement(pokemon, adjustedScale));
+            });
+        }
+
+        function updateHumanComparison() {
+            const pokemonIndex = document.getElementById('humanPokemonSelect').value;
+            const display = document.getElementById('humanDisplay');
+            const useBestFit = document.getElementById('useBestFit')?.checked ?? true;
+            
+            display.innerHTML = '';
+            
+            const pokemonToDisplay = [HUMAN_DATA];
+            if (pokemonIndex !== '') pokemonToDisplay.push(pokemonData[pokemonIndex]);
+            
+            // Calculate best-fit scale
+            let scaleMultiplier = 1;
+            if (useBestFit) {
+                const maxScale = Math.max(...pokemonToDisplay.map(p => calculateScale(p)));
+                const maxHeight = maxScale * 200;
+                const viewHeight = 500;
+                if (maxHeight > viewHeight) {
+                    scaleMultiplier = viewHeight / maxHeight;
+                }
+            }
+            
+            // Create elements with adjusted scale
+            pokemonToDisplay.forEach(pokemon => {
+                const adjustedScale = calculateScale(pokemon) * scaleMultiplier;
+                display.appendChild(createPokemonElement(pokemon, adjustedScale));
+            });
+        }
+
+        function filterPokemon() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (searchTerm.length < 2) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+            
+            const filtered = pokemonData.filter(p => 
+                p.pokemon_name.toLowerCase().includes(searchTerm)
+            ).slice(0, 30);
+            
+            resultsContainer.innerHTML = '';
+            
+            filtered.forEach(pokemon => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.onclick = () => addToRowDisplay(pokemon);
+                
+                if (currentMediaType === 'animated') {
+                    const video = document.createElement('video');
+                    video.src = getImagePath(pokemon.dictionaryId);
+                    video.style.maxHeight = '80px';
+                    video.loop = true;
+                    video.muted = true;
+                    video.playsInline = true;
+                    item.appendChild(video);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = getImagePath(pokemon.dictionaryId);
+                    img.onerror = function() {
+                        this.src = `${STATIC_FOLDER}${pokemon.dictionaryId}.webp`;
+                    };
+                    item.appendChild(img);
+                }
+                
+                const name = document.createElement('div');
+                name.className = 'name';
+                name.textContent = `${pokemon.pokemon_name} (${pokemon.form_name})`;
+                
+                item.appendChild(name);
+                resultsContainer.appendChild(item);
+            });
+        }
+
+        function addToRowDisplay(pokemon) {
+            if (selectedRowPokemon.find(p => p.id === pokemon.id)) {
+                return;
+            }
+            
+            selectedRowPokemon.push(pokemon);
+            updateRowDisplay();
+            updateSelectedTags();
+        }
+
+        function removeFromRowDisplay(pokemonId) {
+            selectedRowPokemon = selectedRowPokemon.filter(p => p.id !== pokemonId);
+            updateRowDisplay();
+            updateSelectedTags();
+        }
+
+        function updateSelectedTags() {
+            const container = document.getElementById('selectedPokemonTags');
+            container.innerHTML = '';
+            
+            if (selectedRowPokemon.length === 0) {
+                container.innerHTML = '<p style="color: #999;">No Pokemon selected yet</p>';
+                return;
+            }
+            
+            selectedRowPokemon.forEach(pokemon => {
+                const tag = document.createElement('div');
+                tag.className = 'selected-pokemon-tag';
+                tag.innerHTML = `
+                    <span>${pokemon.pokemon_name} (${pokemon.form_name})</span>
+                    <span class="remove" onclick="removeFromRowDisplay('${pokemon.id}')">✕</span>
+                `;
+                container.appendChild(tag);
+            });
+        }
+
+        function updateRowDisplay() {
+            const display = document.getElementById('rowDisplay');
+            const useBestFit = document.getElementById('useBestFit')?.checked ?? true;
+            
+            display.innerHTML = '';
+            
+            if (selectedRowPokemon.length === 0) return;
+            
+            // Calculate best-fit scale for row display
+            let scaleMultiplier = 1;
+            if (useBestFit) {
+                const maxScale = Math.max(...selectedRowPokemon.map(p => calculateScale(p)));
+                const maxHeight = maxScale * 200;
+                const viewHeight = 400; // Target max height for row
+                if (maxHeight > viewHeight) {
+                    scaleMultiplier = viewHeight / maxHeight;
+                }
+            }
+            
+            selectedRowPokemon.forEach(pokemon => {
+                const adjustedScale = calculateScale(pokemon) * scaleMultiplier;
+                display.appendChild(createPokemonElement(pokemon, adjustedScale));
+            });
+        }
+
+        function clearRowDisplay() {
+            selectedRowPokemon = [];
+            updateRowDisplay();
+            updateSelectedTags();
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+        }
+
+        function refreshAllDisplays() {
+            updateComparison();
+            updateHumanComparison();
+            updateRowDisplay();
+            filterPokemon();
+        }
+
+        function playAllAnimations() {
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                video.play().catch(e => console.log('Play failed:', e));
+            });
+        }
+
+        function pauseAllAnimations() {
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                video.pause();
+            });
+        }
+
+        function restartAllAnimations() {
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                video.currentTime = 0;
+                video.play().catch(e => console.log('Play failed:', e));
+            });
+        }
+
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.mode-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`mode-${mode}`).classList.add('active');
+        }
+
+        // CSV Loading (file upload only - no fetch)
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                const values = parseCSVLine(line);
+                if (values.length < 10) continue;
+                data.push({
+                    pokemon_name: values[0],
+                    form_name: values[1],
+                    dictionaryId: parseInt(values[2]),
+                    formNo: parseInt(values[3]),
+                    id: values[4],
+                    compareSizeScaleFix: parseInt(values[5]),
+                    compareLayoutScaleFix: parseInt(values[6]),
+                    compareOffsetYFix: parseInt(values[7]),
+                    compareOffsetXFix: parseInt(values[8]),
+                    isGigantamax: values[9]
+                });
+            }
+            return data;
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function populateSelectors() {
+            const selects = ['pokemon1Select', 'pokemon2Select', 'humanPokemonSelect'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">Select Pokemon...</option>';
+                pokemonData.forEach((pokemon, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${pokemon.pokemon_name} (${pokemon.form_name})`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function loadFromFile() {
+            console.log('loadFromFile called');
+            const fileInput = document.getElementById('csvFileInput');
+            console.log('File input:', fileInput);
+            const file = fileInput.files[0];
+            console.log('Selected file:', file);
+            
+            if (!file) {
+                alert('Please select a CSV file first');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    console.log('File read, length:', e.target.result.length);
+                    pokemonData = parseCSV(e.target.result);
+                    console.log('Parsed Pokemon:', pokemonData.length);
+                    
+                    if (pokemonData.length === 0) throw new Error('No data parsed');
+                    
+                    populateSelectors();
+                    document.getElementById('uploadSection').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                    alert(`Successfully loaded ${pokemonData.length} Pokemon!`);
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error parsing CSV file: ' + error.message);
+                }
+            };
+            reader.onerror = function(e) {
+                console.error('FileReader error:', e);
+                alert('Error reading file');
+            };
+            reader.readAsText(file);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // For file:// protocol, always show upload section
+            // No auto-fetch attempt needed
+            console.log('Ready! Please upload your CSV file.');
+        });
+    </script>
+</body>
+</html>

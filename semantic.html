@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Semantic Tools - David Taylor</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    
+    .header {
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+    }
+    
+    .header-links a {
+      margin-left: 20px;
+      color: #333;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    
+    .header-links a:hover {
+      color: #6c63ff;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin: 30px 0 0 0;
+      color: #6c63ff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .case-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px 80px 20px;
+    }
+    
+    /* Hero with quick stats */
+    .hero-section {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      padding: 60px 40px;
+      border-radius: 12px;
+      color: white;
+      margin-bottom: 40px;
+    }
+    
+    .hero-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    
+    .hero-text h1 {
+      font-size: 3rem;
+      margin: 0 0 15px 0;
+      font-weight: 700;
+    }
+    
+    .hero-text p {
+      font-size: 1.3rem;
+      margin: 0 0 25px 0;
+      opacity: 0.95;
+    }
+    
+    .hero-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .hero-tag {
+      background: rgba(255,255,255,0.25);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    
+    .hero-metrics {
+      background: rgba(255,255,255,0.15);
+      padding: 25px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .metric-item {
+      margin-bottom: 20px;
+    }
+    
+    .metric-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .metric-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    
+    .metric-label {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+    
+    /* Quick overview cards */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 50px;
+    }
+    
+    .overview-card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .overview-card h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .overview-icon {
+      font-size: 1.8rem;
+    }
+    
+    .overview-card p {
+      margin: 0;
+      color: #666;
+      line-height: 1.6;
+      font-size: 1.05rem;
+    }
+    
+    .overview-card ul {
+      margin: 10px 0 0 0;
+      padding-left: 20px;
+      color: #666;
+      line-height: 1.8;
+    }
+    
+    /* Image containers that adapt to content */
+    .image-section {
+      margin: 50px 0;
+    }
+    
+    .image-container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 15px;
+    }
+    
+    .image-container img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+    }
+    
+    .image-caption {
+      margin-top: 15px;
+      font-size: 0.95rem;
+      color: #666;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    .image-caption strong {
+      color: #333;
+      font-style: normal;
+      display: block;
+      margin-bottom: 5px;
+      font-size: 1.05rem;
+    }
+    
+    /* Side-by-side comparison */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 50px 0;
+    }
+    
+    .comparison-item {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .comparison-label {
+      background: #6c63ff;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: inline-block;
+      margin-bottom: 15px;
+    }
+    
+    .comparison-item.after .comparison-label {
+      background: #10b981;
+    }
+    
+    /* Process section */
+    .process-section {
+      margin: 60px 0;
+    }
+    
+    .process-step {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    .step-number {
+      position: absolute;
+      top: -20px;
+      left: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .process-step h3 {
+      margin: 10px 0 20px 0;
+      font-size: 1.8rem;
+      color: #333;
+    }
+    
+    .process-step p {
+      color: #666;
+      line-height: 1.8;
+      font-size: 1.05rem;
+      margin-bottom: 20px;
+    }
+    
+    /* Results callout */
+    .results-callout {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px;
+      border-radius: 12px;
+      color: white;
+      margin: 50px 0;
+      text-align: center;
+    }
+    
+    .results-callout h2 {
+      font-size: 2.5rem;
+      margin: 0 0 20px 0;
+    }
+    
+    .results-callout p {
+      font-size: 1.3rem;
+      margin: 0;
+      opacity: 0.95;
+    }
+    
+    /* Full-width showcase image */
+    .showcase-section {
+      margin: 60px -20px;
+    }
+    
+    .showcase-image {
+      width: 100%;
+      max-width: 100vw;
+      height: auto;
+      display: block;
+    }
+    
+    .showcase-caption {
+      background: white;
+      padding: 25px;
+      text-align: center;
+      font-size: 1.1rem;
+      color: #666;
+    }
+    
+    .showcase-caption strong {
+      color: #333;
+      font-size: 1.3rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+    
+    /* CTA */
+    .cta-section {
+      background: white;
+      padding: 50px 40px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .cta-section h2 {
+      margin-top: 0;
+      font-size: 2rem;
+      color: #333;
+    }
+    
+    .cta-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 25px;
+    }
+    
+    .cta-btn {
+      display: inline-block;
+      padding: 15px 30px;
+      background: #6c63ff;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(108, 99, 255, 0.3);
+    }
+    
+    .cta-btn.secondary {
+      background: white;
+      color: #6c63ff;
+      border: 2px solid #6c63ff;
+    }
+    h1 a {
+  text-decoration: none; /* Removes the underline */
+  color: inherit;        /* Makes the link take the color of the surrounding text (usually #333 in your file) */
+}
+    @media (max-width: 768px) {
+      .hero-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .hero-text h1 {
+        font-size: 2rem;
+      }
+      
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .showcase-section {
+        margin: 40px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <h1>  <a href="index.html">DAVID TAYLOR</a></h1>
+      <div class="header-links">
+      
+        <a href="https://grad.substack.com" target="_blank">blog</a>
+        <a href="https://podcasts.apple.com/us/podcast/co-design-with-mom-users-who-matter-most/id1817758084" target="_blank">podcast</a>
+        <a href="about.html">about</a>
+        <a href="mailto:email@daviddot.com">contact</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="case-container">
+
+    
+    <!-- Hero with at-a-glance metrics -->
+    <div class="hero-section">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1>Pokémon Semantic Tools</h1>
+          <p>Building AI-powered taxonomy tools to solve 30 years of inconsistent data across 1,025+ Pokémon</p>
+          <div class="hero-tags">
+            <span class="hero-tag">Personal Project</span>
+            <span class="hero-tag">2023-2024</span>
+            <span class="hero-tag">Information Architecture</span>
+          </div>
+        </div>
+        <div class="hero-metrics">
+          <div class="metric-item">
+            <div class="metric-number">1,025</div>
+            <div class="metric-label">Entities Organized</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-number">Dozens</div>
+            <div class="metric-label">Custom AI Scripts Built</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-number">100%</div>
+            <div class="metric-label">No Programming Knowledge</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick context cards -->
+    <div class="overview-grid">
+      <div class="overview-card">
+        <h3><span class="overview-icon">🎯</span> Challenge</h3>
+        <p>30 years of Pokémon flavor text isn't standardized—entries are recycled, incomplete, and impossible to compare across species. Which Pokémon live near glaciers and contain fur? Who knows?</p>
+      </div>
+      
+      <div class="overview-card">
+        <h3><span class="overview-icon">💡</span> Solution</h3>
+        <p>Custom AI-coded tools to deduplicate entries, count word frequency, categorize attributes, and create interactive filtering—all without knowing any programming</p>
+      </div>
+      
+      <div class="overview-card">
+        <h3><span class="overview-icon">🤖</span> AI as Employee</h3>
+        <p>Gave instructions in plain English to Claude AI and ChatGPT to build dozens of single-use scripts, treating the computer like a team member</p>
+      </div>
+    </div>
+
+    <!-- The Problem -->
+    <div class="image-section">
+      <div class="image-container">
+        <img src="bulba2.jpg" alt="Before - messy data">
+        <div class="image-caption">
+          <strong>The Problem: 30 Years of Inconsistent Data</strong>
+          Bulbapedia and PokeAPI rely on fan maintenance—data is overwhelming, sloppy, and always incomplete
+        </div>
+      </div>
+    </div>
+
+    <!-- Process Steps with Images -->
+    <div class="process-section">
+      <div class="process-step">
+        <div class="step-number">1</div>
+        <h3>AI-Powered Data Cleanup Scripts</h3>
+        <p>Started with a script to pull all Pokédex text entries, then another to deduplicate recycled text. Each problem required a new single-use tool—AI coded word frequency counters, categorization tools, and term mergers all in plain English instructions.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="7.jpg" alt="Custom scripts">
+          <div class="image-caption">
+            <strong>Dozens of Custom AI Scripts</strong>
+            Each tool solved a specific data problem—deduplication, frequency analysis, categorization, and merging
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-number">2</div>
+        <h3>K-Means Color Analysis & Sprite Palettes</h3>
+        <p>Discovered that color was the biggest factor in how people interpret Pokémon designs. Used K-means clustering to generate color palettes from sprites, then sorted by hex values to find patterns and duplicates.</p>
+        
+        <div class="comparison-grid" style="margin-top: 25px;">
+          <div class="comparison-item">
+            <div class="comparison-label">Game Boy Sprites</div>
+            <img src="kme1.jpg" alt="Gameboy sprites" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
+           
+            <p style="color: #666; margin: 0; line-height: 1.6;">Original 2-color sprites—too much black/white for accurate color analysis</p>
+          </div>
+          
+          <div class="comparison-item after">
+            <div class="comparison-label">3D Models</div>
+            <img src="col2.jpg" alt="3D model palettes" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
+            <p style="color: #666; margin: 0; line-height: 1.6;">Modern 3D models provided accurate color proportions for palette extraction</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-number">3</div>
+        <h3>Interactive Taxonomy Interface</h3>
+        <p>Built the full taxonomy tool where nearly every text element and icon is a clickable filter. Sort by type, shape, color, movesets, egg groups—unlimited filter combinations with real-time updates.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="fil2.jpg" alt="Taxonomy interface">
+          <div class="image-caption">
+            <strong>Everything Is a Filter</strong>
+            Click any text or icon to add/remove filters—discover patterns like "which Electric types are pink?" instantly
+          </div>
+        </div>
+      </div>
+    </div>
+
+ 
+
+    <!-- Color sorting showcase -->
+    <div class="image-section">
+      <div class="image-container">
+        <img src="col1.jpg" alt="Color sorting">
+        <div class="image-caption">
+          <strong>Sorted by Hex Color Hue</strong>
+          Using Google Sheets formulas and ChatGPT, created automated color sorting to find patterns and duplicates
+        </div>
+      </div>
+    </div>
+
+      <div class="process-step">
+        <div class="step-number">4</div>
+        <h3>Interactive Type Association Quiz</h3>
+        <p>Early user research revealed a critical gap: How do people actually associate visual designs with type labels? A traditional Google Form couldn't capture the nuance—I needed something smarter that could randomize Pokémon, track partial credit scoring, and adapt to different visual modes.</p>
+        <p>Built an AI-powered quiz that collects data on how users associate visual qualities with elemental types. Users select 1-2 types per Pokémon across different image modes (artwork, grayscale, sprites, 3D motion, palettes). The system awards 1 point per correct type—picking twice can raise or lower scores, revealing confidence levels.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="spr5.jpg" alt="Type quiz">
+          <div class="image-caption">
+            <strong>Smarter User Research Survey</strong>
+            Test type associations across 7 image modes and 9 generations—collecting data that Google Forms can't capture
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-number">5</div>
+        <h3>Global Accessibility: 29 Language Options</h3>
+        <p>To reach a global audience—especially users unfamiliar with Pokémon—I added instant language switching. The interface updates on the spot, allowing anyone to participate regardless of their native language.</p>
+        <p>This wasn't just about translation. Different type labels in different languages could bias design decisions. Does "Agua" (Spanish for Water) evoke different visual associations than "みず" (Japanese) or "Eau" (French)? The multilingual interface lets us study how language shapes visual perception.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="langse.jpg" alt="Type quiz">
+          <div class="image-caption">
+            <strong>29+ Language Options with Instant Switching</strong>
+            Global accessibility reveals how type labels bias design interpretation across cultures
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-number">6</div>
+        <h3>Pokémon Similarity Grouper</h3>
+        <p>As the taxonomy matured, a new question emerged: "Which Pokémon are most similar to each other?" For merchandising teams planning product lines or game designers balancing rosters, this comparison was critical but impossible with existing tools.</p>
+        <p>Built a weighted similarity calculator that scores Pokémon across color, type, shape, and stats. Users can adjust attribute weights in real-time—prioritize type similarity for competitive analysis or color matching for visual merchandise planning.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="cats.jpg" alt="Similarity tool">
+          <div class="image-caption">
+            <strong>Weighted Similarity Calculator</strong>
+            Adjust attribute weights to answer: "Find 10 Pokémon most similar to Liepard when prioritizing body shape over color"
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-number">7</div>
+        <h3>"Who's That Pokémon?" Recognition Game</h3>
+               <p>Players identify Pokémon before they "flee"—testing whether the core visual identity is strong enough for global recognition. The game serves as both user research validation and a demonstration of content localization challenges in global products.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="quiz4.jpg" alt="Quiz game">
+          <div class="image-caption">
+            <strong>Image Recognition Testing</strong>
+            Can users identify Pokémon? Tests visual identity strength
+          </div>
+        </div>
+      </div>
+
+
+
+    <!-- What this demonstrates -->
+    <div class="overview-grid" style="margin-top: 60px;">
+      <div class="overview-card">
+        <h3><span class="overview-icon">📊</span> User Research Design</h3>
+        <p>Built smarter research tools than Google Forms—randomization, partial credit scoring, multi-modal testing across 7 image types</p>
+      </div>
+      
+      <div class="overview-card">
+        <h3><span class="overview-icon">🌍</span> Global Content Strategy</h3>
+        <p>29+ language options reveal how type labels bias visual perception—critical for localization and international products</p>
+      </div>
+      
+      <div class="overview-card">
+        <h3><span class="overview-icon">🤖</span> AI-Powered Content Tools</h3>
+        <p>Built interactive research surveys, similarity calculators, and validation games using AI without coding knowledge</p>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <h2>Explore the Live Tools</h2>
+  
+      <div class="cta-buttons">
+        <a href="taxonomy.html" class="cta-btn">Pokemon Taxonomy</a>
+        <a href="algori.html" class="cta-btn">Similarity Grouper</a>
+        <a href="poke.html" class="cta-btn">Quiz Game</a>
+        <a href="#" class="cta-btn secondary">⬆︎</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

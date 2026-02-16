@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COVID-19 DINING - David Taylor</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    
+    .header {
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+    }
+    
+    .header-links a {
+      margin-left: 20px;
+      color: #333;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    
+    .header-links a:hover {
+      color: #6c63ff;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin: 30px 0 0 0;
+      color: #6c63ff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .case-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px 80px 20px;
+    }
+    
+    .hero-section {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      padding: 60px 40px;
+      border-radius: 12px;
+      color: white;
+      margin-bottom: 40px;
+    }
+    
+    .hero-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    
+    .hero-text h1 {
+      font-size: 3rem;
+      margin: 0 0 15px 0;
+      font-weight: 700;
+    }
+    
+    .hero-text p {
+      font-size: 1.3rem;
+      margin: 0 0 25px 0;
+      opacity: 0.95;
+    }
+    
+    .hero-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .hero-tag {
+      background: rgba(255,255,255,0.25);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    
+    .hero-metrics {
+      background: rgba(255,255,255,0.15);
+      padding: 25px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .metric-item {
+      margin-bottom: 20px;
+    }
+    
+    .metric-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .metric-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    
+    .metric-label {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+    
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 50px;
+    }
+    
+    .overview-card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .overview-card h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .overview-icon {
+      font-size: 1.8rem;
+    }
+    
+    .overview-card p {
+      margin: 0;
+      color: #666;
+      line-height: 1.6;
+      font-size: 1.05rem;
+    }
+    
+    .overview-card ul {
+      margin: 10px 0 0 0;
+      padding-left: 20px;
+      color: #666;
+      line-height: 1.8;
+    }
+    
+    .image-section {
+      margin: 50px 0;
+    }
+    /* Constrain image containers to prevent them from taking over the screen */
+.image-container {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  margin-bottom: 15px;
+  max-width: 800px; /* Prevents images from getting too wide on desktop */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Ensure images fit within the viewport height and don't stretch */
+.image-container img {
+  width: auto; /* Allow the image to find its natural width */
+  max-width: 100%; /* But never wider than the container */
+  height: auto;
+  max-height: 70vh; /* Limits image height to 70% of the screen height */
+  display: block;
+  margin: 0 auto; /* Center the image if it's narrower than the container */
+  object-fit: contain; /* Prevents distortion */
+}
+    
+    .image-caption {
+      margin-top: 15px;
+      font-size: 0.95rem;
+      color: #666;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    .image-caption strong {
+      color: #333;
+      font-style: normal;
+      display: block;
+      margin-bottom: 5px;
+      font-size: 1.05rem;
+    }
+    
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 50px 0;
+    }
+    
+   /* Specific fix for the comparison grid images */
+.comparison-item img {
+  max-height: 40vh; /* Smaller height since they are side-by-side */
+  width: 100%;
+  object-fit: cover; /* This keeps the 'before/after' look consistent */
+}
+
+/* Fix for the full-width showcase images if you use them */
+.showcase-image {
+  max-height: 80vh;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+}
+    
+    .comparison-label {
+      background: #6c63ff;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: inline-block;
+      margin-bottom: 15px;
+    }
+    
+    .comparison-item.after .comparison-label {
+      background: #10b981;
+    }
+    
+    .process-section {
+      margin: 60px 0;
+    }
+    
+    .process-step {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    .step-number {
+      position: absolute;
+      top: -20px;
+      left: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .process-step h3 {
+      margin: 10px 0 20px 0;
+      font-size: 1.8rem;
+      color: #333;
+    }
+    
+    .process-step p {
+      color: #666;
+      line-height: 1.8;
+      font-size: 1.05rem;
+      margin-bottom: 20px;
+    }
+    
+    .results-callout {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px;
+      border-radius: 12px;
+      color: white;
+      margin: 50px 0;
+      text-align: center;
+    }
+    
+    .results-callout h2 {
+      font-size: 2.5rem;
+      margin: 0 0 20px 0;
+    }
+    
+    .results-callout p {
+      font-size: 1.3rem;
+      margin: 0;
+      opacity: 0.95;
+    }
+    
+    .showcase-section {
+      margin: 60px -20px;
+    }
+    
+ 
+    
+    .showcase-caption {
+      background: white;
+      padding: 25px;
+      text-align: center;
+      font-size: 1.1rem;
+      color: #666;
+    }
+    
+    .showcase-caption strong {
+      color: #333;
+      font-size: 1.3rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+    
+    .user-quote {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin: 40px 0;
+      border-left: 5px solid #f093fb;
+    }
+    
+    .user-quote blockquote {
+      margin: 0;
+      font-size: 1.4rem;
+      font-style: italic;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .user-quote cite {
+      display: block;
+      margin-top: 15px;
+      font-size: 1rem;
+      color: #666;
+      font-style: normal;
+    }
+    
+    .cta-section {
+      background: white;
+      padding: 50px 40px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .cta-section h2 {
+      margin-top: 0;
+      font-size: 2rem;
+      color: #333;
+    }
+    
+    .cta-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 25px;
+    }
+    
+    .cta-btn {
+      display: inline-block;
+      padding: 15px 30px;
+      background: #6c63ff;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(108, 99, 255, 0.3);
+    }
+    
+    .cta-btn.secondary {
+      background: white;
+      color: #6c63ff;
+      border: 2px solid #6c63ff;
+    }
+    .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+    max-width: 900px;
+    margin: 40px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  }
+
+  .video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }h1 a {
+  text-decoration: none; /* Removes the underline */
+  color: inherit;        /* Makes the link take the color of the surrounding text (usually #333 in your file) */
+}
+    @media (max-width: 768px) {
+      .hero-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .hero-text h1 {
+        font-size: 2rem;
+      }
+      
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .showcase-section {
+        margin: 40px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <h1>  <a href="index.html">DAVID TAYLOR</a></h1>
+      <div class="header-links">
+ 
+        <a href="https://grad.substack.com" target="_blank">blog</a>
+        <a href="https://podcasts.apple.com/us/podcast/co-design-with-mom-users-who-matter-most/id1817758084" target="_blank">podcast</a>
+        <a href="about.html">about</a>
+        <a href="mailto:email@daviddot.com">contact</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="case-container">
+
+
+    <div class="hero-section">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1>COVID-19 Dining</h1>
+          <p>Helping UW students find safe, comfortable eating spaces during COVID-19 with personalized comfort preferences</p>
+          <div class="hero-tags">
+            <span class="hero-tag">University of Washington</span>
+            <span class="hero-tag">2021</span>
+            <span class="hero-tag">UX Research & Design</span>
+          </div>
+        </div>
+        <div class="hero-metrics">
+          <div class="metric-item">
+            <div class="metric-number">5</div>
+            <div class="metric-label">Contextual Inquiries</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-number">18</div>
+            <div class="metric-label">Survey Responses</div>
+          </div>
+      
+        </div>
+      </div>
+    </div>
+  
+    <div class="overview-grid">
+      <div class="overview-card">
+        <h3><span class="overview-icon">🎯</span> Challenge</h3>
+        <p>COVID-19 created confusing indoor eating guidelines. Students didn't know where they could safely eat on campus—crowded spaces, unclear signage, and weather forcing everyone indoors.</p>
+      </div>
+      
+      <div class="overview-card">
+        <h3><span class="overview-icon">💡</span> Solution</h3>
+        <p>A mobile app with personalized "Comfort Preferences" that matches students to eating spaces based on their unique needs—social distance, shelter, temperature, facilities.</p>
+      </div>
+      
+      <div class="overview-card">
+        <h3><span class="overview-icon">📊</span> My Role</h3>
+        <ul>
+          <li>UX Researcher</li>
+          <li>Contextual Inquiry</li>
+          <li>Survey Design</li>
+     
+
+        </ul>
+      </div>
+    </div>
+
+    <div class="image-section">
+      <div class="comparison-grid">
+        <div class="comparison-item">
+          
+          <img src="bad1.jpg" alt="Crowded eating space" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
+          <p style="color: #666; margin: 0; line-height: 1.6;"><strong>Crowded Indoor Spaces</strong><br>Students clustered in limited designated eating areas, unmasked while eating</p>
+        </div>
+        
+        <div class="comparison-item">
+          <img src="bad2.jpg" alt="Unclear signage" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
+          <p style="color: #666; margin: 0; line-height: 1.6;"><strong>Unclear COVID Guidelines</strong><br>Mixed signage and unclear restrictions left students guessing where eating was allowed</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-quote">
+      <blockquote>"I don't want to drink inside because of the crowd. I feel more safe outside but I feel more comfortable indoors."</blockquote>
+      <cite>— UW Student, who typically eats outside despite Seattle weather</cite>
+    </div>
+
+    <div class="user-quote">
+      <blockquote>"I just don't think it's worth it to wait for a seat. I'd rather walk 15 minutes back to my apartment."</blockquote>
+      <cite>— UW Student, who only used their prepaid dining plan for takeout</cite>
+    </div>
+    <div class="case-container">
+      <div class="video-wrapper">
+        <iframe src="https://www.youtube.com/embed/dYRnKXoljEo?si=hvxVcSG_42UQvcvn" 
+                title="YouTube video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerpolicy="strict-origin-when-cross-origin" 
+                allowfullscreen>
+        </iframe>
+      </div>
+  
+      </div>   <div class="process-section">
+      <div class="process-step">
+        <div class="step-number">1</div>
+        <h3>Contextual Inquiry & Field Observation</h3>
+        <p>Followed 5 students as they searched for eating spaces on campus. Observed their behaviors, decision-making process, and level of comfort. One participant walked 15 minutes in the rain back to his apartment rather than eat in the crowded HUB—revealing deeper safety concerns than anticipated.</p>
+        <p>Key findings: Students avoided indoor eating due to unclear protocols, crowded lines, and distrust of "designated eating areas." One student had never eaten inside the HUB despite having a dining plan, always choosing outside benches or his apartment. Students optimized routes for fewer crowds and stop lights, kept food in coat pockets for warmth, and wore masks outside despite being with roommates.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="int2.jpg" alt="Contextual inquiry">
+          <div class="image-caption">
+            <strong>Following Students Through Campus</strong>
+            Observed unexpected behaviors: choosing 15-minute walks over indoor eating, avoiding crowded lines entirely, selecting shortest queues over preferred restaurants
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-number">2</div>
+        <h3>Survey: What Matters Most?</h3>
+        <p>Conducted a survey with 18 students to rank eating space dimensions. Top priorities: sheltered from rain, having a chair, having a table, warmth, and proximity to classes. This data informed our "Comfort Preferences" feature.</p>
+        <p>Critical insight from interviews: Students didn't know official indoor dining protocols. Many assumed "designated eating areas" were just places where crowds ate before COVID, not areas with better ventilation or safety measures—creating distrust in the system.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="dim2.jpg" alt="Survey results">
+          <div class="image-caption">
+            <strong>Data-Driven Preference Categories</strong>
+            Survey revealed: 1) Shelter, 2) Seating, 3) Tables, 4) Warmth, 5) Proximity—"comfort" means different things to different people
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-number">3</div>
+        <h3>Defining User Needs & System Gaps</h3>
+        <p>Mapped the relationships between COVID restrictions, campus resources, and student needs. Identified critical gaps: 1) Information accessibility—students didn't know where eating was allowed or why, 2) No review system—students wanted crowd forecasts and compliance reports, 3) Trust issues—students questioned whether "designated" areas were actually safer.</p>
+        <p>Additional observations: Students expressed frustration with tables occupied by single unmasked students studying (not eating), lack of queue dividers at restaurants, pressure to use dining plan balances despite safety concerns, and no clear communication about ventilation or safety protocols.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="SyDiagram.jpg" alt="System diagram">
+          <div class="image-caption">
+            <strong>Mapping System Gaps</strong>
+            COVID restrictions ↔ Campus resources ↔ Students: gaps in information flow, lack of crowdsourced reviews, and trust deficit in official designations
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-quote">
+      <blockquote>"I always see people sitting unmasked at tables, not eating—just studying. I don't know the official protocols for when you're allowed to take your mask off indoors."</blockquote>
+      <cite>— UW Student, who avoided all indoor dining due to unclear safety guidelines</cite>
+    
+    </div>
+
+   
+
+    <div class="process-step">
+      <div class="step-number">4</div>
+      <h3>Usability Testing & Evaluation</h3>
+      <p>Created pre/post surveys comparing comfort levels before and after seeing the prototype. Designed 7 specific tasks: browse prototype, find restaurant pages, set up filters, locate Center Table, look up information, write reviews, and navigate using alternative methods.</p>
+      <p>Critical feedback from testing: "I like the comfort setting, it's more preferences. What means comfort to me doesn't mean comfort to other people." This led to our breakthrough feature: personalized Comfort Preferences.</p>
+      
+      <div class="image-container" style="margin-top: 25px;">
+        <img src="ust2.jpg" alt="Usability testing">
+        <div class="image-caption">
+          <strong>Task-Based Usability Testing</strong>
+          Participants completed specific tasks while thinking aloud—revealed need for personalization over generic filters
+        </div>
+      </div>
+    </div>
+
+    <div class="image-section">
+      <div class="image-container">
+        <img src="s45.jpg" alt="Survey questions">
+        <div class="image-caption">
+          <strong>Pre/Post Survey Methodology</strong>
+          Measured changes in comfort levels, satisfaction with eating spaces, and awareness of alternative locations
+        </div>
+      </div>
+    </div>
+
+    <div class="results-callout">
+      <h2>Key Insight</h2>
+      <p>"Comfort" is personal—some prioritize warmth, others social distance. One-size-fits-all recommendations don't work.</p>
+    </div>
+
+    <div class="process-section">
+      <div class="process-step">
+        <div class="step-number">5</div>
+        <h3>Comfort Preferences</h3>
+        <p>Based on usability testing, added a personalized preference system where users customize filters for their unique definition of "comfort": social distance, crowd level, temperature, facilities, shelter, and air circulation.</p>
+        <p>Key features added: live availability updates, operation hours, service offerings, facility details, distance from current location, shortest path directions, and a review system for continuous algorithm improvement.</p>
+        
+        <div class="image-container" style="margin-top: 25px;">
+          <img src="pre.jpg" alt="Design tensions">
+          <div class="image-caption">
+            <strong>Personalized Comfort Settings</strong>
+            Users define their own comfort dimensions—algorithm matches them to spaces that fit their profile + current situation
+          </div>
+        </div>
+      </div> <div class="image-container" style="margin-top: 25px;">
+        <img src="ah4.jpg" alt="Preferences screen">
+      
+        <div class="image-caption">
+          <strong>Crowd-sourced updates</strong>
+          Up-to-date COVID restrictions, contact information, and read the latest reviews.
+        </div>
+      </div>
+    </div>
+
+
+   
+
+   
+
+    <div class="process-step">
+      <h3>Design Tensions & Tradeoffs</h3>
+      <p>We recognized a critical tension: raising awareness of designated eating locations could make those spaces more crowded, potentially increasing infection risk while reducing quiet study spaces on campus.</p>
+      <p>Our solution balanced three competing factors: COVID-19 restrictions, limited space availability, and user comfort needs. The Comfort Preferences system helps distribute students across spaces based on their priorities rather than funneling everyone to the same "best" location.</p>
+      
+     
+    </div>
+
+    <div class="overview-grid" style="margin-top: 60px;">
+      <div class="overview-card">
+        <h3><span class="overview-icon">🔍</span> User-Centered Research</h3>
+        <p>Contextual inquiry, field observation, surveys, and usability testing—multiple methods to validate design decisions</p>
+      </div>
+      
+
+      
+      <div class="overview-card">
+        <h3><span class="overview-icon">⚖️</span> Balancing Tradeoffs</h3>
+        <p>Recognized unintended consequences (crowding popular spaces) and designed for distributed usage patterns</p>
+      </div>
+    </div>
+ 
+    <div class="user-quote" style="border-left-color: #f5576c;">
+      <blockquote style="font-size: 1.2rem;">Limitations & Future Work</blockquote>
+      <p style="color: #666; margin-top: 15px; font-size: 1.05rem; line-height: 1.7;">
+        Time and pandemic restrictions limited our ability to conduct expert interviews on human comfort and implement real-time availability tracking technology. Future iterations would integrate IoT sensors for live capacity monitoring and partner with campus facilities for official eating zone data.
+      </p>
+    </div>
+    <div class="process-step">
+      <h3>Reflection: When Research Doesn't Go As Planned</h3>
+      <p>The most valuable insight from this project came from an unexpected moment: watching a participant choose a 15-minute walk in the rain over eating indoors. I had prepared questions about table selection, sanitization habits, and mask compliance in designated eating areas. Instead, I found myself outside, asking "why are we walking to your apartment?"</p>
+      
+      <p>This contextual inquiry taught me that the most important artifacts aren't always the ones you expect. The rain was an artifact. The air circulation was an artifact. An empty outdoor bench became as significant as any indoor table. When the participant put his sandwich in his coat pocket for warmth, or chose a longer route to avoid crowds, these small behaviors revealed deeper patterns of avoidance and distrust that no survey could have captured.</p>
+      
+      <p>Initially, I considered this interview a failure—we never interacted with the designated eating spaces I had planned to observe. But the participant's extreme avoidance behavior (having a dining plan yet never eating inside the HUB) represented a user segment I hadn't anticipated: students with prepaid meals and no knowledge of where they're allowed to eat, choosing to leave campus entirely rather than navigate unclear guidelines.</p>
+      
+      <p>This experience reinforced that good research means following users where they actually go, not where you expect them to be. The solution we ultimately designed—personalized comfort preferences and crowdsourced information—emerged directly from understanding why students like the particpant opted out of the system entirely. Sometimes the most important research participants are the ones who refuse to participate in the way you planned.</p>
+    </div>
+    <div class="cta-section">
+      <h2>View More Projects</h2>
+     <div class="cta-buttons">
+        <a href="semantic.html" class="cta-btn">Pokémon Semantic Tools</a>
+        <a href="https://davidtaylor.framer.website/cafe" target="_blank" class="cta-btn">Café Menu Ontology</a>
+        <a href="#" class="cta-btn secondary">⬆︎</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
