@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pokemon Ontology Explorer</title>
+<style>
+/* ═══════════════════════════════════════════════
+   CSS VARIABLES & RESET
+   ═══════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+:root{
+  --bg:#f2f2f5;--bg-alt:#fff;--fg:#111;--fg-muted:#555;--fg-dim:#666;--fg-faint:#999;
+  --border:#ccc;--border-strong:#000;--hover:#eee;--hover-strong:#ddd;
+  --accent:#2563eb;--accent-subtle:rgba(37,99,235,0.06);--accent-text:#1d4ed8;
+  --filter-active:#c00;--filter-active-light:rgba(204,0,0,0.08);
+  --search-even:#f0f0f0;--search-sel:#d0d0d0;--search-border:#e0e0e0;
+  --shadow-bloom:0 2px 12px rgba(0,0,0,0.08);
+  --tag-bg:#111;--tag-fg:#fff;
+  --score-good:#16a34a;--score-mid:#ca8a04;--score-low:#dc2626;
+}
+body.dark{
+  --bg:#1a1a1a;--bg-alt:#242424;--fg:#e0e0e0;--fg-muted:#aaa;--fg-dim:#999;--fg-faint:#777;
+  --border:#444;--border-strong:#888;--hover:#2a2a2a;--hover-strong:#333;
+  --accent:#60a5fa;--accent-subtle:rgba(96,165,250,0.08);--accent-text:#93bbfd;
+  --filter-active:#f55;--filter-active-light:rgba(255,85,85,0.1);
+  --search-even:#222;--search-sel:#444;--search-border:#333;
+  --shadow-bloom:0 2px 12px rgba(0,0,0,0.3);
+  --tag-bg:#e0e0e0;--tag-fg:#1a1a1a;
+  --score-good:#4ade80;--score-mid:#facc15;--score-low:#f87171;
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  background:var(--bg);color:var(--fg);
+  display:flex;flex-direction:column;
+  transition:background 0.2s,color 0.2s;
+  overflow-y:auto;overflow-x:hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════ */
+.header{
+  flex-shrink:0;padding:14px 20px 12px;background:var(--bg);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:100;
+}
+.header-left{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.header-title{font-size:15px;font-weight:700;letter-spacing:-0.3px;white-space:nowrap}
+.header-center{flex:1;position:relative;max-width:420px;margin:0 auto}
+.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+
+.search-wrapper{position:relative;width:100%}
+#searchBar{
+  width:100%;padding:8px 12px;font-size:14px;
+  border:1px solid var(--border);background:var(--bg-alt);color:var(--fg);
+  outline:none;transition:border-color 0.2s;font-family:inherit;
+}
+#searchBar:focus{border-color:var(--accent)}
+#searchBar::placeholder{color:var(--fg-faint)}
+#suggestions{
+  position:absolute;top:100%;left:0;right:0;
+  background:var(--bg-alt);border:1px solid var(--border);
+  list-style:none;max-height:280px;overflow-y:auto;
+  z-index:200;display:none;
+}
+#suggestions.visible{display:block}
+#suggestions li{
+  padding:6px 12px;cursor:pointer;font-size:13px;
+  border-bottom:1px solid var(--search-border);transition:background 0.1s;
+}
+#suggestions li:nth-child(even){background:var(--search-even)}
+#suggestions li:hover,#suggestions li.selected{background:var(--search-sel)}
+#suggestions li .num{color:var(--fg-faint);font-size:11px;margin-right:6px;font-family:monospace}
+
+.dark-toggle{
+  width:32px;height:32px;border:1px solid var(--border);background:var(--bg-alt);
+  color:var(--fg);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:background 0.2s;flex-shrink:0;
+}
+.dark-toggle:hover{background:var(--hover)}
+
+/* ═══════════════════════════════════════════════
+   BREADCRUMB
+   ═══════════════════════════════════════════════ */
+.breadcrumb{
+  font-size:12px;color:var(--fg-muted);padding:6px 20px;
+  border-bottom:1px solid var(--border);display:none;
+  align-items:center;gap:4px;flex-wrap:wrap;background:var(--bg);
+}
+.breadcrumb.visible{display:flex}
+.breadcrumb-link{cursor:pointer;color:var(--accent-text);text-decoration:none}
+.breadcrumb-link:hover{text-decoration:underline}
+.breadcrumb-sep{color:var(--fg-faint);margin:0 2px}
+.breadcrumb-current{font-weight:600;color:var(--fg)}
+
+/* ═══════════════════════════════════════════════
+   CONTENT LAYOUT
+   ═══════════════════════════════════════════════ */
+.content{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:16px 20px 40px;max-width:1100px;margin:0 auto;width:100%;
+}
+
+/* Home state */
+.home-view{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:300px;gap:16px;text-align:center;
+}
+.home-view h2{font-size:20px;font-weight:600}
+.home-view p{color:var(--fg-muted);font-size:14px;max-width:400px}
+.home-random{
+  padding:8px 16px;border:1px solid var(--border);background:var(--bg-alt);
+  color:var(--fg);cursor:pointer;font-size:13px;font-family:inherit;
+  transition:background 0.2s;
+}
+.home-random:hover{background:var(--hover)}
+
+/* ═══════════════════════════════════════════════
+   SUBJECT PANEL
+   ═══════════════════════════════════════════════ */
+.subject-panel{width:100%;max-width:480px;margin:0 auto 12px;display:none}
+.subject-panel.visible{display:block}
+
+.subject-card{
+  background:var(--bg-alt);border:1px solid var(--border);padding:16px;
+  display:flex;gap:16px;align-items:flex-start;
+}
+.subject-img{
+  width:80px;height:80px;display:flex;align-items:center;justify-content:center;
+  background:var(--hover);flex-shrink:0;font-size:32px;color:var(--fg-muted);
+}
+.subject-info{flex:1;min-width:0}
+.subject-name{font-size:18px;font-weight:700;margin-bottom:2px}
+.subject-num{font-size:12px;color:var(--fg-faint);font-family:monospace;margin-bottom:6px}
+.subject-attrs{display:flex;flex-wrap:wrap;gap:4px}
+.subject-attr{
+  font-size:11px;padding:2px 6px;border:1px solid var(--border);
+  color:var(--fg-muted);white-space:nowrap;
+}
+.subject-attr.type-tag{
+  color:#fff;border:none;font-weight:500;
+}
+
+/* ═══════════════════════════════════════════════
+   NUDGE BAR
+   ═══════════════════════════════════════════════ */
+.nudge-bar{
+  width:100%;max-width:480px;margin:0 auto 12px;padding:8px 14px;
+  background:var(--accent-subtle);border:1px solid var(--border);
+  font-size:13px;cursor:pointer;display:none;align-items:center;
+  gap:8px;transition:background 0.2s;
+}
+.nudge-bar.visible{display:flex}
+.nudge-bar:hover{background:var(--hover)}
+.nudge-label{flex:1}
+.nudge-dismiss{
+  width:20px;height:20px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--fg-muted);cursor:pointer;flex-shrink:0;
+}
+.nudge-dismiss:hover{color:var(--fg)}
+
+/* ═══════════════════════════════════════════════
+   LENS TABS
+   ═══════════════════════════════════════════════ */
+.lens-tabs{
+  display:none;gap:0;border-bottom:1px solid var(--border);
+  width:100%;max-width:800px;margin:0 auto 16px;
+}
+.lens-tabs.visible{display:flex}
+.lens-tab{
+  padding:8px 16px;cursor:pointer;font-size:13px;font-weight:500;
+  border-bottom:2px solid transparent;color:var(--fg-muted);
+  transition:color 0.2s,border-color 0.2s;white-space:nowrap;
+  background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;
+}
+.lens-tab:hover{color:var(--fg)}
+.lens-tab.active{color:var(--fg);border-bottom-color:var(--accent);font-weight:600}
+
+/* ═══════════════════════════════════════════════
+   MAIN LAYOUT (lens content + weights sidebar)
+   ═══════════════════════════════════════════════ */
+.main-area{
+  display:flex;gap:16px;width:100%;max-width:800px;margin:0 auto;
+}
+.lens-content{flex:1;min-width:0}
+
+/* ═══════════════════════════════════════════════
+   WEIGHTS PANEL
+   ═══════════════════════════════════════════════ */
+.weights-panel{
+  width:200px;flex-shrink:0;background:var(--bg-alt);border:1px solid var(--border);
+  padding:12px;display:none;align-self:flex-start;position:sticky;top:80px;
+}
+.weights-panel.visible{display:block}
+.weights-title{font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;color:var(--fg-muted)}
+.weight-row{margin-bottom:8px}
+.weight-row label{font-size:11px;color:var(--fg-dim);display:flex;justify-content:space-between;margin-bottom:2px}
+.weight-row label span{font-family:monospace;font-size:10px;color:var(--fg-faint)}
+.weight-row input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;background:var(--border);outline:none;cursor:pointer}
+.weight-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:var(--fg);border-radius:50%;cursor:pointer}
+.weights-reset{
+  margin-top:8px;padding:4px 10px;font-size:11px;
+  border:1px solid var(--border);background:var(--bg);color:var(--fg);
+  cursor:pointer;font-family:inherit;width:100%;
+}
+.weights-reset:hover{background:var(--hover)}
+
+/* ═══════════════════════════════════════════════
+   RESULT GRID & CARDS
+   ═══════════════════════════════════════════════ */
+.result-section{margin-bottom:20px}
+.result-section-header{
+  font-size:13px;font-weight:600;margin-bottom:8px;display:flex;
+  align-items:center;gap:8px;
+}
+.result-section-header .count{
+  font-size:11px;font-weight:400;color:var(--fg-faint);
+  padding:1px 6px;border:1px solid var(--border);font-family:monospace;
+}
+.result-section-toggle{
+  font-size:11px;color:var(--accent-text);cursor:pointer;margin-left:auto;
+}
+.result-section-toggle:hover{text-decoration:underline}
+
+.result-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;
+}
+.result-card{
+  padding:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg-alt);
+  text-align:center;transition:box-shadow 0.2s,border-color 0.2s;
+}
+.result-card:hover{box-shadow:var(--shadow-bloom);border-color:var(--border-strong)}
+.result-card-img{
+  width:48px;height:48px;margin:0 auto 4px;display:flex;
+  align-items:center;justify-content:center;font-size:20px;color:var(--fg-muted);
+  background:var(--hover);
+}
+.result-card-name{font-size:11px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result-card-sub{font-size:10px;color:var(--fg-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result-card-score{font-size:10px;font-family:monospace;margin-top:2px}
+.result-card .match-dims{font-size:9px;color:var(--fg-faint);margin-top:1px}
+.result-card.highlighted{border-color:var(--accent);background:var(--accent-subtle)}
+
+/* Inline expansion for tag click */
+.tag-expansion{
+  margin-top:8px;padding:8px;border:1px solid var(--border);background:var(--bg);
+}
+
+/* ═══════════════════════════════════════════════
+   LORE LENS
+   ═══════════════════════════════════════════════ */
+.lore-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.lore-tag{
+  font-size:11px;padding:2px 8px;border:1px solid var(--border);
+  cursor:pointer;color:var(--fg-muted);transition:all 0.15s;
+}
+.lore-tag:hover{border-color:var(--border-strong);color:var(--fg)}
+.lore-tag.active{color:var(--filter-active);border-color:var(--filter-active);font-weight:600}
+.lore-tag .tag-count{font-size:9px;color:var(--fg-faint);margin-left:3px;font-family:monospace}
+
+.lore-phrases{margin-bottom:16px}
+.lore-phrase{
+  font-size:12px;color:var(--fg-dim);margin:4px 0;padding:4px 8px;
+  border-left:2px solid var(--border);font-style:italic;
+}
+.lore-phrase .phrase-tags{font-style:normal;font-size:10px;color:var(--fg-faint);margin-top:2px}
+.lore-show-more{
+  font-size:11px;color:var(--accent-text);cursor:pointer;margin-top:4px;display:inline-block;
+}
+.lore-show-more:hover{text-decoration:underline}
+
+/* ═══════════════════════════════════════════════
+   EVOLUTION LENS
+   ═══════════════════════════════════════════════ */
+.evo-chain{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin-bottom:16px;padding:12px;background:var(--bg-alt);border:1px solid var(--border);
+}
+.evo-stage{text-align:center;cursor:pointer;padding:6px 10px;transition:background 0.15s}
+.evo-stage:hover{background:var(--hover)}
+.evo-stage.current{background:var(--accent-subtle);border:1px solid var(--accent);font-weight:600}
+.evo-stage-name{font-size:11px;margin-top:2px}
+.evo-stage-img{
+  width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:var(--fg-muted);background:var(--hover);margin:0 auto;
+}
+.evo-arrow{color:var(--fg-faint);font-size:16px;flex-shrink:0}
+
+/* ═══════════════════════════════════════════════
+   LOADING & EMPTY STATES
+   ═══════════════════════════════════════════════ */
+.loading-msg{font-size:13px;color:var(--fg-muted);text-align:center;padding:24px 0}
+.empty-msg{font-size:13px;color:var(--fg-faint);text-align:center;padding:24px 0;font-style:italic}
+
+/* ═══════════════════════════════════════════════
+   NUDGE TARGETS (expanded view)
+   ═══════════════════════════════════════════════ */
+.nudge-targets{
+  width:100%;max-width:480px;margin:0 auto 12px;padding:12px;
+  background:var(--bg-alt);border:1px solid var(--border);display:none;
+}
+.nudge-targets.visible{display:block}
+.nudge-targets-header{font-size:12px;font-weight:600;margin-bottom:8px;color:var(--fg-muted)}
+
+/* ═══════════════════════════════════════════════
+   MOBILE
+   ═══════════════════════════════════════════════ */
+@media(max-width:768px){
+  .header{padding:10px 12px;gap:8px}
+  .header-title{font-size:13px}
+  .content{padding:12px}
+  .subject-card{padding:12px}
+  .subject-img{width:60px;height:60px}
+  .subject-name{font-size:16px}
+  .lens-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .lens-tab{padding:8px 12px;font-size:12px}
+  .main-area{flex-direction:column}
+  .weights-panel{width:100%;position:static;margin-top:12px}
+  .result-grid{grid-template-columns:repeat(auto-fill,minmax(90px,1fr))}
+  .nudge-bar,.subject-panel,.nudge-targets{max-width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <span class="header-title">Ontology Explorer</span>
+  </div>
+  <div class="header-center">
+    <div class="search-wrapper">
+      <input type="text" id="searchBar" placeholder="Search Pokemon..." autocomplete="off">
+      <ul id="suggestions"></ul>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="dark-toggle" id="darkToggle" title="Toggle dark mode">&#9790;</button>
+  </div>
+</div>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb" id="breadcrumb"></div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- Home view (no subject) -->
+  <div class="home-view" id="homeView">
+    <h2>Pokemon Ontology Explorer</h2>
+    <p>Search for a Pokemon to explore its connections, similarities, lore, and evolution chain.</p>
+    <button class="home-random" id="randomBtn">Random Pokemon</button>
+  </div>
+
+  <!-- Subject panel -->
+  <div class="subject-panel" id="subjectPanel"></div>
+
+  <!-- Nudge bar -->
+  <div class="nudge-bar" id="nudgeBar">
+    <span class="nudge-label" id="nudgeLabel"></span>
+    <span class="nudge-dismiss" id="nudgeDismiss">&#10005;</span>
+  </div>
+
+  <!-- Nudge targets (expanded) -->
+  <div class="nudge-targets" id="nudgeTargets"></div>
+
+  <!-- Lens tabs -->
+  <div class="lens-tabs" id="lensTabs">
+    <button class="lens-tab active" data-lens="similarity">Similarity</button>
+    <button class="lens-tab" data-lens="lore">Lore</button>
+    <button class="lens-tab" data-lens="attribute">Attributes</button>
+    <button class="lens-tab" data-lens="evolution">Evolution</button>
+  </div>
+
+  <!-- Main area: lens content + weights sidebar -->
+  <div class="main-area">
+    <div class="lens-content" id="lensContent"></div>
+    <div class="weights-panel" id="weightsPanel">
+      <div class="weights-title">Similarity Weights</div>
+      <div id="weightsSliders"></div>
+      <button class="weights-reset" id="weightsReset">Reset Defaults</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- DATA -->
+<script src="pokemon-data.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════
+
+const pokemonGenerations = {
+  1:{start:1,end:151.999,region:"Kanto"},2:{start:152,end:251.999,region:"Johto"},
+  3:{start:252,end:386.999,region:"Hoenn"},4:{start:387,end:493.999,region:"Sinnoh"},
+  5:{start:494,end:649.999,region:"Unova"},6:{start:650,end:721.999,region:"Kalos"},
+  7:{start:722,end:809.999,region:"Alola"},8:{start:810,end:898.999,region:"Galar"},
+  10:{start:899,end:905.999,region:"Hisui"},9:{start:906,end:1010.999,region:"Paldea"},
+  10.1:{start:1011,end:1019.999,region:"Kitakami"},10.3:{start:1025,end:1025,region:"Kitakami"},
+  9.1:{start:1020,end:1025.099,region:"Paldea"},10.2:{start:1025.1,end:9999,region:"Kitakami"}
+};
+
+const specialForms = {
+  "Alola":"Alola","Galar":"Galar","Hisuian":"Hisui","Hisui":"Hisui",
+  "Paldean":"Paldea","Kitakami":"Kitakami","Bloodmoon":"Kitakami",
+  "Mask":"Kitakami","Origin":"Hisui","White-Striped":"Hisui"
+};
+
+const shapeNames = {
+  1:"Round",2:"Serpent",3:"Fins",4:"Arms",5:"Upright",6:"Tailed",
+  7:"Legs",8:"4-Legs",9:"Wings",10:"Tentacle",11:"Multi",12:"Bipedal",
+  13:"4-Wings",14:"Crawling"
+};
+
+const typeColors = {
+  Bug:'#A8B820',Dragon:'#7038F8',Fairy:'#EE99AC',Fire:'#F08030',
+  Ghost:'#705898',Ground:'#E0C068',Normal:'#A8A878',Psychic:'#F85888',
+  Steel:'#B8B8D0',Dark:'#705848',Electric:'#F8D030',Fighting:'#C03028',
+  Flying:'#A890F0',Grass:'#78C850',Ice:'#98D8D8',Poison:'#A040A0',
+  Rock:'#B8A038',Water:'#6890F0'
+};
+
+const DEFAULT_WEIGHTS = {
+  shape:0.25, height:0.20, eggGroups:0.15, color:0.12,
+  type:0.10, abilities:0.08, weight:0.06, baseStats:0.04
+};
+
+// ═══════════════════════════════════════════════
+// NUDGE CONFIG
+// ═══════════════════════════════════════════════
+
+const NUDGE_CONFIG = {
+  pokemon: {
+    'pikachu':{label:"Pikaclones",targets:['plusle','minun','pachirisu','emolga','dedenne','togedemaru','mimikyu','morpeko']},
+    'electabuzz':{label:"Rival pair",targets:['magmar']},
+    'magmar':{label:"Rival pair",targets:['electabuzz']},
+    'hitmonlee':{label:"Hitmon trio",targets:['hitmonchan','hitmontop']},
+    'hitmonchan':{label:"Hitmon trio",targets:['hitmonlee','hitmontop']},
+    'hitmontop':{label:"Hitmon trio",targets:['hitmonlee','hitmonchan']},
+    'tauros':{label:"Counterpart",targets:['miltank']},
+    'miltank':{label:"Counterpart",targets:['tauros']},
+    'lunatone':{label:"Counterpart",targets:['solrock']},
+    'solrock':{label:"Counterpart",targets:['lunatone']},
+    'zangoose':{label:"Rival pair",targets:['seviper']},
+    'seviper':{label:"Rival pair",targets:['zangoose']},
+    'throh':{label:"Counterpart",targets:['sawk']},
+    'sawk':{label:"Counterpart",targets:['throh']},
+    'volbeat':{label:"Counterpart",targets:['illumise']},
+    'illumise':{label:"Counterpart",targets:['volbeat']},
+    'nidoranf':{label:"Counterpart",targets:['nidoranm']},
+    'nidoranm':{label:"Counterpart",targets:['nidoranf']},
+    'plusle':{label:"Counterpart",targets:['minun']},
+    'minun':{label:"Counterpart",targets:['plusle']},
+    'latias':{label:"Eon duo",targets:['latios']},
+    'latios':{label:"Eon duo",targets:['latias']},
+    'eevee':{label:"Eeveelutions",targets:['vaporeon','jolteon','flareon','espeon','umbreon','leafeon','glaceon','sylveon']},
+  },
+  groups: {
+    pseudo_legendary:{label:"Pseudo-Legendaries",members:['dragonite','tyranitar','salamence','metagross','garchomp','hydreigon','goodra','kommoo','dragapult','baxcalibur']},
+    eeveelutions:{label:"Eeveelutions",members:['vaporeon','jolteon','flareon','espeon','umbreon','leafeon','glaceon','sylveon','eevee']},
+    starters_gen1:{label:"Gen 1 Starters",members:['bulbasaur','charmander','squirtle']},
+    starters_gen2:{label:"Gen 2 Starters",members:['chikorita','cyndaquil','totodile']},
+    starters_gen3:{label:"Gen 3 Starters",members:['treecko','torchic','mudkip']},
+    pikaclones:{label:"Pikaclones",members:['pikachu','plusle','minun','pachirisu','emolga','dedenne','togedemaru','mimikyu','morpeko']},
+    fossils_gen1:{label:"Gen 1 Fossils",members:['omanyte','kabuto','aerodactyl']},
+  }
+};
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+
+const APP = {
+  subject: null,
+  lens: 'similarity',
+  history: [],
+  weights: { ...DEFAULT_WEIGHTS },
+  nudgeDismissed: false,
+  nudgeExpanded: false,
+  loreSelectedTag: null,
+  loreShowAll: false,
+  attrExpanded: {},
+  data: {
+    nameKeyMap: {},
+    allKeys: [],
+    classificationsLoaded: false,
+    classificationsLoading: false,
+    classificationsData: {},
+    tagIndex: {},
+    tagFrequency: {},
+  },
+  cache: {
+    similarity: null,
+    lore: null,
+  },
+  ui: {
+    searchIndex: -1,
+    searchResults: [],
+  }
+};
+
+// ═══════════════════════════════════════════════
+// SIMILARITY ENGINE (ported from algori.html)
+// ═══════════════════════════════════════════════
+
+class PokemonSimilarityGrouper {
+  constructor(weights) {
+    this.weights = weights || { ...DEFAULT_WEIGHTS };
+    this.bonusMultipliers = { dualType:1.5, exactTypeOrder:2.0, dualEggGroup:1.3, dualAbility:1.2 };
+  }
+
+  calculateTypeSimilarity(p1, p2) {
+    const t1 = p1.types || [], t2 = p2.types || [];
+    if (!t1.length || !t2.length) return 0;
+    if (t1.length === 2 && t2.length === 2 && t1[0] === t2[0] && t1[1] === t2[1])
+      return 1.0 * this.bonusMultipliers.exactTypeOrder;
+    if (t1.length === 2 && t2.length === 2) {
+      const s1 = new Set(t1), s2 = new Set(t2);
+      if ([...s1].filter(t => s2.has(t)).length === 2) return 1.0 * this.bonusMultipliers.dualType;
+    }
+    const s1 = new Set(t1), s2 = new Set(t2);
+    return [...s1].filter(t => s2.has(t)).length / Math.max(t1.length, t2.length);
+  }
+
+  calculateStatSimilarity(p1, p2) {
+    const s1 = p1.baseStats, s2 = p2.baseStats;
+    if (!s1 || !s2) return 0;
+    const keys = ['hp','atk','def','spa','spd','spe'];
+    const v1 = keys.map(k => s1[k] || 0), v2 = keys.map(k => s2[k] || 0);
+    const dot = v1.reduce((s, v, i) => s + v * v2[i], 0);
+    const m1 = Math.sqrt(v1.reduce((s, v) => s + v * v, 0));
+    const m2 = Math.sqrt(v2.reduce((s, v) => s + v * v, 0));
+    return (m1 === 0 || m2 === 0) ? 0 : dot / (m1 * m2);
+  }
+
+  calculateAbilitySimilarity(p1, p2) {
+    const a1 = Object.values(p1.abilities || {}).filter(Boolean);
+    const a2 = Object.values(p2.abilities || {}).filter(Boolean);
+    if (!a1.length || !a2.length) return 0;
+    const s1 = new Set(a1), s2 = new Set(a2);
+    const shared = [...s1].filter(a => s2.has(a)).length;
+    if (shared === 0) return 0;
+    const base = shared / Math.max(a1.length, a2.length);
+    return shared >= 2 ? base * this.bonusMultipliers.dualAbility : base;
+  }
+
+  calculateEggGroupSimilarity(p1, p2) {
+    const e1 = p1.eggGroups || [], e2 = p2.eggGroups || [];
+    if (!e1.length || !e2.length) return 0;
+    const s1 = new Set(e1), s2 = new Set(e2);
+    const shared = [...s1].filter(g => s2.has(g)).length;
+    if (shared === 0) return 0;
+    const base = shared / Math.max(e1.length, e2.length);
+    return (e1.length === 2 && e2.length === 2 && shared === 2) ? base * this.bonusMultipliers.dualEggGroup : base;
+  }
+
+  calculateColorSimilarity(p1, p2) { return (p1.color && p2.color && p1.color === p2.color) ? 1.0 : 0; }
+  calculateShapeSimilarity(p1, p2) { return (p1.shape && p2.shape && p1.shape === p2.shape) ? 1.0 : 0; }
+
+  calculateHeightSimilarity(p1, p2) {
+    if (!p1.heightm || !p2.heightm) return 0;
+    const r = Math.min(p1.heightm, p2.heightm) / Math.max(p1.heightm, p2.heightm);
+    if (r >= 0.75) return 1.0; if (r >= 0.5) return 0.7; if (r >= 0.25) return 0.4; return 0;
+  }
+
+  calculateWeightSimilarity(p1, p2) {
+    if (!p1.weightkg || !p2.weightkg) return 0;
+    const r = Math.min(p1.weightkg, p2.weightkg) / Math.max(p1.weightkg, p2.weightkg);
+    if (r >= 0.5) return 1.0; if (r >= 0.25) return 0.6; if (r >= 0.1) return 0.3; return 0;
+  }
+
+  calculateSimilarity(p1, p2) {
+    if (p1.name === p2.name) return null;
+    if (p1.baseSpecies === p2.name || p2.baseSpecies === p1.name) return null;
+    if (p1.baseSpecies && p2.baseSpecies && p1.baseSpecies === p2.baseSpecies) return null;
+    if (['Mega','G-Max'].includes(p1.forme) || ['Mega','G-Max'].includes(p2.forme) ||
+        ['Mega','Gmax'].includes(p1.variant) || ['Mega','Gmax'].includes(p2.variant)) return null;
+
+    const sims = {
+      shape: this.calculateShapeSimilarity(p1, p2),
+      height: this.calculateHeightSimilarity(p1, p2),
+      eggGroups: this.calculateEggGroupSimilarity(p1, p2),
+      color: this.calculateColorSimilarity(p1, p2),
+      type: this.calculateTypeSimilarity(p1, p2),
+      abilities: this.calculateAbilitySimilarity(p1, p2),
+      weight: this.calculateWeightSimilarity(p1, p2),
+      baseStats: this.calculateStatSimilarity(p1, p2),
+    };
+
+    let total = 0;
+    for (const [factor, score] of Object.entries(sims)) {
+      total += Math.min(score, 3.0) * this.weights[factor];
+    }
+    return { totalScore: total, similarities: sims };
+  }
+
+  groupBySimilarity(data, targetKey, count = 15, min = 0.3) {
+    const target = data[targetKey];
+    if (!target) return [];
+    const results = [];
+    for (const [key, pokemon] of Object.entries(data)) {
+      const result = this.calculateSimilarity(target, pokemon);
+      if (result && result.totalScore >= min) {
+        results.push({ key, name: pokemon.name, similarity: result.totalScore, breakdown: result.similarities, pokemon });
+      }
+    }
+    return results.sort((a, b) => b.similarity - a.similarity).slice(0, count);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DATA INITIALIZATION
+// ═══════════════════════════════════════════════
+
+function getRegion(num) {
+  for (const gen in pokemonGenerations) {
+    const { start, end, region } = pokemonGenerations[gen];
+    if (num >= start && num <= end) return region;
+  }
+  return "Unknown";
+}
+
+function getSpecialRegion(name) {
+  for (const key in specialForms) {
+    if (name.includes(key)) return specialForms[key];
+  }
+  return null;
+}
+
+function assignRegions() {
+  for (const key in pokemonData) {
+    const p = pokemonData[key];
+    p.region = getSpecialRegion(p.name) || getRegion(p.num);
+  }
+}
+
+function getShapeName(n) { return shapeNames[n] || ('Shape ' + n); }
+
+function extractAbilities(obj) {
+  if (!obj) return [];
+  if (Array.isArray(obj)) return obj;
+  return Object.values(obj).filter(Boolean);
+}
+
+function initializeNameKeyMap() {
+  const map = {};
+  const simpleNameKeys = new Set();
+  Object.keys(pokemonData).forEach(key => {
+    const p = pokemonData[key];
+    const name = p.name.trim();
+    map[key] = key;
+    if (Math.floor(p.num) === p.num && !p.baseSpecies) {
+      map[name] = key; map[name.toLowerCase()] = key;
+      simpleNameKeys.add(name);
+    }
+  });
+  Object.keys(pokemonData).forEach(key => {
+    const p = pokemonData[key];
+    const name = p.name.trim();
+    if (!simpleNameKeys.has(name)) { map[name] = key; map[name.toLowerCase()] = key; }
+    if (p.baseSpecies) {
+      const base = p.baseSpecies.trim();
+      map[base] = map[base] || key; map[base.toLowerCase()] = map[base.toLowerCase()] || key;
+    }
+    if (p.forme) {
+      const base = (p.baseSpecies || name).trim();
+      const fl = p.forme.replace(/ian$/, '').trim();
+      map[`${base}-${fl}`] = key; map[`${base}-${fl}`.toLowerCase()] = key;
+      map[`${base}-${p.forme.trim()}`] = key; map[`${base}-${p.forme.trim()}`.toLowerCase()] = key;
+    }
+  });
+  APP.data.nameKeyMap = map;
+}
+
+function capitalize(s) { return s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-'); }
+
+function formatPokemonName(p) {
+  if (p.baseSpecies && p.forme) {
+    const base = p.baseSpecies.trim();
+    let forme = p.forme.trim();
+    if (forme === 'Galar') forme = 'Galarian';
+    else if (forme === 'Alola') forme = 'Alolan';
+    else if (forme === 'Hisui') forme = 'Hisuian';
+    else if (forme === 'Paldea') forme = 'Paldean';
+    return forme + ' ' + capitalize(base);
+  }
+  return capitalize(p.name.trim());
+}
+
+function bst(p) {
+  if (!p.baseStats) return 0;
+  const s = p.baseStats;
+  return (s.hp||0) + (s.atk||0) + (s.def||0) + (s.spa||0) + (s.spd||0) + (s.spe||0);
+}
+
+// ═══════════════════════════════════════════════
+// EVOLUTION CHAIN (ported from pokedex.html)
+// ═══════════════════════════════════════════════
+
+function findFullEvolutionChainKeys(pokemonKey) {
+  const chainKeys = new Set();
+  const queue = [pokemonKey];
+  const map = APP.data.nameKeyMap;
+  while (queue.length > 0) {
+    const currentKey = queue.shift();
+    if (chainKeys.has(currentKey)) continue;
+    const p = pokemonData[currentKey];
+    if (!p) continue;
+    chainKeys.add(currentKey);
+    const relatives = [];
+    if (p.prevo) relatives.push(p.prevo);
+    if (p.evos) relatives.push(...p.evos);
+    if (p.prevos) relatives.push(...p.prevos);
+    relatives.filter(Boolean).forEach(name => {
+      const n = name.trim();
+      const key = map[n] || map[n.toLowerCase()];
+      if (key && !chainKeys.has(key)) queue.push(key);
+    });
+    const baseName = (p.baseSpecies || p.name).trim();
+    const baseKey = map[baseName] || map[baseName.toLowerCase()];
+    if (baseKey) {
+      if (!chainKeys.has(baseKey)) queue.push(baseKey);
+      const baseP = pokemonData[baseKey];
+      if (baseP) {
+        (baseP.formeOrder || baseP.otherFormes || [])
+          .filter(k => !chainKeys.has(k) && pokemonData[k])
+          .forEach(k => queue.push(k));
+      }
+      Object.keys(pokemonData).filter(k => {
+        const pp = pokemonData[k];
+        return pp.baseSpecies && pp.baseSpecies.trim() === baseName && !chainKeys.has(k);
+      }).forEach(k => queue.push(k));
+    }
+  }
+  return Array.from(chainKeys);
+}
+
+// Build ordered evo chain for display (base → stage 1 → stage 2, with branches)
+function buildEvoTree(pokemonKey) {
+  const chainKeys = findFullEvolutionChainKeys(pokemonKey);
+  if (chainKeys.length === 0) return [];
+
+  // Find the root(s): Pokemon with no prevo in the chain
+  const roots = chainKeys.filter(k => {
+    const p = pokemonData[k];
+    if (!p) return false;
+    if (p.baseSpecies) return false; // formes are not roots
+    if (!p.prevo) return true;
+    const prevoKey = APP.data.nameKeyMap[p.prevo] || APP.data.nameKeyMap[p.prevo.toLowerCase()];
+    return !prevoKey || !chainKeys.includes(prevoKey);
+  });
+
+  // BFS from roots to build ordered stages
+  const stages = [];
+  const visited = new Set();
+
+  function addStage(key, depth) {
+    if (visited.has(key)) return;
+    visited.add(key);
+    if (!stages[depth]) stages[depth] = [];
+    stages[depth].push(key);
+    const p = pokemonData[key];
+    if (p && p.evos) {
+      p.evos.forEach(evoName => {
+        const ek = APP.data.nameKeyMap[evoName] || APP.data.nameKeyMap[evoName.toLowerCase()];
+        if (ek && chainKeys.includes(ek)) addStage(ek, depth + 1);
+      });
+    }
+  }
+
+  (roots.length ? roots : [chainKeys[0]]).forEach(r => addStage(r, 0));
+
+  // Add any formes not yet visited
+  const formeKeys = chainKeys.filter(k => !visited.has(k) && pokemonData[k]);
+  return { stages, formes: formeKeys };
+}
+
+// ═══════════════════════════════════════════════
+// CLASSIFICATIONS / LORE LOADING
+// ═══════════════════════════════════════════════
+
+function slugify(name) {
+  return name.toLowerCase()
+    .replace(/♀/g, 'f').replace(/♂/g, 'm')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function loadClassificationsData(callback) {
+  if (APP.data.classificationsLoaded) { if (callback) callback(); return; }
+  if (APP.data.classificationsLoading) return;
+  APP.data.classificationsLoading = true;
+
+  const script = document.createElement('script');
+  script.src = 'classifications.js';
+  script.onload = function() {
+    if (typeof classificationsJson !== 'undefined') {
+      const tagFreq = {};
+      const tagIdx = {};
+      classificationsJson.forEach(entry => {
+        const allTags = new Set();
+        (entry.phrases || []).forEach(ph => {
+          (ph.classifications || []).forEach(tag => allTags.add(tag));
+        });
+        APP.data.classificationsData[entry.species_id] = {
+          phrases: entry.phrases || [],
+          tags: Array.from(allTags)
+        };
+        allTags.forEach(tag => {
+          tagFreq[tag] = (tagFreq[tag] || 0) + 1;
+          if (!tagIdx[tag]) tagIdx[tag] = [];
+          tagIdx[tag].push(entry.species_id);
+        });
+      });
+      APP.data.tagIndex = tagIdx;
+      APP.data.tagFrequency = tagFreq;
+      APP.data.classificationsLoaded = true;
+      APP.data.classificationsLoading = false;
+      if (callback) callback();
+    }
+  };
+  script.onerror = function() {
+    APP.data.classificationsLoading = false;
+    console.warn('Failed to load classifications.js');
+  };
+  document.head.appendChild(script);
+}
+
+function getClassDataForKey(pokemonKey) {
+  const p = pokemonData[pokemonKey];
+  if (!p) return null;
+  // Try direct key match
+  let data = APP.data.classificationsData[pokemonKey];
+  if (data) return data;
+  // Try name
+  data = APP.data.classificationsData[p.name];
+  if (data) return data;
+  // Try slug match
+  const slug = slugify(p.name);
+  for (const specId in APP.data.classificationsData) {
+    if (slugify(specId) === slug) return APP.data.classificationsData[specId];
+  }
+  // Try base species
+  if (p.baseSpecies) {
+    const baseSlug = slugify(p.baseSpecies);
+    for (const specId in APP.data.classificationsData) {
+      if (slugify(specId) === baseSlug) return APP.data.classificationsData[specId];
+    }
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+
+function navigateTo(key) {
+  if (!pokemonData[key]) return;
+  if (APP.subject) {
+    APP.history.push(APP.subject);
+  }
+  APP.subject = key;
+  APP.nudgeDismissed = false;
+  APP.nudgeExpanded = false;
+  APP.loreSelectedTag = null;
+  APP.loreShowAll = false;
+  APP.attrExpanded = {};
+  APP.cache.similarity = null;
+  APP.cache.lore = null;
+  document.getElementById('searchBar').value = '';
+  hideSuggestions();
+  renderAll();
+}
+
+function navigateBack(index) {
+  if (index < 0 || index >= APP.history.length) return;
+  const key = APP.history[index];
+  APP.history = APP.history.slice(0, index);
+  APP.subject = key;
+  APP.nudgeDismissed = false;
+  APP.nudgeExpanded = false;
+  APP.loreSelectedTag = null;
+  APP.loreShowAll = false;
+  APP.attrExpanded = {};
+  APP.cache.similarity = null;
+  APP.cache.lore = null;
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════
+
+function setupSearch() {
+  const input = document.getElementById('searchBar');
+  const suggestions = document.getElementById('suggestions');
+
+  input.addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    if (q.length < 1) { hideSuggestions(); return; }
+
+    // Search Pokemon names
+    const results = [];
+    for (const key of APP.data.allKeys) {
+      const p = pokemonData[key];
+      if (p.name.toLowerCase().includes(q)) {
+        results.push({ key, name: formatPokemonName(p), num: p.num });
+      }
+      if (results.length >= 12) break;
+    }
+
+    APP.ui.searchResults = results;
+    APP.ui.searchIndex = -1;
+    renderSuggestions();
+  });
+
+  input.addEventListener('keydown', function(e) {
+    const results = APP.ui.searchResults;
+    if (!results.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      APP.ui.searchIndex = Math.min(APP.ui.searchIndex + 1, results.length - 1);
+      renderSuggestions();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      APP.ui.searchIndex = Math.max(APP.ui.searchIndex - 1, -1);
+      renderSuggestions();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (APP.ui.searchIndex >= 0 && results[APP.ui.searchIndex]) {
+        navigateTo(results[APP.ui.searchIndex].key);
+      } else if (results.length > 0) {
+        navigateTo(results[0].key);
+      }
+    } else if (e.key === 'Escape') {
+      hideSuggestions();
+    }
+  });
+
+  input.addEventListener('blur', () => setTimeout(hideSuggestions, 150));
+}
+
+function renderSuggestions() {
+  const ul = document.getElementById('suggestions');
+  const results = APP.ui.searchResults;
+  if (!results.length) { hideSuggestions(); return; }
+
+  ul.innerHTML = '';
+  results.forEach((r, i) => {
+    const li = document.createElement('li');
+    if (i === APP.ui.searchIndex) li.classList.add('selected');
+    li.innerHTML = `<span class="num">#${Math.floor(r.num)}</span>${r.name}`;
+    li.addEventListener('mousedown', e => { e.preventDefault(); navigateTo(r.key); });
+    ul.appendChild(li);
+  });
+  ul.classList.add('visible');
+}
+
+function hideSuggestions() {
+  document.getElementById('suggestions').classList.remove('visible');
+  APP.ui.searchResults = [];
+  APP.ui.searchIndex = -1;
+}
+
+// ═══════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════
+
+function renderAll() {
+  renderBreadcrumb();
+  renderSubjectPanel();
+  renderNudgeBar();
+  renderLensTabs();
+  renderLensContent();
+  renderWeightsPanel();
+  renderHomeView();
+}
+
+function renderHomeView() {
+  document.getElementById('homeView').style.display = APP.subject ? 'none' : 'flex';
+}
+
+function renderBreadcrumb() {
+  const el = document.getElementById('breadcrumb');
+  if (!APP.history.length || !APP.subject) {
+    el.classList.remove('visible');
+    return;
+  }
+  el.classList.add('visible');
+  let html = '';
+  APP.history.forEach((key, i) => {
+    const p = pokemonData[key];
+    if (p) {
+      html += `<span class="breadcrumb-link" data-action="back" data-index="${i}">${formatPokemonName(p)}</span>`;
+      html += `<span class="breadcrumb-sep">&#8594;</span>`;
+    }
+  });
+  html += `<span class="breadcrumb-current">${formatPokemonName(pokemonData[APP.subject])}</span>`;
+  el.innerHTML = html;
+}
+
+function renderSubjectPanel() {
+  const panel = document.getElementById('subjectPanel');
+  if (!APP.subject) { panel.classList.remove('visible'); return; }
+  panel.classList.add('visible');
+
+  const p = pokemonData[APP.subject];
+  const shape = typeof p.shape === 'number' ? getShapeName(p.shape) : (p.shape || '?');
+  const abilities = extractAbilities(p.abilities);
+  const eggs = p.eggGroups || [];
+
+  let attrs = '';
+  (p.types || []).forEach(t => {
+    attrs += `<span class="subject-attr type-tag" style="background:${typeColors[t] || '#888'}">${t}</span>`;
+  });
+  attrs += `<span class="subject-attr">${p.color || '?'}</span>`;
+  attrs += `<span class="subject-attr">${shape}</span>`;
+  attrs += `<span class="subject-attr">${p.region || '?'}</span>`;
+  abilities.forEach(a => { attrs += `<span class="subject-attr">${a}</span>`; });
+  eggs.forEach(e => { attrs += `<span class="subject-attr">${e}</span>`; });
+  attrs += `<span class="subject-attr">${p.heightm || '?'}m</span>`;
+  attrs += `<span class="subject-attr">${p.weightkg || '?'}kg</span>`;
+  attrs += `<span class="subject-attr">BST ${bst(p)}</span>`;
+
+  panel.innerHTML = `<div class="subject-card">
+    <div class="subject-img">${getNumStr(p)}</div>
+    <div class="subject-info">
+      <div class="subject-name">${formatPokemonName(p)}</div>
+      <div class="subject-num">#${Math.floor(p.num)} &middot; ${p.species || ''}</div>
+      <div class="subject-attrs">${attrs}</div>
+    </div>
+  </div>`;
+}
+
+function getNumStr(p) {
+  return '#' + Math.floor(p.num);
+}
+
+function renderNudgeBar() {
+  const bar = document.getElementById('nudgeBar');
+  const targets = document.getElementById('nudgeTargets');
+
+  if (!APP.subject || APP.nudgeDismissed) {
+    bar.classList.remove('visible');
+    targets.classList.remove('visible');
+    return;
+  }
+
+  const key = APP.subject;
+  const nudge = NUDGE_CONFIG.pokemon[key];
+
+  // Check group membership
+  let groupNudge = null;
+  for (const [gid, g] of Object.entries(NUDGE_CONFIG.groups)) {
+    if (g.members.includes(key)) {
+      groupNudge = { label: g.label, targets: g.members.filter(m => m !== key) };
+      break;
+    }
+  }
+
+  const active = nudge || groupNudge;
+  if (!active) {
+    bar.classList.remove('visible');
+    targets.classList.remove('visible');
+    return;
+  }
+
+  document.getElementById('nudgeLabel').textContent =
+    `${formatPokemonName(pokemonData[key])} \u2014 ${active.label} \u2192`;
+  bar.classList.add('visible');
+
+  if (APP.nudgeExpanded) {
+    targets.classList.add('visible');
+    let html = `<div class="nudge-targets-header">${active.label}</div><div class="result-grid">`;
+    active.targets.forEach(tk => {
+      const tp = pokemonData[tk];
+      if (tp) html += renderResultCard(tk, tp);
+    });
+    html += '</div>';
+    targets.innerHTML = html;
+  } else {
+    targets.classList.remove('visible');
+  }
+}
+
+function renderLensTabs() {
+  const tabs = document.getElementById('lensTabs');
+  if (!APP.subject) { tabs.classList.remove('visible'); return; }
+  tabs.classList.add('visible');
+
+  tabs.querySelectorAll('.lens-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.lens === APP.lens);
+  });
+}
+
+function renderWeightsPanel() {
+  const panel = document.getElementById('weightsPanel');
+  if (!APP.subject || APP.lens !== 'similarity') {
+    panel.classList.remove('visible');
+    return;
+  }
+  panel.classList.add('visible');
+}
+
+function buildWeightsSliders() {
+  const container = document.getElementById('weightsSliders');
+  const labels = {
+    shape:'Shape', height:'Height', eggGroups:'Egg Groups', color:'Color',
+    type:'Type', abilities:'Abilities', weight:'Weight', baseStats:'Base Stats'
+  };
+  let html = '';
+  for (const [key, label] of Object.entries(labels)) {
+    const val = APP.weights[key];
+    html += `<div class="weight-row">
+      <label>${label}<span id="wv_${key}">${(val * 100).toFixed(0)}</span></label>
+      <input type="range" min="0" max="1" step="0.01" value="${val}" data-weight="${key}">
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════
+// LENS: SIMILARITY
+// ═══════════════════════════════════════════════
+
+function renderSimilarityLens() {
+  if (!APP.cache.similarity) {
+    const grouper = new PokemonSimilarityGrouper(APP.weights);
+    APP.cache.similarity = grouper.groupBySimilarity(pokemonData, APP.subject, 15, 0.3);
+  }
+
+  const results = APP.cache.similarity;
+  if (!results.length) return '<div class="empty-msg">No similar Pokemon found.</div>';
+
+  let html = '<div class="result-section"><div class="result-section-header">Most Similar <span class="count">' + results.length + '</span></div>';
+  html += '<div class="result-grid">';
+  results.forEach(r => {
+    // Find top 3 dimensions
+    const dims = Object.entries(r.breakdown)
+      .filter(([, v]) => v > 0)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([k]) => k);
+    const scoreColor = r.similarity >= 0.7 ? 'var(--score-good)' : r.similarity >= 0.5 ? 'var(--score-mid)' : 'var(--score-low)';
+
+    html += `<div class="result-card" data-action="navigate" data-key="${r.key}">
+      <div class="result-card-img">${getNumStr(r.pokemon)}</div>
+      <div class="result-card-name">${formatPokemonName(r.pokemon)}</div>
+      <div class="result-card-score" style="color:${scoreColor}">${(r.similarity * 100).toFixed(1)}%</div>
+      <div class="match-dims">${dims.join(', ')}</div>
+    </div>`;
+  });
+  html += '</div></div>';
+  return html;
+}
+
+// ═══════════════════════════════════════════════
+// LENS: LORE
+// ═══════════════════════════════════════════════
+
+function renderLoreLens() {
+  if (!APP.data.classificationsLoaded) {
+    loadClassificationsData(() => renderLensContent());
+    return '<div class="loading-msg">Loading lore data...</div>';
+  }
+
+  const classData = getClassDataForKey(APP.subject);
+  if (!classData || !classData.tags || !classData.tags.length) {
+    return '<div class="empty-msg">No lore data available for this Pokemon.</div>';
+  }
+
+  let html = '';
+
+  // Tag cloud
+  const sortedTags = [...classData.tags].sort((a, b) => (APP.data.tagFrequency[b] || 0) - (APP.data.tagFrequency[a] || 0));
+  html += '<div class="result-section"><div class="result-section-header">Classification Tags <span class="count">' + sortedTags.length + '</span></div>';
+  html += '<div class="lore-tags">';
+  sortedTags.forEach(tag => {
+    const freq = APP.data.tagFrequency[tag] || 0;
+    const isActive = APP.loreSelectedTag === tag;
+    html += `<span class="lore-tag${isActive ? ' active' : ''}" data-action="loretag" data-tag="${escHtml(tag)}">${escHtml(tag)}<span class="tag-count">${freq}</span></span>`;
+  });
+  html += '</div>';
+
+  // If a tag is selected, show Pokemon sharing that tag
+  if (APP.loreSelectedTag && APP.data.tagIndex[APP.loreSelectedTag]) {
+    const tagPokemon = APP.data.tagIndex[APP.loreSelectedTag]
+      .map(specId => {
+        // find key for this specId
+        for (const k of APP.data.allKeys) {
+          if (slugify(pokemonData[k].name) === slugify(specId) || k === specId) return k;
+        }
+        return null;
+      })
+      .filter(k => k && k !== APP.subject && pokemonData[k]);
+
+    html += `<div class="tag-expansion"><div class="result-section-header">"${escHtml(APP.loreSelectedTag)}" <span class="count">${tagPokemon.length}</span></div>`;
+    html += '<div class="result-grid">';
+    tagPokemon.slice(0, 30).forEach(k => {
+      html += renderResultCard(k, pokemonData[k]);
+    });
+    html += '</div>';
+    if (tagPokemon.length > 30) html += `<div class="empty-msg">${tagPokemon.length - 30} more...</div>`;
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Phrases
+  const phrases = classData.phrases || [];
+  const showCount = APP.loreShowAll ? phrases.length : Math.min(3, phrases.length);
+  html += '<div class="result-section"><div class="result-section-header">Pokedex Entry Phrases <span class="count">' + phrases.length + '</span></div>';
+  phrases.slice(0, showCount).forEach(ph => {
+    const phTags = (ph.classifications || []).join(', ');
+    html += `<div class="lore-phrase">${escHtml(ph.text)}<div class="phrase-tags">${escHtml(phTags)}</div></div>`;
+  });
+  if (phrases.length > 3 && !APP.loreShowAll) {
+    html += `<span class="lore-show-more" data-action="loremore">Show all ${phrases.length} phrases</span>`;
+  }
+  html += '</div>';
+
+  // Similar by lore (Jaccard)
+  if (!APP.cache.lore) {
+    APP.cache.lore = computeLoreSimilarity(APP.subject);
+  }
+  if (APP.cache.lore.length) {
+    html += '<div class="result-section"><div class="result-section-header">Similar by Lore <span class="count">' + APP.cache.lore.length + '</span></div>';
+    html += '<div class="result-grid">';
+    APP.cache.lore.forEach(r => {
+      html += `<div class="result-card" data-action="navigate" data-key="${r.key}">
+        <div class="result-card-img">${getNumStr(pokemonData[r.key])}</div>
+        <div class="result-card-name">${formatPokemonName(pokemonData[r.key])}</div>
+        <div class="result-card-sub">${r.shared} shared tags</div>
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+
+  return html;
+}
+
+function computeLoreSimilarity(subjectKey) {
+  const subjectData = getClassDataForKey(subjectKey);
+  if (!subjectData || !subjectData.tags.length) return [];
+
+  const subjectTags = new Set(subjectData.tags);
+  const results = [];
+
+  for (const specId in APP.data.classificationsData) {
+    const cd = APP.data.classificationsData[specId];
+    if (!cd.tags || !cd.tags.length) continue;
+    // Find key for this specId
+    let targetKey = null;
+    for (const k of APP.data.allKeys) {
+      if (slugify(pokemonData[k].name) === slugify(specId) || k === specId) { targetKey = k; break; }
+    }
+    if (!targetKey || targetKey === subjectKey) continue;
+
+    const targetTags = new Set(cd.tags);
+    const intersection = [...subjectTags].filter(t => targetTags.has(t)).length;
+    if (intersection === 0) continue;
+    const union = new Set([...subjectTags, ...targetTags]).size;
+    const jaccard = intersection / union;
+    results.push({ key: targetKey, jaccard, shared: intersection });
+  }
+
+  return results.sort((a, b) => b.jaccard - a.jaccard).slice(0, 10);
+}
+
+// ═══════════════════════════════════════════════
+// LENS: ATTRIBUTE
+// ═══════════════════════════════════════════════
+
+function renderAttributeLens() {
+  const p = pokemonData[APP.subject];
+  if (!p) return '';
+
+  let html = '';
+  const sections = [];
+
+  // 1. Same Type Combo
+  const types = p.types || [];
+  if (types.length) {
+    const matches = APP.data.allKeys.filter(k => {
+      if (k === APP.subject) return false;
+      const o = pokemonData[k];
+      if (!o.types || o.types.length !== types.length) return false;
+      return types.every((t, i) => o.types[i] === t);
+    });
+    sections.push({ title: `Same Type Combo (${types.join('/')})`, items: matches, id: 'typecombo' });
+  }
+
+  // 2. Same Shape + Color
+  const shape = typeof p.shape === 'number' ? p.shape : null;
+  const color = p.color;
+  if (shape && color) {
+    const matches = APP.data.allKeys.filter(k => {
+      if (k === APP.subject) return false;
+      const o = pokemonData[k];
+      return o.color === color && o.shape === shape;
+    });
+    sections.push({ title: `Same Shape + Color (${getShapeName(shape)}, ${color})`, items: matches, id: 'shapecolor' });
+  }
+
+  // 3. Same Egg Groups
+  const eggs = p.eggGroups || [];
+  if (eggs.length) {
+    const matches = APP.data.allKeys.filter(k => {
+      if (k === APP.subject) return false;
+      const o = pokemonData[k];
+      if (!o.eggGroups) return false;
+      return eggs.some(e => o.eggGroups.includes(e));
+    }).sort((a, b) => {
+      const oa = pokemonData[a], ob = pokemonData[b];
+      const sa = eggs.filter(e => (oa.eggGroups || []).includes(e)).length;
+      const sb = eggs.filter(e => (ob.eggGroups || []).includes(e)).length;
+      return sb - sa;
+    });
+    sections.push({ title: `Same Egg Groups (${eggs.join(', ')})`, items: matches, id: 'egggroups' });
+  }
+
+  // 4. Same Abilities
+  const abilities = extractAbilities(p.abilities);
+  if (abilities.length) {
+    const matches = APP.data.allKeys.filter(k => {
+      if (k === APP.subject) return false;
+      const o = pokemonData[k];
+      const oa = extractAbilities(o.abilities);
+      return abilities.some(a => oa.includes(a));
+    });
+    sections.push({ title: `Same Abilities (${abilities.slice(0, 2).join(', ')})`, items: matches, id: 'abilities' });
+  }
+
+  // 5. Same Region
+  if (p.region) {
+    const matches = APP.data.allKeys.filter(k => {
+      if (k === APP.subject) return false;
+      return pokemonData[k].region === p.region;
+    });
+    sections.push({ title: `Same Region (${p.region})`, items: matches, id: 'region' });
+  }
+
+  // 6. Stat Twins
+  const subjectBst = bst(p);
+  if (subjectBst > 0 && p.baseStats) {
+    const grouper = new PokemonSimilarityGrouper({ shape:0, height:0, eggGroups:0, color:0, type:0, abilities:0, weight:0, baseStats:1 });
+    const matches = APP.data.allKeys.filter(k => {
+      if (k === APP.subject) return false;
+      const o = pokemonData[k];
+      const oBst = bst(o);
+      if (!oBst) return false;
+      if (Math.abs(oBst - subjectBst) / subjectBst > 0.1) return false;
+      const result = grouper.calculateSimilarity(p, o);
+      return result && result.similarities.baseStats >= 0.95;
+    });
+    sections.push({ title: `Stat Twins (BST ~${subjectBst})`, items: matches, id: 'stattwins' });
+  }
+
+  sections.forEach(sec => {
+    const expanded = APP.attrExpanded[sec.id];
+    const showCount = expanded ? sec.items.length : Math.min(12, sec.items.length);
+    html += `<div class="result-section">
+      <div class="result-section-header">${sec.title} <span class="count">${sec.items.length}</span>`;
+    if (sec.items.length > 12) {
+      html += `<span class="result-section-toggle" data-action="attrexpand" data-id="${sec.id}">${expanded ? 'Show less' : 'Show all'}</span>`;
+    }
+    html += `</div><div class="result-grid">`;
+    sec.items.slice(0, showCount).forEach(k => {
+      html += renderResultCard(k, pokemonData[k]);
+    });
+    html += '</div></div>';
+  });
+
+  return html || '<div class="empty-msg">No attribute matches found.</div>';
+}
+
+// ═══════════════════════════════════════════════
+// LENS: EVOLUTION
+// ═══════════════════════════════════════════════
+
+function renderEvolutionLens() {
+  const tree = buildEvoTree(APP.subject);
+  if (!tree.stages || !tree.stages.length) return '<div class="empty-msg">No evolution data available.</div>';
+
+  let html = '<div class="result-section"><div class="result-section-header">Evolution Chain</div>';
+  html += '<div class="evo-chain">';
+
+  tree.stages.forEach((stage, si) => {
+    if (si > 0) html += '<span class="evo-arrow">&#8594;</span>';
+    stage.forEach((key, ki) => {
+      if (ki > 0) html += '<span class="evo-arrow">/</span>';
+      const p = pokemonData[key];
+      const isCurrent = key === APP.subject;
+      html += `<div class="evo-stage${isCurrent ? ' current' : ''}" data-action="navigate" data-key="${key}">
+        <div class="evo-stage-img">${getNumStr(p)}</div>
+        <div class="evo-stage-name">${formatPokemonName(p)}</div>
+      </div>`;
+    });
+  });
+  html += '</div></div>';
+
+  // Formes
+  if (tree.formes && tree.formes.length) {
+    html += '<div class="result-section"><div class="result-section-header">Alternate Forms <span class="count">' + tree.formes.length + '</span></div>';
+    html += '<div class="result-grid">';
+    tree.formes.forEach(k => {
+      const fp = pokemonData[k];
+      if (fp) html += renderResultCard(k, fp, k === APP.subject);
+    });
+    html += '</div></div>';
+  }
+
+  return html;
+}
+
+// ═══════════════════════════════════════════════
+// SHARED RENDER HELPERS
+// ═══════════════════════════════════════════════
+
+function renderResultCard(key, p, highlighted) {
+  return `<div class="result-card${highlighted ? ' highlighted' : ''}" data-action="navigate" data-key="${key}">
+    <div class="result-card-img">${getNumStr(p)}</div>
+    <div class="result-card-name">${formatPokemonName(p)}</div>
+    <div class="result-card-sub">${(p.types || []).join('/')}</div>
+  </div>`;
+}
+
+function renderLensContent() {
+  const el = document.getElementById('lensContent');
+  if (!APP.subject) { el.innerHTML = ''; return; }
+
+  let html = '';
+  switch (APP.lens) {
+    case 'similarity': html = renderSimilarityLens(); break;
+    case 'lore': html = renderLoreLens(); break;
+    case 'attribute': html = renderAttributeLens(); break;
+    case 'evolution': html = renderEvolutionLens(); break;
+  }
+  el.innerHTML = html;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ═══════════════════════════════════════════════
+// EVENT DELEGATION
+// ═══════════════════════════════════════════════
+
+document.addEventListener('click', function(e) {
+  const target = e.target.closest('[data-action]');
+  if (!target) {
+    // Handle nudge bar click
+    if (e.target.closest('.nudge-bar') && !e.target.closest('.nudge-dismiss')) {
+      APP.nudgeExpanded = !APP.nudgeExpanded;
+      renderNudgeBar();
+      return;
+    }
+    return;
+  }
+
+  const action = target.dataset.action;
+
+  switch (action) {
+    case 'navigate':
+      if (target.dataset.key) navigateTo(target.dataset.key);
+      break;
+    case 'back':
+      navigateBack(parseInt(target.dataset.index));
+      break;
+    case 'loretag': {
+      const tag = target.dataset.tag;
+      APP.loreSelectedTag = APP.loreSelectedTag === tag ? null : tag;
+      renderLensContent();
+      break;
+    }
+    case 'loremore':
+      APP.loreShowAll = true;
+      renderLensContent();
+      break;
+    case 'attrexpand':
+      APP.attrExpanded[target.dataset.id] = !APP.attrExpanded[target.dataset.id];
+      renderLensContent();
+      break;
+  }
+});
+
+// Nudge dismiss
+document.getElementById('nudgeDismiss').addEventListener('click', function(e) {
+  e.stopPropagation();
+  APP.nudgeDismissed = true;
+  renderNudgeBar();
+});
+
+// Lens tabs
+document.getElementById('lensTabs').addEventListener('click', function(e) {
+  const tab = e.target.closest('.lens-tab');
+  if (!tab) return;
+  APP.lens = tab.dataset.lens;
+  APP.loreSelectedTag = null;
+  APP.loreShowAll = false;
+  renderLensTabs();
+  renderLensContent();
+  renderWeightsPanel();
+});
+
+// Weights sliders
+document.getElementById('weightsSliders').addEventListener('input', function(e) {
+  if (e.target.type === 'range' && e.target.dataset.weight) {
+    const key = e.target.dataset.weight;
+    APP.weights[key] = parseFloat(e.target.value);
+    const display = document.getElementById('wv_' + key);
+    if (display) display.textContent = (APP.weights[key] * 100).toFixed(0);
+    APP.cache.similarity = null;
+    renderLensContent();
+  }
+});
+
+// Weights reset
+document.getElementById('weightsReset').addEventListener('click', function() {
+  Object.assign(APP.weights, DEFAULT_WEIGHTS);
+  buildWeightsSliders();
+  APP.cache.similarity = null;
+  renderLensContent();
+});
+
+// Dark mode
+document.getElementById('darkToggle').addEventListener('click', function() {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  this.innerHTML = isDark ? '&#9788;' : '&#9790;';
+  try { localStorage.setItem('ontology-dark', isDark ? '1' : '0'); } catch(e) {}
+});
+
+// Random
+document.getElementById('randomBtn').addEventListener('click', function() {
+  const keys = APP.data.allKeys.filter(k => {
+    const p = pokemonData[k];
+    return Math.floor(p.num) === p.num && !p.baseSpecies;
+  });
+  if (keys.length) navigateTo(keys[Math.floor(Math.random() * keys.length)]);
+});
+
+// ═════════════════════════════���═════════════════
+// INIT
+// ═══════════════════════════════════════════════
+
+function init() {
+  assignRegions();
+  initializeNameKeyMap();
+  APP.data.allKeys = Object.keys(pokemonData).sort((a, b) => pokemonData[a].num - pokemonData[b].num);
+  buildWeightsSliders();
+  setupSearch();
+
+  // Restore dark mode
+  try {
+    if (localStorage.getItem('ontology-dark') === '1') {
+      document.body.classList.add('dark');
+      document.getElementById('darkToggle').innerHTML = '&#9788;';
+    }
+  } catch(e) {}
+
+  renderAll();
+}
+
+init();
+</script>
+</body>
+</html>

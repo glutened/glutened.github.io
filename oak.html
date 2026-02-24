@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokemon Taxonomy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;border:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    :root{
+      --bg:#f5f5f5;--bg-alt:#fff;--fg:#222;--fg-muted:#555;--fg-faint:#999;
+      --border:#ccc;--border-strong:#666;--hover:#eee;--hover-strong:#ddd;
+      --filter-active:#c00;--filter-active-light:rgba(204,0,0,0.06);
+      --search-even:#ececec;--search-sel:#d0d0d0;--search-border:#e0e0e0;
+      --tag-bg:#222;--tag-fg:#fff;--focus-ring:rgba(0,0,0,0.1);
+      --shadow:0 2px 8px rgba(0,0,0,0.06);--modal-bg:rgba(0,0,0,0.5);
+    }
+    body.dark{
+      --bg:#1a1a1a;--bg-alt:#242424;--fg:#e0e0e0;--fg-muted:#aaa;--fg-faint:#777;
+      --border:#444;--border-strong:#888;--hover:#2a2a2a;--hover-strong:#333;
+      --filter-active:#f55;--filter-active-light:rgba(255,85,85,0.08);
+      --search-even:#222;--search-sel:#444;--search-border:#333;
+      --tag-bg:#e0e0e0;--tag-fg:#1a1a1a;--focus-ring:rgba(255,255,255,0.1);
+      --shadow:0 2px 8px rgba(0,0,0,0.3);--modal-bg:rgba(0,0,0,0.7);
+    }
+    body{padding:0;line-height:1.4;padding-bottom:60px;overflow-x:hidden;max-width:100vw;background:var(--bg);color:var(--fg);transition:background 0.2s,color 0.2s}
+    .hidden{display:none}
+    h3{display:block;margin:4px 0}
+    .pokemon-container{display:block}
+
+    /* Buttons - bigger touch targets */
+    button,.filter-chip{
+      display:inline-block;padding:6px 10px;margin:0 4px 6px 0;
+      border:1px solid var(--border);background:var(--bg-alt);color:var(--fg);
+      cursor:pointer;font-size:13px;white-space:nowrap;font-family:inherit;
+      min-height:32px;line-height:1.3;transition:background 0.15s,color 0.15s,border-color 0.15s;
+    }
+    button:hover,.filter-chip:hover{background:var(--hover)}
+    .selected{font-weight:bold;color:var(--filter-active);border-color:var(--filter-active)}
+    .active-filter-chip{display:inline;margin-right:4px;font-size:13px;color:var(--filter-active);cursor:pointer}
+    .active-filter-chip .remove{color:var(--filter-active)}
+    .filter-separator{color:var(--fg-muted)}
+    .disabled-sort{color:var(--fg-faint)}
+
+    /* Pokemon Card */
+    .pokemon-card{display:block;border-top:1px solid var(--border);padding:6px 0;margin-bottom:2px}
+    .pokemon-card h3{display:inline}
+    .pokemon-card .card-details,.pokemon-abilities,.pokemon-moves{display:block}
+    .pokemon-stats{display:block}
+    .pokemon-stats.hidden{display:none}
+    .empty-state{color:var(--fg-muted);font-style:italic;padding:24px 12px;text-align:center}
+    .empty-state .hint{font-size:0.9em;color:var(--fg-faint);margin-top:6px}
+    .pokemon-card .clickable{text-decoration:underline;cursor:pointer}
+    .quick-clear{color:var(--filter-active);font-weight:bold;cursor:pointer;margin-left:2px}
+    img,.attribute-icon{display:none !important}
+    .pokemon-sprite{display:inline-block !important;width:40px;height:40px;vertical-align:middle;margin-right:5px}
+    .selected-result{color:var(--filter-active)}
+
+    /* Grid View */
+    .grid-view .pokemon-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:5px;padding:5px}
+    .grid-view .pokemon-card{border:1px solid var(--border);padding:2px;text-align:center;cursor:pointer;background:var(--bg-alt);border-top:1px solid var(--border)}
+    .grid-view .pokemon-card img{display:block !important;width:100%;height:auto;max-width:56px;margin:0 auto;image-rendering:pixelated;image-rendering:-moz-crisp-edges;image-rendering:crisp-edges}
+    .grid-view .pokemon-card h3,.grid-view .pokemon-card .card-details,.grid-view .pokemon-card .pokemon-abilities,.grid-view .pokemon-card .pokemon-stats,.grid-view .pokemon-card .pokemon-moves{display:none}
+    .grid-view .pokemon-card.expanded{grid-column:1/-1;text-align:left;padding:10px}
+    .grid-view .pokemon-card.expanded h3,.grid-view .pokemon-card.expanded .card-details,.grid-view .pokemon-card.expanded .pokemon-abilities,.grid-view .pokemon-card.expanded .pokemon-classifications{display:block}
+    .grid-view .pokemon-card.expanded .pokemon-moves{display:block}
+    .grid-view .pokemon-card.expanded .pokemon-stats.hidden{display:none}
+    .grid-view .pokemon-card.expanded .pokemon-stats:not(.hidden){display:block}
+    .grid-view .pokemon-card.expanded img{float:left;margin-right:10px;max-width:96px;image-rendering:pixelated;image-rendering:-moz-crisp-edges;image-rendering:crisp-edges}
+    /* Taxonomy hierarchy (used in classification overlay drill-down) */
+    .tax-category-header{
+      cursor:pointer;padding:5px 8px;margin:1px 0;
+      font-size:13px;font-weight:700;text-transform:uppercase;
+      background:var(--hover-strong);color:var(--fg);user-select:none;
+    }
+    .tax-category-header:hover{background:var(--border)}
+    .tax-subcategory-header{
+      cursor:pointer;padding:3px 8px 3px 16px;margin:0;
+      font-size:12px;font-weight:600;
+      background:var(--hover);color:var(--fg);user-select:none;
+    }
+    .tax-subcategory-header:hover{background:var(--hover-strong)}
+
+    /* Search */
+    .search-section{position:sticky;top:0;z-index:100;background:var(--bg);padding:6px 8px 4px;margin:0}
+    #searchBar{
+      width:100%;padding:12px 14px;font-size:1em;
+      border:2px solid var(--border);background:var(--bg-alt);color:var(--fg);
+      transition:box-shadow 0.2s,border-color 0.2s;font-family:inherit;
+    }
+    #searchBar:focus{outline:none;box-shadow:0 0 0 3px var(--focus-ring);border-color:var(--border-strong)}
+    #searchBar::placeholder{color:var(--fg-faint)}
+    #suggestions{
+      position:absolute;top:100%;left:0;right:0;
+      background:var(--bg-alt);border:2px solid var(--border);border-top:none;
+      z-index:10;max-height:320px;overflow-y:auto;padding:0;list-style:none;margin-top:0;display:none;
+    }
+    #suggestions.visible{display:block}
+    #suggestions li{
+      display:flex;align-items:center;gap:8px;padding:4px 8px;
+      cursor:pointer;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      border-bottom:1px solid var(--search-border);transition:background 0.05s;
+    }
+    #suggestions li:last-child{border-bottom:none}
+    #suggestions li:nth-child(even){background:var(--search-even)}
+    #suggestions li:hover,#suggestions li.selected{background:var(--hover-strong)}
+    #suggestions li img{width:40px;height:40px;flex-shrink:0;display:block !important}
+    #suggestions li .suggestion-text{overflow:hidden;text-overflow:ellipsis}
+
+    /* Moveset styles */
+    .move-item{display:inline;margin-right:2px}
+    .learn-method{font-size:0.75em;color:var(--fg-faint)}
+    .loading-indicator{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:10px;border-radius:4px;z-index:9999}
+    #copyright{background:var(--bg);border-top:1px solid var(--border);padding:3px;font-size:9px;text-align:center;color:var(--fg-faint)}
+    .pokemon-container{padding-bottom:60px;overflow-x:hidden;word-wrap:break-word}
+    .pokemon-moves{overflow-x:hidden;word-wrap:break-word;max-width:100%}
+
+    /* Top bar with settings + dark toggle */
+    .top-bar{position:fixed;top:5px;right:5px;z-index:200;display:flex;gap:4px}
+    .top-bar button{
+      font-size:18px;cursor:pointer;background:var(--bg-alt);
+      border:1px solid var(--border);padding:5px 10px;color:var(--fg);min-height:36px;
+    }
+    .top-bar button:hover{background:var(--hover)}
+
+    /* Settings Modal */
+    #settingsModal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--modal-bg);z-index:300;overflow-y:auto}
+    #settingsContent{background:var(--bg-alt);margin:20px auto;padding:20px;max-width:500px;border:2px solid var(--border);max-height:80vh;overflow-y:auto;color:var(--fg)}
+    .settings-section{margin-bottom:15px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+    .settings-section h4{margin-bottom:8px;font-size:14px;font-weight:600}
+    .settings-section label{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px;cursor:pointer}
+    .settings-section label input[type=checkbox]{width:18px;height:18px;cursor:pointer}
+    .settings-section input[type=range]{flex:1;max-width:200px;cursor:pointer}
+    .settings-section .font-size-display{font-size:13px;font-family:monospace;min-width:36px}
+    #closeSettings{float:right;font-size:20px;cursor:pointer;font-weight:bold;color:var(--fg)}
+
+    /* Toolbar: filter icon left, sort buttons right */
+    #toolbar{display:flex;align-items:flex-start;gap:8px;padding:4px 8px;position:sticky;top:48px;z-index:99;background:var(--bg);transition:transform 0.3s,opacity 0.3s}
+    #toolbar.hidden-scroll{transform:translateY(-100%);opacity:0;pointer-events:none}
+    #toolbarLeft{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+    #toolbarLeft button{min-width:40px;min-height:36px;font-size:18px;padding:4px 8px}
+    #toolbarRight{display:flex;gap:4px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:wrap}
+    #toolbarRight::-webkit-scrollbar{display:none}
+    #toolbarRight button{flex-shrink:0}
+
+    /* Filter Overlay */
+    #filterOverlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:250;flex-direction:column}
+    #filterOverlay.visible{display:flex}
+    #filterOverlayHeader{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid var(--border);gap:10px}
+    #filterOverlayHeader h3{margin:0;font-size:16px}
+    #filterOverlayBody{display:flex;flex:1;overflow:hidden}
+    #filterCategoryList{display:flex;flex-direction:column;width:40%;max-width:160px;overflow-y:auto;border-right:1px solid var(--border);background:var(--bg-alt)}
+    .filter-category-btn{text-align:left;padding:12px 10px;border:none;border-bottom:1px solid var(--border);background:transparent;font-size:13px;font-weight:600;color:var(--fg);cursor:pointer;font-family:inherit;position:relative}
+    .filter-category-btn:hover{background:var(--hover)}
+    .filter-category-btn.active{background:var(--hover-strong);color:var(--filter-active);border-left:3px solid var(--filter-active)}
+    .filter-category-btn .cat-badge{font-size:10px;background:var(--filter-active);color:#fff;border-radius:8px;padding:1px 5px;margin-left:4px}
+    #filterOptionsPanel{flex:1;overflow-y:auto;padding:8px}
+    #filterOptionsPanel .filter-chip{margin:3px}
+    #filterClassDrill{flex:1;overflow-y:auto;padding:8px;display:none;border-left:1px solid var(--border)}
+    #filterClassDrill.visible{display:block}
+    #filterOverlayFooter{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-top:1px solid var(--border);background:var(--bg-alt)}
+    #filterShowResults{font-weight:bold;font-size:14px;padding:10px 20px;background:var(--filter-active);color:#fff;border:none;cursor:pointer;font-family:inherit}
+    #filterLiveCount{font-size:13px;color:var(--fg-muted)}
+
+    /* Summary Panel - fixed bottom */
+    #summaryPanel{position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--bg-alt);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,0.1);transition:transform 0.3s}
+    #summaryPanel.hidden-no-filters{transform:translateY(100%)}
+    #summaryCollapsed{display:flex;align-items:center;padding:6px 8px;min-height:36px;gap:6px;cursor:pointer}
+    #summaryFilterTags{display:flex;gap:4px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap}
+    #summaryFilterTags::-webkit-scrollbar{display:none}
+    .summary-filter-chip{flex-shrink:0;display:inline-flex;align-items:center;gap:3px;padding:3px 8px;background:var(--filter-active-light);border:1px solid var(--filter-active);color:var(--filter-active);font-size:12px;cursor:pointer;font-family:inherit}
+    .summary-filter-chip:hover{background:var(--filter-active);color:#fff}
+    #summaryExpandBtn{flex-shrink:0;min-width:32px;min-height:28px;font-size:14px;transition:transform 0.2s;background:var(--bg-alt);border:1px solid var(--border);cursor:pointer;color:var(--fg);font-family:inherit}
+    #summaryExpanded{display:none;max-height:25vh;overflow-y:auto;padding:8px 12px;border-top:1px solid var(--border)}
+    #summaryPanel.expanded #summaryExpanded{display:block}
+    #summaryPanel.expanded #summaryExpandBtn{transform:rotate(180deg)}
+    #summaryExpandedHeader{margin-bottom:6px;font-size:13px;font-weight:600}
+    #summaryExpandedHeader button{font-size:12px;padding:2px 6px;margin:0 2px;min-height:24px}
+  </style>
+</head>
+<body>
+    <div class="top-bar">
+        <button id="darkToggle" title="Toggle dark mode">&#9790;</button>
+        <button id="settingsIcon" title="Settings">&#9881;</button>
+    </div>
+
+    <div id="settingsModal">
+        <div id="settingsContent">
+            <span id="closeSettings">&times;</span>
+            <h3>Settings</h3>
+
+            <div class="settings-section">
+                <h4>Font Size</h4>
+                <label>
+                    <input type="range" id="fontSizeSlider" min="8" max="24" value="12">
+                    <span class="font-size-display" id="fontSizeDisplay">12px</span>
+                </label>
+            </div>
+
+            <div class="settings-section">
+                <h4>Visible Attributes</h4>
+                <label><input type="checkbox" id="showNumber" checked> Number</label>
+                <label><input type="checkbox" id="showName" checked> Name</label>
+                <label><input type="checkbox" id="showSpecies" checked> Species</label>
+                <label><input type="checkbox" id="showImage"> Image</label>
+                <label><input type="checkbox" id="showTypes" checked> Types</label>
+                <label><input type="checkbox" id="showRegion" checked> Region</label>
+                <label><input type="checkbox" id="showColor" checked> Color</label>
+                <label><input type="checkbox" id="showShape" checked> Shape</label>
+                <label><input type="checkbox" id="showEggGroups" checked> Egg Groups</label>
+                <label><input type="checkbox" id="showAbilities" checked> Abilities</label>
+                <label><input type="checkbox" id="showStats"> Base Stats</label>
+                <label><input type="checkbox" id="showGridView"> Grid View (Render Images)</label>
+            </div>
+
+            <div class="settings-section">
+                <h4>Summary Panel</h4>
+                <label><input type="checkbox" id="showStatsCount" checked> Show Count</label>
+                <label><input type="checkbox" id="showStatsPercent" checked> Show Percentage</label>
+            </div>
+
+            <button onclick="applySettings()">Apply Settings</button>
+            <button onclick="closeSettings()">Close</button>
+        </div>
+    </div>
+
+    <div class="search-section">
+        <input type="text" id="searchBar" placeholder="Search (Name, Num, Type, Egg, Ability, Species, Move)" autocomplete="off">
+        <ul id="suggestions"></ul>
+    </div>
+
+    <div id="toolbar">
+      <div id="toolbarLeft">
+        <button id="filterIconBtn" title="Open filters">&#9776;</button>
+        <button id="clearFiltersBtn" onclick="clearAllFilters()" title="Clear all filters">&times;</button>
+      </div>
+      <div id="toolbarRight">
+        <button id="moveLevelSortButton" data-sort="movelevel" onclick="handleSort('movelevel')" style="display:none;">Move Level</button>
+        <button data-sort="name" onclick="handleSort('name')">Name</button>
+        <button data-sort="number" onclick="handleSort('number')">Number</button>
+        <button data-sort="type" onclick="handleSort('type')">Type</button>
+        <button data-sort="color" onclick="handleSort('color')">Color</button>
+        <button data-sort="shape" onclick="handleSort('shape')">Shape</button>
+        <button data-sort="height" onclick="handleSort('height')">Size</button>
+        <button id="loreAlphaSortButton" onclick="toggleLoreAlphaSort()" style="display:none;">Lore A-Z</button>
+      </div>
+    </div>
+
+    <div id="filterOverlay">
+      <div id="filterOverlayHeader">
+        <button id="filterOverlayClose" style="font-size:20px;background:none;cursor:pointer;color:var(--fg);min-height:32px;padding:4px 8px;">&times;</button>
+        <h3>Filters</h3>
+      </div>
+      <div id="filterOverlayBody">
+        <div id="filterCategoryList">
+          <button class="filter-category-btn" data-target="fo-types">Types</button>
+          <button class="filter-category-btn" data-target="fo-regions">Regions</button>
+          <button class="filter-category-btn" data-target="fo-colors">Colors</button>
+          <button class="filter-category-btn" data-target="fo-shapes">Shapes</button>
+          <button class="filter-category-btn" data-target="fo-eggGroups">Egg Groups</button>
+          <button class="filter-category-btn" data-target="fo-variants">Include Forms</button>
+          <button class="filter-category-btn" data-target="fo-moves" id="movesOverlayBtn">Moves</button>
+          <button class="filter-category-btn" data-target="fo-classifications" id="classificationsOverlayBtn">Classifications</button>
+        </div>
+        <div id="filterOptionsPanel"></div>
+        <div id="filterClassDrill"></div>
+      </div>
+      <div id="filterOverlayFooter">
+        <span id="filterLiveCount">0 results</span>
+        <button id="filterShowResults" onclick="closeFilterOverlay()">Show (0) results</button>
+      </div>
+    </div>
+
+  <div class="pokemon-container" id="pokemonContainer">
+    <div class="empty-state">No filters active<div class="hint">Select a filter, or search and pick a Pokemon to see results.</div></div>
+  </div>
+
+  <script src="pokemon-data.js"></script>
+  <script>
+
+// ═══════════════════════════════════════
+// GLOBALS & CONSTANTS
+// ═══════════════════════════════════════
+
+let learnsetLoaded = false;
+let pokemonMovesExpanded = {};
+let classificationsLoaded = false;
+let classificationsData = {};
+let allClassificationTags = [];
+let activeClassificationFilters = [];
+let classificationsAndMode = true;
+let pokemonLoreExpanded = {};
+let pokemonLoreAllExpanded = {};
+
+const CLASSIFICATION_TAXONOMY = [
+  { name: "BODY", subcategories: [
+    { name: "Body Part", tags: ["Head","Arm","Leg","Tail","Wing","Claw","Horn","Eye","Mouth","Torso","Tentacle","Fin","Antenna","Beak","Teeth"] },
+    { name: "Covering", tags: ["Skin","Fur","Feathers","Carapace","Spike","Gaseous","Smooth","Rough","Slimy","Spiky","Metallic","Scaly","Fluffy","Ethereal"] },
+    { name: "Size", tags: ["Miniature","Gigantic"] },
+    { name: "Color", tags: ["White","Black","Red","Orange","Yellow","Green","Blue","Purple","Pink","Brown","Gray"] },
+    { name: "Senses", tags: ["Taste","Eyesight","Hearing","Scotopic","Echolocation","Olfaction","Fragrant","Stinky"] },
+    { name: "Biology", tags: ["Breathing","Thermoregulation"] }
+  ]},
+  { name: "POWERS & ABILITIES", subcategories: [
+    { name: "Elements", tags: ["Flame","Water","Electric","Earth","Air","Luminosity","Darkness","Solar","Lunar","Magnetism"] },
+    { name: "Movement", tags: ["Run","Jump","Hop","Climb","Swim","Fly","Glide","Levitate","Teleport","Crawl","Roll","Dive","Float","Burrowing"] },
+    { name: "Attack", tags: ["Venom","Curses","Scratches","Vibration"] },
+    { name: "Defense", tags: ["Camouflage","Invisibility","Armor","Regeneration","Antitoxin","Injured"] },
+    { name: "Status Effects", tags: ["Paralysis","Confusion"] },
+    { name: "Mind & Psychic", tags: ["Telepathy","Illusions","Precognition","Soothing","Beauty","Dreaming","Longevity","Mediumship"] },
+    { name: "Transformation", tags: ["Evolution","Growth","Metamorphosis","Shapeshifting"] }
+  ]},
+  { name: "NATURE & HABITAT", subcategories: [
+    { name: "Land", tags: ["Forests","Jungles","Meadows","Plains","Mountain","Desert","Tundra","Urban","Caves","Volcano","Ruins"] },
+    { name: "Water", tags: ["Lakes","Rivers","Wetlands","Ocean","Beach","Seabed"] },
+    { name: "Sky & Space", tags: ["Sky","Cosmos"] },
+    { name: "Weather", tags: ["Sunny","Rain","Snow","Hail","Fog","Blizzard","Wind","Thunderstorm"] },
+    { name: "Climate", tags: ["Arid","Humid","Heat","Frozen"] },
+    { name: "Disasters", tags: ["Earthquakes","Floods","Wildfires","Terraforming"] },
+    { name: "Ecology", tags: ["Symbiosis","Endangered","Extinct","Seasonality"] }
+  ]},
+  { name: "BEHAVIOR", subcategories: [
+    { name: "Social", tags: ["Solitary","Colony","Herd"] },
+    { name: "Temperament", tags: ["Peaceful","Territorial","Shy","Proud","Angry","Loyal","Brave","Cowardly","Mischievous"] },
+    { name: "Intelligence", tags: ["Cunning","Intelligence"] },
+    { name: "Emotion", tags: ["Joyful","Grieving"] },
+    { name: "Activity", tags: ["Nocturnal","Hibernation","Migration","Sleep","Hibernate","Spinning","Flee","Adapt"] },
+    { name: "Communication", tags: ["Gestures","Sing","Roar","Chirp","Hiss","Buzz","Clang","Squeak","Scream","Moan","Silence"] },
+    { name: "Reproduction", tags: ["Nesting","Nurturing","Egg","Birth","Child","Adult","Death","Gender"] },
+    { name: "Relationships", tags: ["Friendship","Loyalty"] }
+  ]},
+  { name: "CULTURE & STATS", subcategories: [
+    { name: "Mythology", tags: ["Myths","Origin","Worshipped","Prehistoric","Historic","Traditions"] },
+    { name: "Symbolism", tags: ["Luck","Misfortune","Heroism","Royalty","Painting","Dance"] },
+    { name: "Human Use", tags: ["Farming","Transport","Nuisance","Deadly","Coach","Exercise","Domestication","Technology"] },
+    { name: "Speed", tags: ["Slow","mph","knots","Faster than"] },
+    { name: "Strength", tags: ["Strength","Stamina","Reflexes","Stronger than"] },
+    { name: "Comparisons", tags: ["Similar to","As big as","Heavier than","Fahrenheit","Measurement"] }
+  ]}
+];
+let statsTopN = 6;
+let statsShowRarest = false;
+let statsPanelExpanded = false;
+let loreSortAlpha = false;
+
+const pokemonGenerations = {
+  1:{start:1,end:151.999,region:"Kanto"},2:{start:152,end:251.999,region:"Johto"},
+  3:{start:252,end:386.999,region:"Hoenn"},4:{start:387,end:493.999,region:"Sinnoh"},
+  5:{start:494,end:649.999,region:"Unova"},6:{start:650,end:721.999,region:"Kalos"},
+  7:{start:722,end:809.999,region:"Alola"},8:{start:810,end:898.999,region:"Galar"},
+  10:{start:899,end:905.999,region:"Hisui"},9:{start:906,end:1010.999,region:"Paldea"},
+  10.1:{start:1011,end:1019.999,region:"Kitakami"},10.3:{start:1025,end:1025,region:"Kitakami"},
+  9.1:{start:1020,end:1025.099,region:"Paldea"},10.2:{start:1025.1,end:9999,region:"Kitakami"}
+};
+
+const specialForms = {
+  "Alola":"Alola","Galar":"Galar","Hisuian":"Hisui","Hisui":"Hisui",
+  "Paldean":"Paldea","Kitakami":"Kitakami","Bloodmoon":"Kitakami","Mask":"Kitakami","Origin":"Hisui","White-Striped":"Hisui"
+};
+
+const typeColors = {
+  Bug:'#A8B820',Dragon:'#7038F8',Fairy:'#EE99AC',Fire:'#F08030',
+  Ghost:'#705898',Ground:'#E0C068',Normal:'#A8A878',Psychic:'#F85888',
+  Steel:'#B8B8D0',Dark:'#705848',Electric:'#F8D030',Fighting:'#C03028',
+  Flying:'#A890F0',Grass:'#78C850',Ice:'#98D8D8',Poison:'#A040A0',
+  Rock:'#B8A038',Water:'#6890F0'
+};
+
+let nameToKeyMap = {};
+
+function initializeNameKeyMap() {
+    nameToKeyMap = {};
+    const simpleNameKeys = new Set();
+    Object.keys(pokemonData).forEach(key => {
+        const pokemon = pokemonData[key];
+        const nameTrimmed = pokemon.name.trim();
+        nameToKeyMap[key] = key;
+        if (Math.floor(pokemon.num) === pokemon.num && !pokemon.baseSpecies) {
+             nameToKeyMap[nameTrimmed] = key;
+             nameToKeyMap[nameTrimmed.toLowerCase()] = key;
+             simpleNameKeys.add(nameTrimmed);
+        }
+    });
+    Object.keys(pokemonData).forEach(key => {
+        const pokemon = pokemonData[key];
+        const nameTrimmed = pokemon.name.trim();
+        if (!simpleNameKeys.has(nameTrimmed)) {
+            nameToKeyMap[nameTrimmed] = key;
+            nameToKeyMap[nameTrimmed.toLowerCase()] = key;
+        }
+        if (pokemon.baseSpecies) {
+            const baseNameTrimmed = pokemon.baseSpecies.trim();
+            nameToKeyMap[baseNameTrimmed] = nameToKeyMap[baseNameTrimmed] || key;
+            nameToKeyMap[baseNameTrimmed.toLowerCase()] = nameToKeyMap[baseNameTrimmed.toLowerCase()] || key;
+        }
+        if (pokemon.forme) {
+            const baseNameToUse = pokemon.baseSpecies ? pokemon.baseSpecies.trim() : nameTrimmed;
+            const formeLinkName = pokemon.forme.replace(/ian$/, '').trim();
+            nameToKeyMap[`${baseNameToUse}-${formeLinkName}`] = key;
+            nameToKeyMap[`${baseNameToUse}-${formeLinkName}`.toLowerCase()] = key;
+            nameToKeyMap[`${baseNameToUse}-${pokemon.forme.trim()}`] = key;
+            nameToKeyMap[`${baseNameToUse}-${pokemon.forme.trim()}`.toLowerCase()] = key;
+        }
+    });
+}
+
+function getRegion(num) {
+  for (const gen in pokemonGenerations) {
+    const { start, end, region } = pokemonGenerations[gen];
+    if (num >= start && num <= end) return region;
+  }
+  return "Unknown";
+}
+
+function getSpecialRegion(name) {
+  for (const key in specialForms) { if (name.includes(key)) return specialForms[key]; }
+  return null;
+}
+
+function assignRegions(pokemonData) {
+  for (const key in pokemonData) {
+    const pokemon = pokemonData[key];
+    pokemon.region = getSpecialRegion(pokemon.name) || getRegion(pokemon.num);
+  }
+}
+
+function extractAbilities(abilitiesObj) {
+  if (!abilitiesObj) return [];
+  if (Array.isArray(abilitiesObj)) return abilitiesObj;
+  const abilities = [];
+  for (const key in abilitiesObj) abilities.push(abilitiesObj[key]);
+  return abilities;
+}
+
+function getShapeName(shapeNum) {
+  const shapeNames = {1:"Round",2:"Serpent",3:"Fins",4:"Arms",5:"Upright",6:"Tailed",7:"Legs",8:"4-Legs",9:"Wings",10:"Tentacle",11:"Multi",12:"Bipedal",13:"4-Wings",14:"Crawling"};
+  return shapeNames[shapeNum] || `Shape ${shapeNum}`;
+}
+
+const allTypes = ["Bug","Dragon","Fairy","Fire","Ghost","Ground","Normal","Psychic","Steel","Dark","Electric","Fighting","Flying","Grass","Ice","Poison","Rock","Water"];
+const allRegions = ["Kanto","Johto","Hoenn","Sinnoh","Unova","Kalos","Alola","Galar","Hisui","Paldea","Kitakami"];
+
+function getAllColors() {
+  const colors = new Set();
+  Object.values(pokemonData).forEach(p => { if (p.color) colors.add(p.color); });
+  return Array.from(colors).sort();
+}
+function getAllVariantTypes() { return ["Minor","Item","Gmax","Mega","Battle","Natural"]; }
+function getAllShapes() {
+  const shapes = new Set();
+  Object.values(pokemonData).forEach(p => {
+    if (p.shape) { shapes.add(typeof p.shape === 'number' ? getShapeName(p.shape) : p.shape); }
+  });
+  return Array.from(shapes).sort();
+}
+function getAllEggGroups() {
+  const eggGroups = new Set();
+  Object.values(pokemonData).forEach(p => {
+    if (p.eggGroups && Array.isArray(p.eggGroups)) p.eggGroups.forEach(g => eggGroups.add(g));
+  });
+  return Array.from(eggGroups).sort();
+}
+function getAllSpecies() {
+  const species = new Set();
+  Object.values(pokemonData).forEach(p => { if (p.species) species.add(p.species); });
+  return Array.from(species).sort();
+}
+function getAllSpeciesSearchTerms() {
+  const words = new Set();
+  getAllSpecies().forEach(species => {
+    if (species.includes(' ')) words.add(species);
+    species.split(' ').forEach(word => { if (word.length > 2) words.add(word); });
+  });
+  return Array.from(words).sort((a, b) => a.localeCompare(b)).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+}
+function getAllAbilities() {
+  const abilities = new Set();
+  Object.values(pokemonData).forEach(p => { extractAbilities(p.abilities).forEach(a => abilities.add(a)); });
+  return Array.from(abilities).sort();
+}
+function extractMoves(learnset) { return learnset ? Object.keys(learnset) : []; }
+function getAllMoves() {
+  const moves = new Set();
+  if (learnsetLoaded) {
+    Object.values(pokemonData).forEach(p => {
+      if (p.learnset) extractMoves(p.learnset).forEach(m => moves.add(m));
+    });
+  }
+  return Array.from(moves).sort();
+}
+function getGroupingKey(name) {
+  let baseName = name.trim();
+  if (baseName.includes('-')) baseName = baseName.split('-')[0];
+  else if (baseName.includes(' ')) { const parts = baseName.split(' '); baseName = parts[parts.length - 1]; }
+  return baseName.toLowerCase();
+}
+function getPokemonKey(pokemon) {
+  for (const key in pokemonData) { if (pokemonData[key] === pokemon) return key; }
+  return null;
+}
+
+function findFullEvolutionChainKeys(pokemonKey) {
+    const chainKeys = new Set();
+    const queue = [pokemonKey];
+    while (queue.length > 0) {
+        const currentKey = queue.shift();
+        if (chainKeys.has(currentKey)) continue;
+        const pokemon = pokemonData[currentKey];
+        if (!pokemon) continue;
+        chainKeys.add(currentKey);
+        let relativesToProcess = [];
+        if (pokemon.prevo) relativesToProcess.push(pokemon.prevo);
+        if (pokemon.evos) relativesToProcess.push(...pokemon.evos);
+        if (pokemon.prevos) relativesToProcess.push(...pokemon.prevos);
+        relativesToProcess.filter(n => n).forEach(name => {
+            const normalizedName = name.trim();
+            const key = nameToKeyMap[normalizedName] || nameToKeyMap[normalizedName.toLowerCase()];
+            if (key && !chainKeys.has(key)) queue.push(key);
+        });
+        const baseName = (pokemon.baseSpecies || pokemon.name).trim();
+        const basePokemonKey = nameToKeyMap[baseName] || nameToKeyMap[baseName.toLowerCase()];
+        if (basePokemonKey) {
+            if (!chainKeys.has(basePokemonKey)) queue.push(basePokemonKey);
+            const basePokemon = pokemonData[basePokemonKey];
+            if (basePokemon) {
+                (basePokemon.formeOrder || basePokemon.otherFormes || []).filter(k => !chainKeys.has(k) && pokemonData[k]).forEach(k => queue.push(k));
+            }
+            Object.keys(pokemonData).filter(k => {
+                const p = pokemonData[k];
+                return p.baseSpecies && p.baseSpecies.trim() === baseName && !chainKeys.has(k);
+            }).forEach(k => queue.push(k));
+        }
+    }
+    return Array.from(chainKeys);
+}
+
+// ═══════════════════════════════════════
+// FILTER STATE
+// ═══════════════════════════════════════
+
+let activeFilters = { types:[], regions:[], colors:[], shapes:[], abilities:[], eggGroups:[], variantExclude:[], moves:[] };
+let secondaryFilter = { type:null, value:null, displayValue:null, selectedKey:null };
+const filterConstraints = { types:2, regions:null, eggGroups:2, abilities:2, colors:null, shapes:null, variantExclude:6, moves:10 };
+let statsVisible = false;
+let searchableTerms = [];
+let currentSort = { key:'number', direction:1 };
+
+// Settings state - simplified
+let displaySettings = {
+    baseFontSize: 12,
+    gridView: false,
+    show: {
+        number:true, name:true, species:true, image:false,
+        types:true, region:true, color:true, shape:true,
+        eggGroups:true, abilities:true, stats:false
+    },
+    statsShowCount: true,
+    statsShowPercent: true
+};
+
+let expandedCards = new Set();
+let showEggMoves = false;
+let showTMMoves = false;
+let showTutorMoves = false;
+let showEventMoves = false;
+let includeMinor = false;
+let includeItem = false;
+let includeGmax = false;
+let includeMega = false;
+let includeBattle = false;
+let includeNatural = false;
+
+// ═══════════════════════════════════════
+// FILTER FUNCTIONS
+// ═══════════════════════════════════════
+
+function clearSecondaryFilter() {
+    secondaryFilter = { type:null, value:null, displayValue:null, selectedKey:null };
+    const searchBar = document.getElementById('searchBar');
+    if (searchBar) searchBar.value = '';
+    const suggestionsList = document.getElementById('suggestions');
+    if (suggestionsList) { suggestionsList.innerHTML = ''; suggestionsList.classList.remove('visible'); }
+    renderPokemonList();
+    updateActiveFilters();
+    updateSortButtons();
+}
+
+function toggleFilter(filterType, value) {
+    if (secondaryFilter.type) clearSecondaryFilter();
+    if (activeFilters[filterType].includes(value)) {
+        activeFilters[filterType] = activeFilters[filterType].filter(item => item !== value);
+    } else {
+        if (filterConstraints[filterType] !== null && activeFilters[filterType].length >= filterConstraints[filterType]) {
+            activeFilters[filterType].shift();
+        }
+        activeFilters[filterType].push(value);
+    }
+    updateFilterUI(filterType);
+    if (filterOverlayOpen) {
+        computeFilteredCount();
+    } else {
+        renderPokemonList();
+        updateSummaryPanel(window._lastPokemonToDisplay || []);
+    }
+    updateSortButtons();
+    document.getElementById('searchBar').value = '';
+    document.getElementById('suggestions').innerHTML = '';
+    document.getElementById('suggestions').classList.remove('visible');
+    const moveLevelButton = document.getElementById('moveLevelSortButton');
+    if (moveLevelButton) moveLevelButton.style.display = activeFilters.moves.length > 0 ? 'inline-block' : 'none';
+}
+
+function updateFilterUI(filterType) {
+    const selector = filterType === 'types' ? '[data-type]' : filterType === 'regions' ? '[data-region]' : filterType === 'colors' ? '[data-color]' : filterType === 'variantExclude' ? '[data-variant]' : filterType === 'shapes' ? '[data-shape]' : filterType === 'eggGroups' ? '[data-egggroup]' : filterType === 'moves' ? '[data-move]' : '';
+    if (selector) {
+        document.querySelectorAll(`.filter-chip${selector}`).forEach(chip => {
+            const attr = selector.replace(/[\[\]]/g, '');
+            chip.classList.toggle('selected', activeFilters[filterType].includes(chip.getAttribute(attr)));
+        });
+    }
+}
+
+function updateActiveFilters() {
+    // Now handled by updateSummaryPanel - keep as no-op for any remaining callers
+    updateSummaryPanel(window._lastPokemonToDisplay || []);
+}
+
+function updateSummaryPanel(pokemonList) {
+    const panel = document.getElementById('summaryPanel');
+    const tagsContainer = document.getElementById('summaryFilterTags');
+    const statsContent = document.getElementById('summaryStatsContent');
+    const countSpan = document.getElementById('summaryCount');
+    const titleSpan = document.getElementById('summaryTitle');
+    if (!panel || !tagsContainer) return;
+
+    const hasFilters = hasAnyActiveFilter();
+    panel.classList.toggle('hidden-no-filters', !hasFilters);
+    if (!hasFilters) return;
+
+    // Render active filter chips in summary bar
+    tagsContainer.innerHTML = '';
+    const filterTypeMap = { types:'type', regions:'region', colors:'color', shapes:'shape', eggGroups:'egg', abilities:'ability', moves:'move' };
+    if (secondaryFilter.type) {
+        const label = secondaryFilter.type === 'secondary-name' ? 'name' : secondaryFilter.type === 'secondary-num' ? 'num' : 'species';
+        const chip = document.createElement('span');
+        chip.className = 'summary-filter-chip';
+        chip.textContent = label + ': ' + (secondaryFilter.displayValue || secondaryFilter.value) + ' \u00d7';
+        chip.addEventListener('click', (e) => { e.stopPropagation(); clearSecondaryFilter(); });
+        tagsContainer.appendChild(chip);
+    }
+    for (const [filterType, values] of Object.entries(activeFilters)) {
+        if (values.length > 0) {
+            values.forEach(value => {
+                const displayType = filterTypeMap[filterType] || filterType.toLowerCase();
+                const displayValue = filterType === 'moves' ? formatMoveName(value) : value;
+                const chip = document.createElement('span');
+                chip.className = 'summary-filter-chip';
+                chip.textContent = displayType + ': ' + displayValue + ' \u00d7';
+                chip.addEventListener('click', (e) => { e.stopPropagation(); toggleFilter(filterType, value); });
+                tagsContainer.appendChild(chip);
+            });
+        }
+    }
+    if (classificationsLoaded && activeClassificationFilters.length > 0) {
+        activeClassificationFilters.forEach(tag => {
+            const chip = document.createElement('span');
+            chip.className = 'summary-filter-chip';
+            chip.textContent = 'class: ' + tag + ' \u00d7';
+            chip.addEventListener('click', (e) => { e.stopPropagation(); toggleClassificationFilter(tag); });
+            tagsContainer.appendChild(chip);
+        });
+    }
+
+    // Render stats in expanded section
+    if (!pokemonList || pokemonList.length === 0) {
+        if (statsContent) statsContent.innerHTML = '<em>No results</em>';
+        if (countSpan) countSpan.textContent = '0';
+        return;
+    }
+    if (countSpan) countSpan.textContent = pokemonList.length;
+
+    // Build title
+    const titleParts = [];
+    if (activeFilters.types.length > 0) titleParts.push('Type: ' + activeFilters.types.join(', '));
+    if (activeFilters.regions.length > 0) titleParts.push('Region: ' + activeFilters.regions.join(', '));
+    if (activeFilters.colors.length > 0) titleParts.push('Color: ' + activeFilters.colors.join(', '));
+    if (activeFilters.shapes.length > 0) titleParts.push('Shape: ' + activeFilters.shapes.join(', '));
+    if (activeFilters.eggGroups.length > 0) titleParts.push('Egg: ' + activeFilters.eggGroups.join(', '));
+    if (activeFilters.abilities.length > 0) titleParts.push('Ability: ' + activeFilters.abilities.join(', '));
+    if (activeFilters.moves.length > 0) titleParts.push('Move: ' + activeFilters.moves.slice(0,3).join(', ') + (activeFilters.moves.length > 3 ? '...' : ''));
+    if (activeClassificationFilters.length > 0) titleParts.push('Lore: ' + activeClassificationFilters.slice(0,2).join(', ') + (activeClassificationFilters.length > 2 ? '...' : ''));
+    if (secondaryFilter.type) titleParts.push('Search: ' + (secondaryFilter.displayValue || secondaryFilter.value || '?'));
+    if (titleSpan) titleSpan.textContent = titleParts.length > 0 ? titleParts.join(' | ') : 'Summary';
+
+    // Build frequency data
+    const freq = { types:{}, regions:{}, colors:{}, shapes:{}, eggGroups:{}, abilities:{}, moves:{}, classifications:{} };
+    pokemonList.forEach(pokemon => {
+        const key = getPokemonKey(pokemon);
+        (pokemon.types || []).forEach(t => { freq.types[t] = (freq.types[t] || 0) + 1; });
+        if (pokemon.region) freq.regions[pokemon.region] = (freq.regions[pokemon.region] || 0) + 1;
+        if (pokemon.color) freq.colors[pokemon.color] = (freq.colors[pokemon.color] || 0) + 1;
+        const shapeName = typeof pokemon.shape === 'number' ? getShapeName(pokemon.shape) : pokemon.shape;
+        if (shapeName) freq.shapes[shapeName] = (freq.shapes[shapeName] || 0) + 1;
+        (pokemon.eggGroups || []).forEach(g => { freq.eggGroups[g] = (freq.eggGroups[g] || 0) + 1; });
+        extractAbilities(pokemon.abilities).forEach(a => { freq.abilities[a] = (freq.abilities[a] || 0) + 1; });
+        if (learnsetLoaded && pokemon.learnset) {
+            Object.keys(pokemon.learnset).forEach(move => {
+                const learnMethods = pokemon.learnset[move];
+                const hasValidMethod = learnMethods.some(method => {
+                    const mt = method[0];
+                    if (mt === 'L') return true;
+                    if (mt === 'E') return showEggMoves;
+                    if (mt === 'M') return showTMMoves;
+                    if (mt === 'T') return showTutorMoves;
+                    if (mt === 'V' || mt === 'S' || mt === 'D') return showEventMoves;
+                    return true;
+                });
+                if (hasValidMethod) freq.moves[move] = (freq.moves[move] || 0) + 1;
+            });
+        }
+        if (classificationsLoaded && key) {
+            const speciesId = _classIdBySlug[key];
+            const entry = speciesId ? classificationsData[speciesId] : undefined;
+            if (entry) entry.phrases.forEach(phrase => { (phrase.classifications || []).forEach(tag => { freq.classifications[tag] = (freq.classifications[tag] || 0) + 1; }); });
+        }
+    });
+
+    function formatCategory(title, data, topN, filterType) {
+        const entries = Object.entries(data).sort((a, b) => statsShowRarest ? (a[1] - b[1]) : (b[1] - a[1]));
+        const limited = entries.slice(0, topN);
+        if (limited.length === 0) return '';
+        const items = limited.map(([name, count]) => {
+            const pct = ((count / pokemonList.length) * 100).toFixed(1);
+            const isActive = filterType === 'classifications' ? activeClassificationFilters.includes(name) : (activeFilters[filterType] && activeFilters[filterType].includes(name));
+            const colorStyle = isActive ? 'color:var(--filter-active);font-weight:bold;' : '';
+            const displayName = filterType === 'moves' ? formatMoveName(name) : name;
+            const clickHandler = filterType === 'classifications' ? `toggleClassificationFilter('${name.replace(/'/g, "\\'")}')` : `toggleFilter('${filterType}', '${name.replace(/'/g, "\\'")}')`;
+            let statsSuffix = '';
+            if (displaySettings.statsShowCount && displaySettings.statsShowPercent) statsSuffix = ` (${count}, ${pct}%)`;
+            else if (displaySettings.statsShowCount) statsSuffix = ` (${count})`;
+            else if (displaySettings.statsShowPercent) statsSuffix = ` (${pct}%)`;
+            return `<span class="clickable" onclick="${clickHandler}" style="margin-right:8px;text-decoration:underline;cursor:pointer;${colorStyle}">${displayName}${statsSuffix}</span>`;
+        }).join('');
+        return `<div style="margin-bottom:6px;"><strong>${title}:</strong> ${items}</div>`;
+    }
+
+    let html = '';
+    if (displaySettings.show.types) html += formatCategory('Types', freq.types, statsTopN, 'types');
+    if (displaySettings.show.region) html += formatCategory('Regions', freq.regions, statsTopN, 'regions');
+    if (displaySettings.show.color) html += formatCategory('Colors', freq.colors, statsTopN, 'colors');
+    if (displaySettings.show.shape) html += formatCategory('Shapes', freq.shapes, statsTopN, 'shapes');
+    if (displaySettings.show.eggGroups) html += formatCategory('Egg Groups', freq.eggGroups, statsTopN, 'eggGroups');
+    if (displaySettings.show.abilities) html += formatCategory('Abilities', freq.abilities, statsTopN, 'abilities');
+    if (learnsetLoaded) html += formatCategory('Moves', freq.moves, statsTopN, 'moves');
+    if (classificationsLoaded) html += formatCategory('Lore Tags', freq.classifications, statsTopN, 'classifications');
+    if (statsContent) statsContent.innerHTML = html || '<em>No data to display</em>';
+}
+
+function toggleSummaryPanel() {
+    const panel = document.getElementById('summaryPanel');
+    panel.classList.toggle('expanded');
+    statsPanelExpanded = panel.classList.contains('expanded');
+}
+
+function clearAllFilters() {
+    for (const filterType in activeFilters) activeFilters[filterType] = [];
+    activeClassificationFilters = [];
+    clearSecondaryFilter();
+    document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('selected'));
+    if (filterOverlayOpen) {
+        computeFilteredCount();
+        updateFilterCategoryBadges();
+        if (currentFilterCategory) selectFilterCategory(currentFilterCategory);
+    } else {
+        renderPokemonList();
+        updateSummaryPanel(window._lastPokemonToDisplay || []);
+    }
+    updateSortButtons();
+}
+
+// ═══════════════════════════════════════
+// ATTRIBUTE HTML - Full text labels only
+// ═══════════════════════════════════════
+
+function getTypesHTML(types) {
+    if (!types || types.length === 0) return 'Types: N/A';
+    if (!displaySettings.show.types) return '';
+    const typesList = types.map(type => {
+        const isSelected = activeFilters.types.includes(type);
+        const className = isSelected ? 'clickable selected-result' : 'clickable';
+        return `<span class="${className}" data-filter-type="types" data-filter-value="${type}">${type}</span>`;
+    }).join(' / ');
+    return 'Types: ' + typesList;
+}
+
+function getAbilitiesHTML(abilitiesObj) {
+    const abilities = extractAbilities(abilitiesObj);
+    if (abilities.length === 0) return 'N/A';
+    if (!displaySettings.show.abilities) return '';
+    let html = '';
+    abilities.forEach((ability, index) => {
+        const isSelected = activeFilters.abilities.includes(ability);
+        const className = isSelected ? 'clickable selected-result' : 'clickable';
+        html += `<span class="${className}" data-filter-type="abilities" data-filter-value="${ability}">${ability}</span>${index < abilities.length - 1 ? ' / ' : ''}`;
+    });
+    return 'Abilities: ' + html;
+}
+
+function getEggGroupsHTML(eggGroups) {
+    if (!eggGroups || eggGroups.length === 0) return 'Egg Groups: N/A';
+    if (!displaySettings.show.eggGroups) return '';
+    const groupsList = eggGroups.map(group => {
+        const isSelected = activeFilters.eggGroups.includes(group);
+        const className = isSelected ? 'clickable selected-result' : 'clickable';
+        return `<span class="${className}" data-filter-type="eggGroups" data-filter-value="${group}">${group}</span>`;
+    }).join(' / ');
+    return 'Egg Groups: ' + groupsList;
+}
+
+// ═══════════════════════════════════════
+// MOVES
+// ═══════════════════════════════════════
+
+const moveDisplayNames = { "karatechop":"Karate Chop", "zingzap":"Zing Zap" };
+function formatMoveName(moveKey) {
+    if (moveDisplayNames[moveKey.toLowerCase()]) return moveDisplayNames[moveKey.toLowerCase()];
+    return moveKey.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+function getLearnMethodText(method) {
+    if (method.startsWith('L')) return `Lv.${method.substring(1)}`;
+    const methodMap = { 'M':'TM', 'T':'Tu', 'E':'Egg', 'V':'Event', 'S':'Event', 'D':'Event' };
+    return methodMap[method[0]] || method;
+}
+function getMovesHTML(learnset, pokemonKey, showFiltered = false) {
+    if (!learnsetLoaded || !learnset || Object.keys(learnset).length === 0) return '';
+    const moveEntries = Object.entries(learnset).slice(0, 500);
+    const parts = [];
+    moveEntries.forEach(([move, methods]) => {
+        const displayName = formatMoveName(move);
+        const learnMethod = methods[0];
+        const methodType = learnMethod[0];
+        const methodText = getLearnMethodText(learnMethod);
+        let shouldHide = false;
+        if (methodType === 'E' && !showEggMoves) shouldHide = true;
+        else if (methodType === 'M' && !showTMMoves) shouldHide = true;
+        else if (methodType === 'T' && !showTutorMoves) shouldHide = true;
+        else if ((methodType === 'V' || methodType === 'S' || methodType === 'D') && !showEventMoves) shouldHide = true;
+        const isFiltered = activeFilters.moves.includes(move);
+        if (!shouldHide) {
+            if (showFiltered && !isFiltered) return;
+            const className = isFiltered ? 'move-item clickable selected-result' : 'move-item clickable';
+            parts.push(`<span class="${className}" data-filter-type="moves" data-filter-value="${move}">${displayName} <small class="learn-method">(${methodText})</small></span>`);
+        }
+    });
+    return parts.length > 0 ? parts.join('; ') : '';
+}
+
+function togglePokemonMoves(pokemonKey) { pokemonMovesExpanded[pokemonKey] = !pokemonMovesExpanded[pokemonKey]; renderPokemonList(); }
+function togglePokemonLore(pokemonKey) {
+    // Use shouldShowLore to determine current visual state, then toggle it
+    const currentlyShowing = shouldShowLore(pokemonKey);
+    pokemonLoreExpanded[pokemonKey] = !currentlyShowing;
+    if (!pokemonLoreExpanded[pokemonKey]) pokemonLoreAllExpanded[pokemonKey] = false;
+    renderPokemonList();
+}
+function togglePokemonLoreAll(pokemonKey) { pokemonLoreAllExpanded[pokemonKey] = !pokemonLoreAllExpanded[pokemonKey]; renderPokemonList(); }
+
+function toggleLoreAlphaSort() {
+    loreSortAlpha = !loreSortAlpha;
+    const btn = document.getElementById('loreAlphaSortButton');
+    if (btn) { btn.style.fontWeight = loreSortAlpha ? 'bold' : 'normal'; btn.style.color = loreSortAlpha ? 'green' : ''; }
+    renderPokemonList();
+}
+
+// ═══════════════════════════════════════
+// STATS PANEL
+// ═══════════════════════════════════════
+
+function adjustStatsTopN(delta) {
+    statsTopN = Math.max(3, statsTopN + delta);
+    const display = document.getElementById('statsTopNDisplay');
+    if (display) display.textContent = statsTopN;
+    updateSummaryPanel(window._lastPokemonToDisplay || []);
+}
+function toggleStatsSort() {
+    statsShowRarest = !statsShowRarest;
+    const btn = document.getElementById('statsSortToggle');
+    if (btn) btn.textContent = statsShowRarest ? '\u2191' : '\u2193';
+    updateSummaryPanel(window._lastPokemonToDisplay || []);
+}
+
+function toggleLearnMethod(methodKey) {
+    if (methodKey === 'Egg') { showEggMoves = !showEggMoves; document.getElementById('toggle-EggButton').classList.toggle('selected', showEggMoves); }
+    else if (methodKey === 'TM') { showTMMoves = !showTMMoves; document.getElementById('toggle-TMButton').classList.toggle('selected', showTMMoves); }
+    else if (methodKey === 'Tutor') { showTutorMoves = !showTutorMoves; document.getElementById('toggle-TutorButton').classList.toggle('selected', showTutorMoves); }
+    else if (methodKey === 'Event') { showEventMoves = !showEventMoves; document.getElementById('toggle-EventButton').classList.toggle('selected', showEventMoves); }
+    renderPokemonList();
+}
+
+function toggleVariantInclude(variantKey) {
+    if (variantKey === 'Minor') { includeMinor = !includeMinor; document.getElementById('toggle-MinorButton').classList.toggle('selected', includeMinor); }
+    else if (variantKey === 'Item') { includeItem = !includeItem; document.getElementById('toggle-ItemButton').classList.toggle('selected', includeItem); }
+    else if (variantKey === 'Gmax') { includeGmax = !includeGmax; document.getElementById('toggle-GmaxButton').classList.toggle('selected', includeGmax); }
+    else if (variantKey === 'Mega') { includeMega = !includeMega; document.getElementById('toggle-MegaButton').classList.toggle('selected', includeMega); }
+    else if (variantKey === 'Battle') { includeBattle = !includeBattle; document.getElementById('toggle-BattleButton').classList.toggle('selected', includeBattle); }
+    else if (variantKey === 'Natural') { includeNatural = !includeNatural; document.getElementById('toggle-NaturalButton').classList.toggle('selected', includeNatural); }
+    renderPokemonList();
+}
+
+// Filter overlay functions
+let filterOverlayOpen = false;
+let currentFilterCategory = null;
+
+function openFilterOverlay() {
+    filterOverlayOpen = true;
+    document.getElementById('filterOverlay').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    updateFilterCategoryBadges();
+    computeFilteredCount();
+    // Select first category by default
+    const firstBtn = document.querySelector('.filter-category-btn');
+    if (firstBtn) selectFilterCategory(firstBtn.getAttribute('data-target'));
+}
+
+function closeFilterOverlay() {
+    filterOverlayOpen = false;
+    document.getElementById('filterOverlay').classList.remove('visible');
+    document.body.style.overflow = '';
+    renderPokemonList();
+    updateSummaryPanel(window._lastPokemonToDisplay || []);
+}
+
+function selectFilterCategory(targetId) {
+    currentFilterCategory = targetId;
+    // Highlight active category button
+    document.querySelectorAll('.filter-category-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-target') === targetId);
+    });
+    const panel = document.getElementById('filterOptionsPanel');
+    const drillPanel = document.getElementById('filterClassDrill');
+    panel.innerHTML = '';
+    drillPanel.innerHTML = '';
+    drillPanel.classList.remove('visible');
+
+    if (targetId === 'fo-types') populateOverlayChips(panel, allTypes, 'types', 'data-type');
+    else if (targetId === 'fo-regions') populateOverlayChips(panel, allRegions, 'regions', 'data-region');
+    else if (targetId === 'fo-colors') populateOverlayChips(panel, getAllColors(), 'colors', 'data-color');
+    else if (targetId === 'fo-shapes') populateOverlayChips(panel, getAllShapes(), 'shapes', 'data-shape');
+    else if (targetId === 'fo-eggGroups') populateOverlayChips(panel, getAllEggGroups(), 'eggGroups', 'data-egggroup');
+    else if (targetId === 'fo-variants') populateOverlayVariants(panel);
+    else if (targetId === 'fo-moves') populateOverlayMoves(panel);
+    else if (targetId === 'fo-classifications') populateOverlayClassifications(panel, drillPanel);
+}
+
+function populateOverlayChips(container, items, filterType, attr) {
+    items.forEach(item => {
+        const chip = document.createElement('div');
+        chip.className = 'filter-chip';
+        chip.setAttribute(attr, item);
+        chip.textContent = item;
+        if (activeFilters[filterType] && activeFilters[filterType].includes(item)) chip.classList.add('selected');
+        chip.addEventListener('click', () => {
+            toggleFilter(filterType, item);
+            chip.classList.toggle('selected', activeFilters[filterType].includes(item));
+            updateFilterCategoryBadges();
+        });
+        container.appendChild(chip);
+    });
+}
+
+function populateOverlayVariants(container) {
+    const variants = [
+        { key: 'Minor', label: 'Minor', getter: () => includeMinor, toggler: () => { includeMinor = !includeMinor; } },
+        { key: 'Item', label: 'Item', getter: () => includeItem, toggler: () => { includeItem = !includeItem; } },
+        { key: 'Gmax', label: 'Gmax', getter: () => includeGmax, toggler: () => { includeGmax = !includeGmax; } },
+        { key: 'Mega', label: 'Mega', getter: () => includeMega, toggler: () => { includeMega = !includeMega; } },
+        { key: 'Battle', label: 'Battle', getter: () => includeBattle, toggler: () => { includeBattle = !includeBattle; } },
+        { key: 'Natural', label: 'Natural', getter: () => includeNatural, toggler: () => { includeNatural = !includeNatural; } }
+    ];
+    variants.forEach(v => {
+        const chip = document.createElement('div');
+        chip.className = 'filter-chip';
+        chip.textContent = v.label;
+        if (v.getter()) chip.classList.add('selected');
+        chip.addEventListener('click', () => {
+            v.toggler();
+            chip.classList.toggle('selected', v.getter());
+            if (filterOverlayOpen) computeFilteredCount();
+        });
+        container.appendChild(chip);
+    });
+}
+
+function populateOverlayMoves(container) {
+    if (!learnsetLoaded) {
+        const loadBtn = document.createElement('button');
+        loadBtn.textContent = 'Load Moves Data';
+        loadBtn.style.cssText = 'padding:10px 16px;font-size:14px;margin:8px;cursor:pointer;';
+        loadBtn.addEventListener('click', () => {
+            loadLearnsetData();
+            setTimeout(() => { if (learnsetLoaded) selectFilterCategory('fo-moves'); }, 1500);
+        });
+        container.appendChild(loadBtn);
+        return;
+    }
+    // Learn method toggles
+    const methods = [
+        { key: 'Egg', getter: () => showEggMoves, toggler: () => { showEggMoves = !showEggMoves; } },
+        { key: 'TM', getter: () => showTMMoves, toggler: () => { showTMMoves = !showTMMoves; } },
+        { key: 'Tutor', getter: () => showTutorMoves, toggler: () => { showTutorMoves = !showTutorMoves; } },
+        { key: 'Event', getter: () => showEventMoves, toggler: () => { showEventMoves = !showEventMoves; } }
+    ];
+    const methodLabel = document.createElement('div');
+    methodLabel.style.cssText = 'font-weight:600;font-size:12px;margin:4px 0 2px;color:var(--fg-muted);';
+    methodLabel.textContent = 'Include learn methods:';
+    container.appendChild(methodLabel);
+    methods.forEach(m => {
+        const chip = document.createElement('div');
+        chip.className = 'filter-chip';
+        chip.textContent = m.key;
+        if (m.getter()) chip.classList.add('selected');
+        chip.addEventListener('click', () => {
+            m.toggler();
+            chip.classList.toggle('selected', m.getter());
+            if (filterOverlayOpen) computeFilteredCount();
+        });
+        container.appendChild(chip);
+    });
+    // Move search hint
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-size:12px;color:var(--fg-faint);margin:8px 4px;';
+    hint.textContent = 'Use the search bar to find and filter specific moves.';
+    container.appendChild(hint);
+    // Show active move filters
+    if (activeFilters.moves.length > 0) {
+        const activeLabel = document.createElement('div');
+        activeLabel.style.cssText = 'font-weight:600;font-size:12px;margin:8px 0 2px;color:var(--fg-muted);';
+        activeLabel.textContent = 'Active move filters:';
+        container.appendChild(activeLabel);
+        activeFilters.moves.forEach(move => {
+            const chip = document.createElement('div');
+            chip.className = 'filter-chip selected';
+            chip.textContent = formatMoveName(move);
+            chip.addEventListener('click', () => {
+                toggleFilter('moves', move);
+                selectFilterCategory('fo-moves'); // refresh
+            });
+            container.appendChild(chip);
+        });
+    }
+}
+
+function populateOverlayClassifications(container, drillPanel) {
+    if (!classificationsLoaded) {
+        const loadBtn = document.createElement('button');
+        loadBtn.textContent = 'Load Classifications Data';
+        loadBtn.style.cssText = 'padding:10px 16px;font-size:14px;margin:8px;cursor:pointer;';
+        loadBtn.addEventListener('click', () => {
+            loadClassificationsData();
+            setTimeout(() => { if (classificationsLoaded) selectFilterCategory('fo-classifications'); }, 1500);
+        });
+        container.appendChild(loadBtn);
+        return;
+    }
+    drillPanel.classList.add('visible');
+
+    // Build mapped tags set
+    const mappedTags = new Set();
+    CLASSIFICATION_TAXONOMY.forEach(cat => cat.subcategories.forEach(sub => sub.tags.forEach(tag => mappedTags.add(tag))));
+
+    // Render taxonomy categories in left panel
+    CLASSIFICATION_TAXONOMY.forEach(cat => {
+        const validSubs = cat.subcategories.map(sub => {
+            const validTags = sub.tags.filter(tag => allClassificationTags.includes(tag));
+            return { name: sub.name, tags: validTags };
+        }).filter(sub => sub.tags.length > 0);
+        if (validSubs.length === 0) return;
+
+        const catBtn = document.createElement('div');
+        catBtn.className = 'tax-category-header';
+        catBtn.textContent = cat.name;
+        catBtn.style.cursor = 'pointer';
+        catBtn.addEventListener('click', () => {
+            drillPanel.innerHTML = '';
+            validSubs.forEach(sub => {
+                const subHeader = document.createElement('div');
+                subHeader.className = 'tax-subcategory-header';
+                subHeader.textContent = sub.name;
+                subHeader.style.cursor = 'pointer';
+                drillPanel.appendChild(subHeader);
+                const tagsDiv = document.createElement('div');
+                tagsDiv.style.cssText = 'padding:4px 4px 8px 8px;';
+                sub.tags.forEach(tag => {
+                    const chip = document.createElement('div');
+                    chip.className = 'filter-chip';
+                    chip.setAttribute('data-classtag', tag);
+                    chip.textContent = tag;
+                    if (activeClassificationFilters.includes(tag)) chip.classList.add('selected');
+                    chip.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleClassificationFilter(tag);
+                        chip.classList.toggle('selected', activeClassificationFilters.includes(tag));
+                        updateFilterCategoryBadges();
+                    });
+                    tagsDiv.appendChild(chip);
+                });
+                drillPanel.appendChild(tagsDiv);
+                subHeader.addEventListener('click', () => {
+                    tagsDiv.style.display = tagsDiv.style.display === 'none' ? 'block' : 'none';
+                });
+            });
+        });
+        container.appendChild(catBtn);
+    });
+
+    // Other catch-all
+    const unmappedTags = allClassificationTags.filter(tag => !mappedTags.has(tag));
+    if (unmappedTags.length > 0) {
+        const otherBtn = document.createElement('div');
+        otherBtn.className = 'tax-category-header';
+        otherBtn.textContent = 'OTHER';
+        otherBtn.style.cursor = 'pointer';
+        otherBtn.addEventListener('click', () => {
+            drillPanel.innerHTML = '';
+            unmappedTags.forEach(tag => {
+                const chip = document.createElement('div');
+                chip.className = 'filter-chip';
+                chip.setAttribute('data-classtag', tag);
+                chip.textContent = tag;
+                if (activeClassificationFilters.includes(tag)) chip.classList.add('selected');
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleClassificationFilter(tag);
+                    chip.classList.toggle('selected', activeClassificationFilters.includes(tag));
+                    updateFilterCategoryBadges();
+                });
+                drillPanel.appendChild(chip);
+            });
+        });
+        container.appendChild(otherBtn);
+    }
+}
+
+function updateFilterCategoryBadges() {
+    document.querySelectorAll('.filter-category-btn').forEach(btn => {
+        const target = btn.getAttribute('data-target');
+        let count = 0;
+        if (target === 'fo-types') count = activeFilters.types.length;
+        else if (target === 'fo-regions') count = activeFilters.regions.length;
+        else if (target === 'fo-colors') count = activeFilters.colors.length;
+        else if (target === 'fo-shapes') count = activeFilters.shapes.length;
+        else if (target === 'fo-eggGroups') count = activeFilters.eggGroups.length;
+        else if (target === 'fo-variants') count = [includeMinor,includeItem,includeGmax,includeMega,includeBattle,includeNatural].filter(Boolean).length;
+        else if (target === 'fo-moves') count = activeFilters.moves.length;
+        else if (target === 'fo-classifications') count = activeClassificationFilters.length;
+        const existing = btn.querySelector('.cat-badge');
+        if (existing) existing.remove();
+        if (count > 0) {
+            const badge = document.createElement('span');
+            badge.className = 'cat-badge';
+            badge.textContent = count;
+            btn.appendChild(badge);
+        }
+    });
+}
+
+function computeFilteredCount() {
+    let pokemonToDisplay = Object.values(pokemonData);
+    if (secondaryFilter.type === 'secondary-name' || secondaryFilter.type === 'secondary-num') {
+        const selectedKey = secondaryFilter.selectedKey;
+        if (selectedKey) {
+            const chainKeys = findFullEvolutionChainKeys(selectedKey);
+            pokemonToDisplay = chainKeys.map(key => pokemonData[key]).filter(p => p);
+        } else pokemonToDisplay = [];
+    } else if (secondaryFilter.type === 'secondary-species') {
+        const searchTerm = secondaryFilter.value.toLowerCase();
+        pokemonToDisplay = pokemonToDisplay.filter(p => (p.species || '').toLowerCase().includes(searchTerm));
+    }
+    if (!secondaryFilter.type || secondaryFilter.type === 'secondary-species') {
+        if (activeFilters.types.length > 0) pokemonToDisplay = pokemonToDisplay.filter(p => activeFilters.types.every(type => p.types.includes(type)));
+        if (activeFilters.regions.length > 0) pokemonToDisplay = pokemonToDisplay.filter(p => activeFilters.regions.includes(p.region));
+        if (activeFilters.abilities.length > 0) pokemonToDisplay = pokemonToDisplay.filter(p => { const pa = extractAbilities(p.abilities); return activeFilters.abilities.every(a => pa.includes(a)); });
+        if (activeFilters.colors.length > 0) pokemonToDisplay = pokemonToDisplay.filter(p => activeFilters.colors.includes(p.color));
+        pokemonToDisplay = pokemonToDisplay.filter(p => {
+            if (!p.variant) return true;
+            if (p.variant === 'Minor') return includeMinor;
+            if (p.variant === 'Item') return includeItem;
+            if (p.variant === 'Gmax') return includeGmax;
+            if (p.variant === 'Mega') return includeMega;
+            if (p.variant === 'Battle') return includeBattle;
+            if (p.variant === 'Natural') return includeNatural;
+            return true;
+        });
+        if (activeFilters.shapes.length > 0) pokemonToDisplay = pokemonToDisplay.filter(p => { const sn = typeof p.shape === 'number' ? getShapeName(p.shape) : p.shape; return activeFilters.shapes.includes(sn); });
+        if (activeFilters.eggGroups.length > 0) pokemonToDisplay = pokemonToDisplay.filter(p => p.eggGroups && activeFilters.eggGroups.every(g => p.eggGroups.includes(g)));
+        if (activeFilters.moves.length > 0 && learnsetLoaded) pokemonToDisplay = pokemonToDisplay.filter(p => {
+            if (!p.learnset) return false;
+            return activeFilters.moves.every(move => {
+                if (!p.learnset[move]) return false;
+                return p.learnset[move].some(method => {
+                    const mt = method[0];
+                    if (mt === 'L') return true;
+                    if (mt === 'E') return showEggMoves;
+                    if (mt === 'M') return showTMMoves;
+                    if (mt === 'T') return showTutorMoves;
+                    if (mt === 'V' || mt === 'S' || mt === 'D') return showEventMoves;
+                    return true;
+                });
+            });
+        });
+        if (classificationsLoaded && activeClassificationFilters.length > 0)
+            pokemonToDisplay = pokemonToDisplay.filter(p => { const key = getPokemonKey(p); return key && pokemonMatchesClassifications(key); });
+    }
+    const count = pokemonToDisplay.length;
+    const liveCount = document.getElementById('filterLiveCount');
+    const showBtn = document.getElementById('filterShowResults');
+    if (liveCount) liveCount.textContent = count + ' results';
+    if (showBtn) showBtn.textContent = 'Show (' + count + ') results';
+    return count;
+}
+
+// ═══════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════
+
+let searchIndex = -1;
+
+function populateSearchableTerms() {
+    const terms = [];
+    const filterables = {
+        'Type': { values: allTypes, filterType: 'types' },
+        'Region': { values: allRegions, filterType: 'regions' },
+        'Color': { values: getAllColors(), filterType: 'colors' },
+        'Shape': { values: getAllShapes(), filterType: 'shapes' },
+        'Egg Group': { values: getAllEggGroups(), filterType: 'eggGroups' },
+        'Ability': { values: getAllAbilities(), filterType: 'abilities' }
+    };
+    for (const [typeLabel, data] of Object.entries(filterables)) {
+        data.values.forEach(value => {
+            terms.push({ label: `${typeLabel}: ${value.charAt(0).toUpperCase() + value.slice(1)}`, filterType: data.filterType, filterValue: value });
+        });
+    }
+    getAllSpeciesSearchTerms().forEach(term => {
+        terms.push({ label: `Species: ${term}`, filterType: 'secondary-species', filterValue: term });
+    });
+    if (learnsetLoaded) {
+        getAllMoves().forEach(move => {
+            terms.push({ label: `Move: ${formatMoveName(move)}`, filterType: 'moves', filterValue: move });
+        });
+    }
+    if (classificationsLoaded) {
+        allClassificationTags.forEach(tag => {
+            terms.push({ label: `Classification: ${tag}`, filterType: 'classifications', filterValue: tag });
+        });
+    }
+    const nameMap = new Map();
+    Object.keys(pokemonData).forEach(key => {
+        const pokemon = pokemonData[key];
+        let displayFullName = pokemon.name.trim();
+        const isForm = pokemon.baseSpecies || Math.floor(pokemon.num) !== pokemon.num;
+        if (pokemon.baseSpecies && pokemon.forme) {
+            const baseName = pokemon.baseSpecies.charAt(0).toUpperCase() + pokemon.baseSpecies.slice(1);
+            const formeName = pokemon.forme.charAt(0).toUpperCase() + pokemon.forme.slice(1);
+            let formeDisplay = formeName;
+            if (formeName === 'Galar') formeDisplay = 'Galarian';
+            else if (formeName === 'Alola') formeDisplay = 'Alolan';
+            else if (formeName === 'Hisui') formeDisplay = 'Hisuian';
+            else if (formeName === 'Paldea') formeDisplay = 'Paldean';
+            displayFullName = `${formeDisplay} ${baseName}`;
+        } else {
+            displayFullName = displayFullName.charAt(0).toUpperCase() + displayFullName.slice(1);
+        }
+        if (nameMap.has(displayFullName)) return;
+        nameMap.set(displayFullName, true);
+        const numStr = Math.floor(pokemon.num).toString();
+        if (isForm) {
+            // Forms: show just the form name (e.g. "Galarian Zigzagoon")
+            terms.push({ label: displayFullName, searchText: (numStr + ' ' + displayFullName).toLowerCase(), filterType: 'secondary-name', filterValue: getGroupingKey(pokemon.name), displayName: displayFullName, pokemonKey: key, isPokemon: true, pokemonName: displayFullName.toLowerCase(), pokemonNum: numStr });
+        } else {
+            // Base Pokemon: show "#151 Mew"
+            terms.push({ label: `#${numStr} ${displayFullName}`, searchText: (numStr + ' ' + displayFullName).toLowerCase(), filterType: 'secondary-name', filterValue: getGroupingKey(pokemon.name), displayName: displayFullName, pokemonKey: key, isPokemon: true, pokemonName: displayFullName.toLowerCase(), pokemonNum: numStr });
+        }
+    });
+    searchableTerms = terms;
+}
+
+function handleSearchInput() {
+    const input = document.getElementById('searchBar');
+    const suggestionsList = document.getElementById('suggestions');
+    const query = input.value.toLowerCase().trim();
+    suggestionsList.innerHTML = '';
+    searchIndex = -1;
+
+    if (query.length < 2) { suggestionsList.classList.remove('visible'); return; }
+
+    // Filter matching terms using searchText for pokemon, label for others
+    const matched = searchableTerms.filter(term => {
+        if (term.searchText) return term.searchText.includes(query);
+        return term.label.toLowerCase().includes(query);
+    });
+
+    // Score each match for ranking
+    matched.forEach(term => {
+        if (term.isPokemon) {
+            // Pokemon: prefix match on name > prefix match on number > contains match
+            if (term.pokemonName.startsWith(query)) term._score = 1;
+            else if (term.pokemonNum.startsWith(query)) term._score = 2;
+            else term._score = 4;
+        } else {
+            // Non-pokemon: extract value portion after ": "
+            const colonIdx = term.label.indexOf(': ');
+            const valueStr = colonIdx >= 0 ? term.label.substring(colonIdx + 2).toLowerCase() : term.label.toLowerCase();
+            if (valueStr === query) term._score = 0; // exact value match
+            else if (valueStr.startsWith(query)) term._score = 3;
+            else term._score = 5;
+        }
+    });
+
+    // Sort by score, then alphabetically by label
+    matched.sort((a, b) => {
+        if (a._score !== b._score) return a._score - b._score;
+        return a.label.localeCompare(b.label);
+    });
+
+    const matchedTerms = matched.slice(0, 12);
+
+    if (matchedTerms.length === 0) { suggestionsList.classList.remove('visible'); return; }
+
+    matchedTerms.forEach((term, i) => {
+        const li = document.createElement('li');
+
+        // Add thumbnail for pokemon name/number results
+        if (term.pokemonKey && pokemonData[term.pokemonKey]) {
+            const num = Number(pokemonData[term.pokemonKey].num).toString();
+            const img = document.createElement('img');
+            img.src = `icons/poke/${num}.png`;
+            img.loading = 'lazy';
+            img.onerror = function() { this.style.display = 'none'; };
+            li.appendChild(img);
+        }
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'suggestion-text';
+        textSpan.textContent = term.label;
+        li.appendChild(textSpan);
+
+        li.addEventListener('click', () => {
+            if (term.filterType.startsWith('secondary')) {
+                // Clear all tags/filters first
+                for (const ft in activeFilters) activeFilters[ft] = [];
+                activeClassificationFilters = [];
+                pokemonLoreExpanded = {};
+                pokemonLoreAllExpanded = {};
+                document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('selected'));
+                // Then set secondary filter
+                secondaryFilter.type = term.filterType;
+                secondaryFilter.value = term.filterValue;
+                secondaryFilter.displayValue = term.displayName || term.filterValue;
+                secondaryFilter.selectedKey = term.pokemonKey;
+                input.value = secondaryFilter.displayValue;
+                renderPokemonList();
+                updateActiveFilters();
+                updateSortButtons();
+            } else if (term.filterType === 'classifications') {
+                toggleClassificationFilter(term.filterValue);
+            } else {
+                toggleFilter(term.filterType, term.filterValue);
+            }
+            suggestionsList.innerHTML = '';
+            suggestionsList.classList.remove('visible');
+        });
+        suggestionsList.appendChild(li);
+    });
+    suggestionsList.classList.add('visible');
+}
+
+function highlightSuggestion() {
+    const items = document.querySelectorAll('#suggestions li');
+    items.forEach((li, i) => li.classList.toggle('selected', i === searchIndex));
+    if (searchIndex >= 0 && items[searchIndex]) items[searchIndex].scrollIntoView({ block: 'nearest' });
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+
+function hasAnyActiveFilter() {
+    if (secondaryFilter.type) return true;
+    if (activeClassificationFilters.length > 0) return true;
+    for (const key in activeFilters) { if (activeFilters[key].length > 0) return true; }
+    return false;
+}
+
+function renderPokemonList() {
+    const container = document.getElementById('pokemonContainer');
+    container.innerHTML = '';
+    if (displaySettings.gridView) document.body.classList.add('grid-view');
+    else document.body.classList.remove('grid-view');
+
+    if (!hasAnyActiveFilter()) {
+        container.innerHTML = '<div class="empty-state">No filters active<div class="hint">Select a filter, or search and pick a Pokemon to see results.</div></div>';
+        return;
+    }
+
+    let pokemonToDisplay = Object.values(pokemonData);
+
+    if (secondaryFilter.type === 'secondary-name' || secondaryFilter.type === 'secondary-num') {
+        const selectedKey = secondaryFilter.selectedKey;
+        if (selectedKey) {
+            const chainKeys = findFullEvolutionChainKeys(selectedKey);
+            pokemonToDisplay = chainKeys.map(key => pokemonData[key]).filter(p => p);
+            pokemonToDisplay.sort((a, b) => {
+                const keyA = getPokemonKey(a);
+                const keyB = getPokemonKey(b);
+                if (keyA === selectedKey) return -1;
+                if (keyB === selectedKey) return 1;
+                return a.num - b.num;
+            });
+        } else pokemonToDisplay = [];
+    } else if (secondaryFilter.type === 'secondary-species') {
+        const searchTerm = secondaryFilter.value.toLowerCase();
+        pokemonToDisplay = pokemonToDisplay.filter(p => (p.species || '').toLowerCase().includes(searchTerm));
+    }
+
+    if (!secondaryFilter.type || secondaryFilter.type === 'secondary-species') {
+        if (activeFilters.types.length > 0)
+            pokemonToDisplay = pokemonToDisplay.filter(p => activeFilters.types.every(type => p.types.includes(type)));
+        if (activeFilters.regions.length > 0)
+            pokemonToDisplay = pokemonToDisplay.filter(p => activeFilters.regions.includes(p.region));
+        if (activeFilters.abilities.length > 0)
+            pokemonToDisplay = pokemonToDisplay.filter(p => { const pa = extractAbilities(p.abilities); return activeFilters.abilities.every(a => pa.includes(a)); });
+        if (activeFilters.colors.length > 0)
+            pokemonToDisplay = pokemonToDisplay.filter(p => activeFilters.colors.includes(p.color));
+        pokemonToDisplay = pokemonToDisplay.filter(p => {
+            if (!p.variant) return true;
+            if (p.variant === 'Minor') return includeMinor;
+            if (p.variant === 'Item') return includeItem;
+            if (p.variant === 'Gmax') return includeGmax;
+            if (p.variant === 'Mega') return includeMega;
+            if (p.variant === 'Battle') return includeBattle;
+            if (p.variant === 'Natural') return includeNatural;
+            return true;
+        });
+        if (activeFilters.shapes.length > 0)
+            pokemonToDisplay = pokemonToDisplay.filter(p => { const sn = typeof p.shape === 'number' ? getShapeName(p.shape) : p.shape; return activeFilters.shapes.includes(sn); });
+        if (activeFilters.eggGroups.length > 0)
+            pokemonToDisplay = pokemonToDisplay.filter(p => p.eggGroups && activeFilters.eggGroups.every(g => p.eggGroups.includes(g)));
+        if (activeFilters.moves.length > 0 && learnsetLoaded)
+            pokemonToDisplay = pokemonToDisplay.filter(p => {
+                if (!p.learnset) return false;
+                return activeFilters.moves.every(move => {
+                    if (!p.learnset[move]) return false;
+                    return p.learnset[move].some(method => {
+                        const mt = method[0];
+                        if (mt === 'L') return true;
+                        if (mt === 'E') return showEggMoves;
+                        if (mt === 'M') return showTMMoves;
+                        if (mt === 'T') return showTutorMoves;
+                        if (mt === 'V' || mt === 'S' || mt === 'D') return showEventMoves;
+                        return true;
+                    });
+                });
+            });
+        if (classificationsLoaded && activeClassificationFilters.length > 0)
+            pokemonToDisplay = pokemonToDisplay.filter(p => { const key = getPokemonKey(p); return key && pokemonMatchesClassifications(key); });
+        if (!secondaryFilter.type)
+            pokemonToDisplay = sortList(pokemonToDisplay, currentSort.key, currentSort.direction);
+    }
+
+    if (pokemonToDisplay.length === 0) {
+        container.innerHTML = '<div class="no-results" style="padding:12px;color:var(--fg-muted);">No Pokemon match your filters</div>';
+        return;
+    }
+
+    const expandedFrag = document.createDocumentFragment();
+    const collapsedFrag = document.createDocumentFragment();
+
+    pokemonToDisplay.forEach(pokemon => {
+        const card = document.createElement('div');
+        card.className = 'pokemon-card';
+        const shapeName = typeof pokemon.shape === 'number' ? getShapeName(pokemon.shape) : pokemon.shape;
+        const pokemonKey = getPokemonKey(pokemon);
+        const isCardExpanded = expandedCards.has(pokemonKey);
+        if (isCardExpanded) card.classList.add('expanded');
+        const spriteNum = Number(pokemon.num).toString();
+        const spritePath = `icons/poke/${spriteNum}.png`;
+
+        if (displaySettings.gridView && !isCardExpanded) {
+            card.innerHTML = `<img src="${spritePath}" alt="${pokemon.name}" onerror="this.style.display='none'">`;
+            card.addEventListener('click', () => { expandedCards.add(pokemonKey); renderPokemonList(); });
+            collapsedFrag.appendChild(card);
+            return;
+        }
+
+        const quickClearButton = secondaryFilter.type ? `<span class="quick-clear" onclick="clearSecondaryFilter()">[X]</span>` : '';
+        let titleContent = '';
+        const isForm = pokemon.baseSpecies || Math.floor(pokemon.num) !== pokemon.num;
+        const imageHTML = displaySettings.show.image ? `<img src="${spritePath}" class="pokemon-sprite" alt="${pokemon.name}" onerror="this.style.display='none'">` : '';
+
+        if (isForm) {
+            const baseName = (pokemon.baseSpecies || pokemon.name).trim();
+            let baseNameCapitalized = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+            let formeName = (pokemon.forme || (pokemon.name.includes('-') ? pokemon.name.split('-').slice(1).join('-') : '')).trim();
+            let formeNameCapitalized = formeName.charAt(0).toUpperCase() + formeName.slice(1);
+            if (pokemon.baseSpecies) {
+                if (formeNameCapitalized === 'Galar') formeNameCapitalized = 'Galarian';
+                else if (formeNameCapitalized === 'Alola') formeNameCapitalized = 'Alolan';
+                else if (formeNameCapitalized === 'Hisui') formeNameCapitalized = 'Hisuian';
+                else if (formeNameCapitalized === 'Paldea') formeNameCapitalized = 'Paldean';
+                if (displaySettings.show.name) titleContent = `${formeNameCapitalized} ${baseNameCapitalized}`;
+            } else {
+                if (displaySettings.show.name) titleContent = pokemon.name.trim().split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('-');
+            }
+        } else {
+            const nameTrimmed = pokemon.name.trim();
+            const numDisplay = displaySettings.show.number ? `# ${Math.floor(pokemon.num)} ` : '';
+            if (displaySettings.show.name) {
+                titleContent = `${numDisplay}${nameTrimmed.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('-')}`;
+            } else titleContent = numDisplay;
+        }
+
+        const speciesDisplay = displaySettings.show.species && pokemon.species ? ` (Species: <span>${pokemon.species}</span>)` : '';
+        const hasMovesFilter = activeFilters.moves.length > 0;
+        const isExpanded = pokemonMovesExpanded[pokemonKey];
+        let movesContent = '';
+        let showMovesToggle = false;
+        if (learnsetLoaded && pokemon.learnset) {
+            if (hasMovesFilter) {
+                const filteredMovesHTML = getMovesHTML(pokemon.learnset, pokemonKey, true);
+                if (filteredMovesHTML) { movesContent = 'Moves: ' + filteredMovesHTML; showMovesToggle = true; }
+                if (isExpanded) {
+                    const allMovesHTML = getMovesHTML(pokemon.learnset, pokemonKey, false);
+                    if (allMovesHTML) movesContent += `<div style="margin-top:2px;padding-top:2px;border-top:1px solid var(--border);">All: ${allMovesHTML}</div>`;
+                }
+            } else if (isExpanded) {
+                const allMovesHTML = getMovesHTML(pokemon.learnset, pokemonKey, false);
+                if (allMovesHTML) movesContent = 'Moves: ' + allMovesHTML;
+            }
+            if (Object.keys(pokemon.learnset).length > 0) showMovesToggle = true;
+        }
+
+        // Build attribute HTML with full text labels
+        let cardDetailsHTML = '<div class="card-details">' + getTypesHTML(pokemon.types);
+
+        if (displaySettings.show.region) {
+            const regionSelected = activeFilters.regions.includes(pokemon.region);
+            const regionClass = regionSelected ? 'clickable selected-result' : 'clickable';
+            if (getTypesHTML(pokemon.types)) cardDetailsHTML += ' | ';
+            cardDetailsHTML += `Region: <span class="${regionClass}" data-filter-type="regions" data-filter-value="${pokemon.region || ''}">${pokemon.region || 'N/A'}</span>`;
+        }
+        if (displaySettings.show.color) {
+            const colorSelected = activeFilters.colors.includes(pokemon.color);
+            const colorClass = colorSelected ? 'clickable selected-result' : 'clickable';
+            if (displaySettings.show.region || getTypesHTML(pokemon.types)) cardDetailsHTML += ' | ';
+            cardDetailsHTML += `Color: <span class="${colorClass}" data-filter-type="colors" data-filter-value="${pokemon.color || ''}">${pokemon.color || 'N/A'}</span>`;
+        }
+        if (displaySettings.show.shape) {
+            const shapeSelected = activeFilters.shapes.includes(shapeName);
+            const shapeClass = shapeSelected ? 'clickable selected-result' : 'clickable';
+            if (displaySettings.show.region || displaySettings.show.color || getTypesHTML(pokemon.types)) cardDetailsHTML += ' | ';
+            cardDetailsHTML += `Shape: <span class="${shapeClass}" data-filter-type="shapes" data-filter-value="${shapeName || ''}">${shapeName || 'N/A'}</span>`;
+        }
+        cardDetailsHTML += '</div>';
+
+        const eggHTML = getEggGroupsHTML(pokemon.eggGroups);
+        const eggSection = eggHTML ? `<div class="card-details">${eggHTML}</div>` : '';
+        const abilitiesHTML = getAbilitiesHTML(pokemon.abilities);
+        const abilitiesSection = abilitiesHTML ? `<div class="pokemon-abilities">${abilitiesHTML}</div>` : '';
+
+        const gridCloseButton = displaySettings.gridView && isCardExpanded ? `<button onclick="event.stopPropagation(); expandedCards.delete('${pokemonKey}'); renderPokemonList();" style="float:right;">Close [X]</button>` : '';
+        const gridImageHTML = displaySettings.gridView && isCardExpanded ? `<img src="${spritePath}" alt="${pokemon.name}" onerror="this.style.display='none'">` : '';
+
+        const hasLore = classificationsLoaded && (() => { const sid = _classIdBySlug[pokemonKey]; const ent = sid ? classificationsData[sid] : undefined; return ent && ent.phrases.length > 0; })();
+        const isLoreExpanded = shouldShowLore(pokemonKey);
+        const loreToggleButton = hasLore ? `<button onclick="togglePokemonLore('${pokemonKey}')" style="margin-left:4px;">${isLoreExpanded ? '[-]' : '[+]'} Lore</button>` : '';
+
+        card.innerHTML = `
+            ${gridCloseButton}${gridImageHTML}
+            <h3>${quickClearButton} ${imageHTML}${titleContent}</h3>${speciesDisplay}
+            ${showMovesToggle ? `<button onclick="togglePokemonMoves('${pokemonKey}')" style="margin-left:4px;">${isExpanded ? '[-]' : '[+]'} Moves</button>` : ''}
+            ${loreToggleButton}
+            ${cardDetailsHTML}${eggSection}${abilitiesSection}
+            <div class="pokemon-stats ${displaySettings.show.stats ? '' : 'hidden'}">
+                Stats: HP ${pokemon.baseStats.hp}/Atk ${pokemon.baseStats.atk}/Def ${pokemon.baseStats.def}/SpA ${pokemon.baseStats.spa}/SpD ${pokemon.baseStats.spd}/Spe ${pokemon.baseStats.spe}
+            </div>
+            ${movesContent ? `<div class="pokemon-moves">${movesContent}</div>` : ''}
+            ${getClassificationsHTML(pokemonKey)}
+        `;
+        card.style.fontSize = displaySettings.baseFontSize + 'px';
+
+        if (displaySettings.gridView && isCardExpanded) {
+            card.addEventListener('click', (e) => { if (!e.target.closest('.clickable') && !e.target.closest('button')) e.stopPropagation(); });
+        }
+        if (displaySettings.gridView && isCardExpanded) expandedFrag.appendChild(card);
+        else collapsedFrag.appendChild(card);
+    });
+    container.appendChild(expandedFrag);
+    container.appendChild(collapsedFrag);
+    window._lastPokemonToDisplay = pokemonToDisplay;
+    updateSummaryPanel(pokemonToDisplay);
+}
+
+// ═══════════════════════════════════════
+// SORT
+// ═══════════════════════════════════════
+
+function sortList(list, sortBy, direction) {
+    list.sort((a, b) => {
+        let valA, valB;
+        if (sortBy === 'number') { valA = a.num; valB = b.num; }
+        else if (sortBy === 'height') { valA = a.heightm || 0; valB = b.heightm || 0; }
+        else if (sortBy === 'color') { valA = a.color || ''; valB = b.color || ''; if (valA.localeCompare(valB) === 0) return (a.name || '').localeCompare(b.name || '') * direction; }
+        else if (sortBy === 'shape') { valA = a.shape || 0; valB = b.shape || 0; }
+        else if (sortBy === 'name') { valA = a.name || ''; valB = b.name || ''; }
+        else if (sortBy === 'type') { valA = a.types[0] || ''; valB = b.types[0] || ''; if (valA.localeCompare(valB) === 0) return (a.name || '').localeCompare(b.name || '') * direction; }
+        else if (sortBy === 'movelevel') {
+            valA = 9999; valB = 9999;
+            if (activeFilters.moves.length > 0 && a.learnset) {
+                activeFilters.moves.forEach(move => { if (a.learnset[move]) a.learnset[move].forEach(method => { if (method[0] === 'L') valA = Math.min(valA, method.length > 1 ? parseInt(method.substring(1)) : 0); else if (method[0] === 'E' || method[0] === 'S') valA = Math.min(valA, 0); }); });
+            }
+            if (activeFilters.moves.length > 0 && b.learnset) {
+                activeFilters.moves.forEach(move => { if (b.learnset[move]) b.learnset[move].forEach(method => { if (method[0] === 'L') valB = Math.min(valB, method.length > 1 ? parseInt(method.substring(1)) : 0); else if (method[0] === 'E' || method[0] === 'S') valB = Math.min(valB, 0); }); });
+            }
+        }
+        let comparison = typeof valA === 'string' ? valA.localeCompare(valB) : valA - valB;
+        return comparison * direction;
+    });
+    return list;
+}
+
+function handleSort(sortBy) {
+    if (currentSort.key === sortBy) currentSort.direction *= -1;
+    else { currentSort.key = sortBy; currentSort.direction = 1; }
+    renderPokemonList();
+}
+
+function updateSortButtons() {
+    const sortButtons = document.querySelectorAll('#toolbarRight button');
+    const isNameSelected = secondaryFilter.type === 'secondary-name' || secondaryFilter.type === 'secondary-num';
+    sortButtons.forEach(b => b.classList.toggle('disabled-sort', isNameSelected));
+}
+
+// ═══════════════════════════════════════
+// LOAD MOVES & CLASSIFICATIONS
+// ═══════════════════════════════════════
+
+function loadLearnsetData() {
+    if (learnsetLoaded) return;
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'loadingIndicator';
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.textContent = 'Loading move data...';
+    document.body.appendChild(loadingIndicator);
+    const script = document.createElement('script');
+    script.src = 'moveset-data.js';
+    script.onload = function () {
+        if (typeof movesetData !== 'undefined') {
+            Object.keys(movesetData).forEach(pokemonId => { if (pokemonData[pokemonId]) pokemonData[pokemonId].learnset = movesetData[pokemonId].learnset; });
+            learnsetLoaded = true;
+            document.body.removeChild(loadingIndicator);
+            populateSearchableTerms();
+            renderPokemonList();
+        } else { console.error('Move data not found'); if (document.body.contains(loadingIndicator)) document.body.removeChild(loadingIndicator); }
+    };
+    script.onerror = function () { console.error('Error loading move data'); if (document.body.contains(loadingIndicator)) document.body.removeChild(loadingIndicator); };
+    document.head.appendChild(script);
+}
+
+function loadClassificationsData() {
+    if (classificationsLoaded) return;
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'loadingClassIndicator';
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.textContent = 'Loading classifications...';
+    document.body.appendChild(loadingIndicator);
+    const script = document.createElement('script');
+    script.src = 'classifications.js';
+    script.onload = function () {
+        if (typeof classificationsJson !== 'undefined') {
+            classificationsJson.forEach(entry => { classificationsData[entry.species_id] = { phrases: entry.phrases || [], phraseStates: entry.phraseStates || {} }; });
+            const tagSet = new Set();
+            classificationsJson.forEach(entry => { (entry.phrases || []).forEach(phrase => { (phrase.classifications || []).forEach(tag => tagSet.add(tag)); }); });
+            allClassificationTags = Array.from(tagSet).sort();
+            classificationsLoaded = true;
+            _buildClassSlugMap();
+            document.body.removeChild(loadingIndicator);
+            const loreAlphaBtn = document.getElementById('loreAlphaSortButton');
+            if (loreAlphaBtn) loreAlphaBtn.style.display = 'inline-block';
+            populateSearchableTerms();
+            renderPokemonList();
+        } else { console.error('Classifications data not found'); if (document.body.contains(loadingIndicator)) document.body.removeChild(loadingIndicator); }
+    };
+    script.onerror = function () { console.error('Error loading classifications.js'); if (document.body.contains(loadingIndicator)) document.body.removeChild(loadingIndicator); };
+    document.head.appendChild(script);
+}
+
+function toggleClassificationFilter(tag) {
+    if (secondaryFilter.type) clearSecondaryFilter();
+    const idx = activeClassificationFilters.indexOf(tag);
+    if (idx !== -1) activeClassificationFilters.splice(idx, 1);
+    else activeClassificationFilters.push(tag);
+    // Reset manual lore toggle state so auto-expand takes fresh effect
+    pokemonLoreExpanded = {};
+    pokemonLoreAllExpanded = {};
+    document.querySelectorAll('.filter-chip[data-classtag]').forEach(chip => {
+        chip.classList.toggle('selected', activeClassificationFilters.includes(chip.getAttribute('data-classtag')));
+    });
+    if (filterOverlayOpen) {
+        computeFilteredCount();
+    } else {
+        renderPokemonList();
+        updateSummaryPanel(window._lastPokemonToDisplay || []);
+    }
+    updateSortButtons();
+    document.getElementById('searchBar').value = '';
+    document.getElementById('suggestions').innerHTML = '';
+    document.getElementById('suggestions').classList.remove('visible');
+}
+
+let _classIdBySlug = {};
+function _slugify(name) {
+    return name.toLowerCase().replace(/♀/g, 'f').replace(/♂/g, 'm').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+}
+function _buildClassSlugMap() {
+    _classIdBySlug = {};
+    Object.keys(classificationsData).forEach(speciesId => { _classIdBySlug[_slugify(speciesId)] = speciesId; });
+}
+function pokemonMatchesClassifications(pokemonKey) {
+    if (activeClassificationFilters.length === 0) return true;
+    if (!classificationsLoaded) return true;
+    const speciesId = _classIdBySlug[pokemonKey];
+    const entry = speciesId ? classificationsData[speciesId] : undefined;
+    if (!entry) return false;
+    const speciesTags = new Set();
+    entry.phrases.forEach(phrase => { (phrase.classifications || []).forEach(t => speciesTags.add(t)); });
+    return activeClassificationFilters.every(tag => speciesTags.has(tag));
+}
+
+function isLoreAutoExpanded(pokemonKey) {
+    return activeClassificationFilters.length > 0 && classificationsLoaded && pokemonMatchesClassifications(pokemonKey);
+}
+
+function shouldShowLore(pokemonKey) {
+    // If user manually set a value, respect it
+    if (pokemonLoreExpanded[pokemonKey] === true) return true;
+    if (pokemonLoreExpanded[pokemonKey] === false) return false;
+    // Otherwise, auto-expand if classification filters are active and Pokemon matches
+    return isLoreAutoExpanded(pokemonKey);
+}
+
+function getClassificationsHTML(pokemonKey) {
+    if (!classificationsLoaded) return '';
+    if (!shouldShowLore(pokemonKey)) return '';
+    const speciesId = _classIdBySlug[pokemonKey];
+    const entry = speciesId ? classificationsData[speciesId] : undefined;
+    if (!entry || entry.phrases.length === 0) return '';
+    const freq = {};
+    entry.phrases.forEach(phrase => { (phrase.classifications || []).forEach(t => { freq[t] = (freq[t] || 0) + 1; }); });
+    const sortedTags = Object.keys(freq).sort((a, b) => {
+        if (loreSortAlpha) return a.localeCompare(b);
+        const diff = freq[b] - freq[a];
+        return diff !== 0 ? diff : a.localeCompare(b);
+    });
+    const tagBar = sortedTags.map(tag => {
+        const isActive = activeClassificationFilters.includes(tag);
+        const cls = isActive ? 'clickable selected-result' : 'clickable';
+        return `<span class="${cls}" data-filter-type="classifications" data-filter-value="${tag}">${tag}</span>`;
+    }).join(', ');
+    const hasActiveFilters = activeClassificationFilters.length > 0;
+    const filteredPhrases = hasActiveFilters ? entry.phrases.filter(phrase => activeClassificationFilters.some(tag => (phrase.classifications || []).includes(tag))) : entry.phrases;
+    const showAll = pokemonLoreAllExpanded[pokemonKey];
+    const phrasesToRender = (showAll || !hasActiveFilters) ? entry.phrases : filteredPhrases;
+    const needsMoreToggle = hasActiveFilters && filteredPhrases.length < entry.phrases.length;
+    function renderPhrase(phrase) {
+        const tags = (phrase.classifications || []).map(tag => {
+            const isActive = activeClassificationFilters.includes(tag);
+            const cls = isActive ? 'clickable selected-result' : 'clickable';
+            return `<span class="${cls}" data-filter-type="classifications" data-filter-value="${tag}">${tag}</span>`;
+        }).join(' ');
+        return `<div style="margin-left:8px;margin-top:2px;font-size:0.9em;color:var(--fg-muted);">"${phrase.text}" \u2192 [${tags}]</div>`;
+    }
+    const phrasesHTML = phrasesToRender.map(renderPhrase).join('');
+    let moreToggle = '';
+    if (needsMoreToggle) {
+        moreToggle = showAll
+            ? `<div style="margin-left:8px;margin-top:3px;"><button onclick="togglePokemonLoreAll('${pokemonKey}')">[-] Less</button></div>`
+            : `<div style="margin-left:8px;margin-top:3px;"><button onclick="togglePokemonLoreAll('${pokemonKey}')">[+] More</button></div>`;
+    }
+    let tagBarHTML = '';
+    if (!hasActiveFilters) {
+        tagBarHTML = '<span style="font-size:0.85em;color:var(--fg-muted);">Lore: </span>' +
+                     '<span style="font-size:0.85em;">' + tagBar + '</span>';
+    }
+    return '<div class="pokemon-classifications" style="margin-top:4px;">' +
+           tagBarHTML +
+           '<div class="pokemon-lore-phrases">' + phrasesHTML + moreToggle + '</div>' +
+           '</div>';
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+
+function openSettings() {
+    document.getElementById('settingsModal').style.display = 'block';
+    document.getElementById('fontSizeSlider').value = displaySettings.baseFontSize;
+    document.getElementById('fontSizeDisplay').textContent = displaySettings.baseFontSize + 'px';
+    document.getElementById('showNumber').checked = displaySettings.show.number;
+    document.getElementById('showName').checked = displaySettings.show.name;
+    document.getElementById('showSpecies').checked = displaySettings.show.species;
+    document.getElementById('showImage').checked = displaySettings.show.image;
+    document.getElementById('showTypes').checked = displaySettings.show.types;
+    document.getElementById('showRegion').checked = displaySettings.show.region;
+    document.getElementById('showColor').checked = displaySettings.show.color;
+    document.getElementById('showShape').checked = displaySettings.show.shape;
+    document.getElementById('showEggGroups').checked = displaySettings.show.eggGroups;
+    document.getElementById('showAbilities').checked = displaySettings.show.abilities;
+    document.getElementById('showStats').checked = displaySettings.show.stats;
+    document.getElementById('showStatsCount').checked = displaySettings.statsShowCount;
+    document.getElementById('showStatsPercent').checked = displaySettings.statsShowPercent;
+    document.getElementById('showGridView').checked = displaySettings.gridView;
+}
+function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+function applySettings() {
+    displaySettings.baseFontSize = parseInt(document.getElementById('fontSizeSlider').value);
+    displaySettings.show.number = document.getElementById('showNumber').checked;
+    displaySettings.show.name = document.getElementById('showName').checked;
+    displaySettings.show.species = document.getElementById('showSpecies').checked;
+    displaySettings.show.image = document.getElementById('showImage').checked;
+    displaySettings.show.types = document.getElementById('showTypes').checked;
+    displaySettings.show.region = document.getElementById('showRegion').checked;
+    displaySettings.show.color = document.getElementById('showColor').checked;
+    displaySettings.show.shape = document.getElementById('showShape').checked;
+    displaySettings.show.eggGroups = document.getElementById('showEggGroups').checked;
+    displaySettings.show.abilities = document.getElementById('showAbilities').checked;
+    displaySettings.show.stats = document.getElementById('showStats').checked;
+    displaySettings.statsShowCount = document.getElementById('showStatsCount').checked;
+    displaySettings.statsShowPercent = document.getElementById('showStatsPercent').checked;
+    statsVisible = displaySettings.show.stats;
+    // Grid view
+    const newGridView = document.getElementById('showGridView').checked;
+    if (newGridView !== displaySettings.gridView) {
+        displaySettings.gridView = newGridView;
+        expandedCards.clear();
+    }
+    renderPokemonList();
+    closeSettings();
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+    initializeNameKeyMap();
+    assignRegions(pokemonData);
+    populateSearchableTerms();
+    renderPokemonList();
+    updateSummaryPanel(window._lastPokemonToDisplay || []);
+    updateSortButtons();
+
+    // Filter overlay events
+    document.getElementById('filterIconBtn').addEventListener('click', openFilterOverlay);
+    document.getElementById('filterOverlayClose').addEventListener('click', closeFilterOverlay);
+    document.querySelectorAll('.filter-category-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectFilterCategory(btn.getAttribute('data-target')));
+    });
+
+    // Delegated click for .clickable in cards
+    document.getElementById('pokemonContainer').addEventListener('click', function(e) {
+        const el = e.target.closest('.clickable');
+        if (!el) return;
+        e.stopPropagation();
+        const filterType = el.getAttribute('data-filter-type');
+        const filterValue = el.getAttribute('data-filter-value');
+        if (filterType && filterValue && filterValue !== 'Unknown' && filterValue !== '' && filterValue !== 'N/A') {
+            if (secondaryFilter.type) clearSecondaryFilter();
+            if (filterType === 'classifications') toggleClassificationFilter(filterValue);
+            else toggleFilter(filterType, filterValue);
+        }
+    });
+
+    // Search events
+    const searchBar = document.getElementById('searchBar');
+    const suggestionsEl = document.getElementById('suggestions');
+
+    searchBar.addEventListener('input', handleSearchInput);
+    searchBar.addEventListener('focus', handleSearchInput);
+
+    searchBar.addEventListener('keydown', function(e) {
+        const items = suggestionsEl.querySelectorAll('li');
+        if (e.key === 'ArrowDown' && items.length) { e.preventDefault(); searchIndex = Math.min(searchIndex + 1, items.length - 1); highlightSuggestion(); }
+        else if (e.key === 'ArrowUp' && items.length) { e.preventDefault(); searchIndex = Math.max(searchIndex - 1, -1); highlightSuggestion(); }
+        else if (e.key === 'Enter' && searchIndex >= 0 && items[searchIndex]) { e.preventDefault(); items[searchIndex].click(); }
+        else if (e.key === 'Escape') { suggestionsEl.innerHTML = ''; suggestionsEl.classList.remove('visible'); searchBar.value = ''; searchBar.blur(); }
+    });
+
+    // Type anywhere to search (suppress when overlay is open)
+    document.addEventListener('keydown', function(e) {
+        if (filterOverlayOpen) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.key === 'Escape') {
+            if (hasAnyActiveFilter()) { clearAllFilters(); return; }
+            return;
+        }
+        if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) searchBar.focus();
+    });
+
+    // Scroll-direction detection for toolbar hide/show
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+        requestAnimationFrame(() => {
+            const toolbar = document.getElementById('toolbar');
+            if (window.scrollY > lastScrollY && window.scrollY > 100) {
+                toolbar.classList.add('hidden-scroll');
+            } else {
+                toolbar.classList.remove('hidden-scroll');
+            }
+            lastScrollY = window.scrollY;
+        });
+    });
+
+    // Click outside to clear search
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-section') && !e.target.closest('#suggestions')) {
+            suggestionsEl.innerHTML = '';
+            suggestionsEl.classList.remove('visible');
+        }
+    });
+
+    // Settings
+    document.getElementById('settingsIcon').addEventListener('click', openSettings);
+    document.getElementById('closeSettings').addEventListener('click', closeSettings);
+    document.getElementById('settingsModal').addEventListener('click', (e) => { if (e.target.id === 'settingsModal') closeSettings(); });
+
+    // Font size slider live preview
+    document.getElementById('fontSizeSlider').addEventListener('input', function() {
+        document.getElementById('fontSizeDisplay').textContent = this.value + 'px';
+    });
+
+    // Dark mode
+    const isDark = localStorage.getItem('db-dark') === '1' ||
+        (localStorage.getItem('db-dark') === null && window.matchMedia('(prefers-color-scheme:dark)').matches);
+    if (isDark) document.body.classList.add('dark');
+    updateDarkIcon();
+
+    document.getElementById('darkToggle').addEventListener('click', function() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('db-dark', document.body.classList.contains('dark') ? '1' : '0');
+        updateDarkIcon();
+    });
+
+    function updateDarkIcon() {
+        document.getElementById('darkToggle').textContent = document.body.classList.contains('dark') ? '\u2600' : '\u263E';
+    }
+});
+
+// Double-tap to scroll to top
+let lastTapTime = 0;
+document.addEventListener("touchend", (e) => {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapTime;
+    if (tapLength < 300 && tapLength > 0) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        lastTapTime = 0;
+    } else lastTapTime = currentTime;
+});
+
+  </script>
+  <p id="copyright">Pokemon &copy; 1995 Nintendo. Used for commentary and informational purposes only.</p>
+
+  <div id="summaryPanel" class="hidden-no-filters">
+    <div id="summaryCollapsed" onclick="toggleSummaryPanel()">
+      <div id="summaryFilterTags"></div>
+      <button id="summaryExpandBtn">&#9650;</button>
+    </div>
+    <div id="summaryExpanded">
+      <div id="summaryExpandedHeader">
+        <span id="summaryTitle">Summary</span> (<span id="summaryCount">0</span> Pokemon)
+        <button onclick="event.stopPropagation(); adjustStatsTopN(-3)">&#8722;</button>
+        <span id="statsTopNDisplay" style="font-size:12px;margin:0 4px;">6</span>
+        <button onclick="event.stopPropagation(); adjustStatsTopN(3)">+</button>
+        <button id="statsSortToggle" onclick="event.stopPropagation(); toggleStatsSort()">&#8595;</button>
+      </div>
+      <div id="summaryStatsContent"></div>
+    </div>
+  </div>
+</body>
+</html>

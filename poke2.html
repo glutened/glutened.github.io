@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pokemon Type Quiz</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --bg: #f8f6f2;
+            --bg-card: #ffffff;
+            --bg-grid: #f0ede8;
+            --fg: #2c2c2c;
+            --fg-muted: #6b6b6b;
+            --fg-dim: #8a8a8a;
+            --accent: #4a7cdb;
+            --accent-hover: #3a66bf;
+            --accent-soft: #e8eef8;
+            --border: #e0dcd6;
+            --border-strong: #c8c4bc;
+            --success: #48a868;
+            --error: #d45050;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        @font-face {
+            font-family: 'EssentiarumVG';
+            src: url('fonts/EssentiarumVG.woff2') format('woff2'),
+                 url('fonts/EssentiarumVG.woff') format('woff');
+            font-display: swap;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pixelated {
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        /* Quiz container — fills viewport */
+        .quiz-shell {
+            display: flex;
+            flex-direction: column;
+            height: 100dvh;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top bar: progress + settings toggle */
+        .top-bar {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+        }
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .progress-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--fg-muted);
+            letter-spacing: 0.03em;
+        }
+        .progress-bar-track {
+            width: 80px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        .settings-btn {
+            background: none;
+            border: 1.5px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--fg-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: inherit;
+        }
+        .settings-btn:active { background: var(--bg-grid); }
+        .settings-btn svg { width: 14px; height: 14px; }
+
+        /* Settings panel — slides down */
+        .settings-panel {
+            flex-shrink: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+        }
+        .settings-panel.open {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .settings-inner {
+            padding: 12px 16px 16px;
+        }
+        .settings-section {
+            margin-bottom: 14px;
+        }
+        .settings-section:last-child { margin-bottom: 0; }
+        .settings-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--fg-dim);
+            margin-bottom: 8px;
+        }
+
+        /* Language select */
+        .lang-select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--fg);
+            font-family: inherit;
+            font-size: 0.85rem;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+        .lang-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        /* Sprite mode pills */
+        .sprite-modes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .sprite-pill {
+            padding: 6px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg);
+            color: var(--fg-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .sprite-pill:active { transform: scale(0.96); }
+        .sprite-pill.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        /* Gen filter chips */
+        .gen-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .gen-chip {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            color: var(--fg-muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .gen-chip:active { transform: scale(0.92); }
+        .gen-chip.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .gen-chip.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .gen-chip-all {
+            width: auto;
+            padding: 0 12px;
+            border-radius: 18px;
+        }
+
+        /* Restriction notice */
+        .restriction-notice {
+            display: inline-block;
+            background: #fef3cd;
+            color: #856404;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        /* Pokemon display area — flexible center */
+        .pokemon-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px 4px;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .pokemon-sprite-wrap {
+            flex-shrink: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            max-height: 45vw;
+            width: 100%;
+        }
+        .pokemon-sprite-wrap img,
+        .pokemon-sprite-wrap video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .pokemon-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--fg);
+            margin-top: 4px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .selected-display {
+            font-size: 0.78rem;
+            color: var(--fg-dim);
+            font-weight: 600;
+            margin-top: 2px;
+            min-height: 1.1em;
+            flex-shrink: 0;
+        }
+
+        /* Video play overlay */
+        .video-wrap {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .play-indicator {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            width: 28px;
+            height: 28px;
+            background: rgba(0,0,0,0.35);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .play-indicator svg { width: 14px; height: 14px; fill: #fff; }
+
+        /* Type grid — bottom section */
+        .type-section {
+            flex-shrink: 0;
+            background: var(--bg-grid);
+            border-top: 1px solid var(--border);
+            padding: 10px 10px 0;
+        }
+        .type-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        /* Type button */
+        .type-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: none;
+            border-radius: 22px;
+            color: #fff;
+            padding: 9px 4px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.12s, opacity 0.15s, box-shadow 0.15s;
+            position: relative;
+            -webkit-user-select: none;
+            user-select: none;
+            min-height: 40px;
+        }
+        .type-btn:active { transform: scale(0.95); }
+        .type-btn.dimmed { opacity: 0.35; }
+        .type-btn.selected {
+            box-shadow: 0 0 0 3px var(--bg-grid), 0 0 0 5.5px currentColor;
+            transform: scale(1.04);
+        }
+        .type-icon {
+            font-family: 'EssentiarumVG';
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        .type-label {
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 0.7rem;
+            line-height: 1;
+            letter-spacing: 0.02em;
+        }
+
+        /* Submit / Next button */
+        .submit-area {
+            flex-shrink: 0;
+            padding: 10px 16px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            background: var(--bg-grid);
+        }
+        .submit-btn {
+            display: block;
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--accent);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.15s, opacity 0.15s, transform 0.1s;
+        }
+        .submit-btn:active { transform: scale(0.98); }
+        .submit-btn:disabled {
+            background: var(--border);
+            color: var(--fg-dim);
+            cursor: not-allowed;
+        }
+        .submit-btn:not(:disabled):hover { background: var(--accent-hover); }
+
+        /* ====== Results / Complete screen ====== */
+        .results-shell {
+            display: flex;
+            flex-direction: column;
+            height: 100dvh;
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--bg);
+        }
+        .results-inner {
+            max-width: 520px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 16px 40px;
+        }
+        .results-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .results-check {
+            width: 52px;
+            height: 52px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+        }
+        .results-check svg { width: 28px; height: 28px; fill: #fff; }
+        .results-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--fg);
+            margin-bottom: 4px;
+        }
+        .results-subtitle {
+            font-size: 0.85rem;
+            color: var(--fg-dim);
+        }
+        .score-card {
+            background: var(--accent-soft);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .score-label {
+            font-size: 0.8rem;
+            color: var(--fg-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .score-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .score-pct {
+            font-size: 0.85rem;
+            color: var(--fg-dim);
+            margin-top: 2px;
+        }
+
+        /* Result card */
+        .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .result-card.correct { border-left: 3px solid var(--success); }
+        .result-card.wrong { border-left: 3px solid var(--error); }
+        .result-sprite {
+            width: 56px;
+            height: 48px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            flex-shrink: 0;
+        }
+        .result-info { flex: 1; min-width: 0; }
+        .result-name {
+            font-weight: 700;
+            font-size: 0.92rem;
+            margin-bottom: 3px;
+        }
+        .result-types {
+            font-size: 0.78rem;
+            color: var(--fg-muted);
+            line-height: 1.4;
+        }
+        .result-types span { font-weight: 600; }
+        .result-pts {
+            flex-shrink: 0;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .result-pts.correct { color: var(--success); }
+        .result-pts.wrong { color: var(--error); }
+
+        .retry-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--accent);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        .retry-btn:active { transform: scale(0.98); }
+
+        /* Palette modal */
+        .palette-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            padding-top: 16px;
+        }
+        .palette-overlay.active { display: flex; }
+        .palette-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .palette-img-wrap {
+            background: #6b6b6b;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .palette-img-wrap img {
+            height: 55vh;
+            width: auto;
+            image-rendering: pixelated;
+        }
+        .palette-controls {
+            display: flex;
+            gap: 6px;
+        }
+        .palette-controls button {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* About modal */
+        .about-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .about-overlay.active { display: flex; }
+        .about-modal {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 400px;
+            margin: 16px;
+            box-shadow: var(--shadow-md);
+        }
+        .about-modal h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .about-modal p {
+            font-size: 0.85rem;
+            color: var(--fg-muted);
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+        .about-close {
+            padding: 8px 18px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--fg);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* Loading / submitting */
+        .loading-shell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100dvh;
+            height: 100vh;
+            background: var(--bg);
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Empty state (no gens selected) */
+        .empty-msg {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            color: var(--fg-dim);
+            font-size: 0.95rem;
+        }
+
+        /* Desktop tweaks */
+        @media (min-width: 640px) {
+            .quiz-shell {
+                max-width: 480px;
+                margin: 0 auto;
+                height: 100vh;
+                border-left: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+            }
+            .results-inner { padding: 32px 24px 48px; }
+            .pokemon-sprite-wrap { max-height: 220px; }
+            .type-grid { gap: 8px; }
+            .type-btn { padding: 10px 6px; min-height: 44px; }
+            .type-label { font-size: 0.75rem; }
+        }
+
+        /* Copyright */
+        #copyright {
+            position: fixed;
+            bottom: 0;
+            left: 6px;
+            color: #aaa;
+            font-size: 7px;
+            line-height: 1;
+            padding: 4px 0;
+        }
+        @media (max-width: 640px) {
+            #copyright { display: none; }
+        }
+
+        /* Focus visible for keyboard users */
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* Brightness filter for dimmed type buttons */
+        .brightness-low { filter: brightness(0.40); }
+
+        /* Animated gradient border for selected type */
+        @property --angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+        @keyframes rotateGradient {
+            to { --angle: 360deg; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="loading-shell">
+            <div class="spinner"></div>
+            <p style="color: var(--fg-muted); font-size: 0.9rem;">Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        function getIconChar(type) {
+            const map = {
+                ground: 'a', bug: 'b', normal: 'c', dark: 'd', fighting: 'f',
+                grass: 'g', ghost: 'h', ice: 'i', rock: 'k', electric: 'l',
+                steel: 'm', dragon: 'n', poison: 'o', psychic: 'p',
+                fire: 'r', flying: 'v', water: 'w', fairy: 'y'
+            };
+            return map[type] || '?';
+        }
+    </script>
+    <script src="pokemon-names.js"></script>
+    <script src="translate.js"></script>
+    <script>
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxya77jjiWfTLhXcFJcwSV70ytLXfr4Ok9cOlkrKvBgfY5Mq2vMQ2CqjPooBQTg5ZNOVw/exec';
+
+        let POKEMON_NAMES = {};
+
+        function parsePokemonNamesFromCSV(csvText) {
+            const data = {};
+            const lines = csvText.trim().split('\n').filter(line => line.trim() !== '');
+            if (lines.length === 0) return data;
+            const headers = lines[0].split(',').map(h => h.trim());
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length !== headers.length) continue;
+                const pokemonId = values[0];
+                const nameTranslations = {};
+                for (let j = 1; j < headers.length; j++) {
+                    let langCode = headers[j];
+                    const translation = values[j];
+                    if (langCode === 'zh_HK' || langCode === 'zh_TW') langCode = 'zh-Hant';
+                    else if (langCode === 'zh') langCode = 'zh-Hans';
+                    nameTranslations[langCode] = translation;
+                }
+                if (pokemonId) data[pokemonId] = nameTranslations;
+            }
+            return data;
+        }
+
+        function getBrowserLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            if (browserLang.startsWith('ja')) return 'ja';
+            if (browserLang.startsWith('es')) return 'es';
+            if (browserLang.startsWith('zh-HK') || browserLang.startsWith('zh-TW')) return 'zh-Hant';
+            if (browserLang.startsWith('zh')) return 'zh-Hans';
+            if (browserLang.startsWith('fr')) return 'fr';
+            if (browserLang.startsWith('de')) return 'de';
+            if (browserLang.startsWith('ko')) return 'ko';
+            if (browserLang.startsWith('it')) return 'it';
+            return 'en';
+        }
+
+        let currentLang = localStorage.getItem('currentLang') || getBrowserLanguage();
+
+        function translateType(typeKey) {
+            if (!typeKey) return '';
+            return TRANSLATIONS[currentLang]?.types[typeKey.toLowerCase()] || typeKey;
+        }
+
+        function translatePokemonName(pokemonId, defaultName) {
+            const idKey = String(pokemonId);
+            if (currentLang === 'en') return defaultName;
+            const translatedName = POKEMON_NAMES[idKey]?.[currentLang];
+            if (translatedName) return translatedName;
+            if (currentLang.startsWith('zh')) {
+                const zhName = POKEMON_NAMES[idKey]?.['zh-Hans'] || POKEMON_NAMES[idKey]?.['zh-Hant'];
+                if (zhName) return zhName;
+            }
+            return defaultName;
+        }
+
+        function translateText(key, defaultValue) {
+            return TRANSLATIONS[currentLang]?.text?.[key] || defaultValue;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('currentLang', lang);
+            render();
+        }
+
+        let spriteMode = 'default';
+        let selectedGens = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let settingsOpen = false;
+
+        function getAllowedGens(mode) {
+            const restrictions = {
+                'gif': [1, 2], '3d': [1, 2], 'card': [1, 2],
+                'palette': [1, 2], 'tcg': [1, 2], 'gb': [1, 2], 'gbc': [1, 2]
+            };
+            return restrictions[mode] || [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        }
+
+        function hasGenRestrictions(mode) {
+            return ['gif', '3d', 'card', 'gb', 'tcg', 'gbc'].includes(mode);
+        }
+
+        function getSpriteModeLabel(mode) {
+            const labels = {
+                'default': 'Art', 'gbc': 'Color', 'gb': 'Gray', '3d': '3D',
+                'tcg': 'TCG', 'palette': 'Palette', 'card': 'Plush',
+                'gif': '2D Motion', 'moves': 'Moves'
+            };
+            return labels[mode] || mode;
+        }
+
+        function setSpriteMode(mode) {
+            spriteMode = mode;
+            const allowedGens = getAllowedGens(mode);
+            if (mode === 'gb' || mode === 'gbc') {
+                selectedGens = [1];
+            } else {
+                selectedGens = selectedGens.filter(gen => allowedGens.includes(gen));
+                if (selectedGens.length === 0) selectedGens = [...allowedGens];
+            }
+            initQuiz();
+        }
+
+        function toggleGen(gen) {
+            const allowedGens = getAllowedGens(spriteMode);
+            if (!allowedGens.includes(gen)) return;
+            if (selectedGens.includes(gen)) {
+                selectedGens = selectedGens.filter(g => g !== gen);
+            } else {
+                selectedGens.push(gen);
+                selectedGens.sort((a, b) => a - b);
+            }
+            if (selectedGens.length === 0) {
+                if (spriteMode === 'gb' || spriteMode === 'gbc') {
+                    selectedGens = [1];
+                } else {
+                    selectedGens = [...allowedGens];
+                }
+            }
+            initQuiz();
+        }
+
+        function toggleAllGens() {
+            const allowedGens = getAllowedGens(spriteMode);
+            if (selectedGens.length === allowedGens.length) {
+                selectedGens = [];
+            } else {
+                selectedGens = [...allowedGens];
+                initQuiz();
+            }
+            render();
+        }
+
+        function toggleSettings() {
+            settingsOpen = !settingsOpen;
+            const panel = document.getElementById('settings-panel');
+            if (panel) panel.classList.toggle('open', settingsOpen);
+        }
+
+        function getSpriteExtension(mode) {
+            if (mode === '3d' || mode === 'gif') return 'webm';
+            if (mode === 'card' || mode === 'moves') return 'jpg';
+            if (mode === 'palette') return 'png';
+            if (mode === 'default') return 'webp';
+            return 'png';
+        }
+
+        function parsePokemonData(csv) {
+            const lines = csv.trim().split('\n').filter(line => line.trim() !== '');
+            return lines.map(line => {
+                const parts = line.split(',');
+                const id = parts[0].trim();
+                const name = parts[1].trim();
+                const type1 = parts[2].trim();
+                const type2 = parts[3] ? parts[3].trim() : '';
+                const gen = parts[4] ? parts[4].trim() : '1';
+                const types = [type1.toLowerCase()];
+                if (type2) types.push(type2.toLowerCase());
+                const pokemonId = parseInt(id);
+                const ext = getSpriteExtension(spriteMode);
+                const spritePath = spriteMode === 'default'
+                    ? `images/${pokemonId}.${ext}`
+                    : `images/${spriteMode}/${pokemonId}.${ext}`;
+                return {
+                    id: pokemonId, name, types, gen: parseInt(gen),
+                    sprite: spritePath,
+                    spriteBackup: spriteMode === 'default' ? `images/${pokemonId}.svg` : null
+                };
+            }).filter(p => !isNaN(p.id) && p.id > 0);
+        }
+
+        const TYPE_COLORS = {
+            bug: '#91A119', dark: '#50413f', dragon: '#5060E1', electric: '#FAC000',
+            fairy: '#EF70EF', fighting: '#FF8000', fire: '#E62829', flying: '#81B9EF',
+            ghost: '#704170', grass: '#3FA129', ground: '#915121', ice: '#3fd8ff',
+            normal: '#9FA19F', poison: '#9141CB', psychic: '#EF4179', rock: '#AFA981',
+            steel: '#60A1B8', water: '#2980EF',
+        };
+
+        const types = ['bug', 'flying', 'ground', 'poison', 'electric', 'rock', 'fighting', 'steel', 'fire', 'dragon', 'psychic', 'ice', 'fairy', 'dark', 'water', 'normal', 'grass', 'ghost'];
+
+        const GEN_REGIONS = {
+            1: 'Kanto', 2: 'Johto', 3: 'Hoenn', 4: 'Sinnoh',
+            5: 'Unova', 6: 'Kalos', 7: 'Alola', 8: 'Galar & Hisui', 9: 'Paldea'
+        };
+
+        let quizPokemon = [];
+        let currentIndex = 0;
+        let selectedTypes = [];
+        let results = [];
+        let screen = 'quiz';
+
+        function showPaletteModal(sprite, name) {
+            const modal = document.getElementById('paletteModal');
+            const img = document.getElementById('paletteModalImg');
+            if (modal && img) {
+                img.src = sprite;
+                img.alt = name;
+                modal.classList.add('active');
+            }
+        }
+
+        function closePaletteModal() {
+            const modal = document.getElementById('paletteModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function setPaletteBg(theme) {
+            const wrap = document.getElementById('paletteImgWrap');
+            if (wrap) wrap.style.backgroundColor = theme === 'light' ? '#ffffff' : '#1a1a1a';
+        }
+
+        function calculateScore(correctTypes, userTypes) {
+            let points = 0;
+            const hasOneType = correctTypes.length === 1;
+            const hasTwoTypes = correctTypes.length === 2;
+            const correctGuesses = userTypes.filter(ut => correctTypes.includes(ut)).length;
+            const wrongGuesses = userTypes.filter(ut => !correctTypes.includes(ut)).length;
+            points = correctGuesses - wrongGuesses;
+            if (correctGuesses > 0 && points < 1) points = 1;
+            if (hasOneType && correctGuesses === 1 && wrongGuesses === 0) points += 1;
+            else if (hasTwoTypes && correctGuesses === 2 && wrongGuesses === 0) points += 1;
+            return Math.max(0, points);
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function initQuiz() {
+            try {
+                if (Object.keys(POKEMON_NAMES).length === 0) {
+                    POKEMON_NAMES = parsePokemonNamesFromCSV(POKEMON_NAMES_CSV_RAW);
+                }
+                const allPokemon = parsePokemonData(POKEMON_CSV);
+                const allowedGens = getAllowedGens(spriteMode);
+                const filteredByMode = allPokemon.filter(p => allowedGens.includes(p.gen));
+                const filteredPokemon = filteredByMode.filter(p => selectedGens.includes(p.gen));
+                if (filteredPokemon.length === 0 && allPokemon.length > 0) {
+                    selectedGens = [...allowedGens];
+                    return initQuiz();
+                }
+                const shuffled = shuffleArray(filteredPokemon);
+                quizPokemon = shuffled.slice(0, Math.min(5, filteredPokemon.length));
+                currentIndex = 0;
+                selectedTypes = [];
+                results = [];
+                screen = 'quiz';
+                render();
+            } catch (error) {
+                console.error('Error initializing quiz:', error);
+                document.getElementById('app').innerHTML = `
+                    <div class="loading-shell">
+                        <p style="color: var(--error); font-weight: 600;">Error loading quiz</p>
+                        <p style="color: var(--fg-dim); font-size: 0.85rem; margin-top: 8px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function toggleType(type) {
+            if (selectedTypes.includes(type)) {
+                selectedTypes = selectedTypes.filter(t => t !== type);
+            } else if (selectedTypes.length < 2) {
+                selectedTypes.push(type);
+            }
+            updateTypeButtons();
+        }
+
+        function updateTypeButtons() {
+            const btns = document.querySelectorAll('.type-btn');
+            btns.forEach(btn => {
+                const t = btn.dataset.type;
+                const isSelected = selectedTypes.includes(t);
+                btn.classList.toggle('selected', isSelected);
+                btn.classList.toggle('dimmed', selectedTypes.length === 2 && !isSelected);
+                btn.setAttribute('aria-pressed', isSelected);
+            });
+            const display = document.getElementById('selected-types-display');
+            if (display) {
+                display.textContent = selectedTypes.length > 0
+                    ? selectedTypes.map(t => translateType(t)).join(', ')
+                    : '';
+            }
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = selectedTypes.length === 0;
+            }
+        }
+
+        async function submitAnswerBackground(result) {
+            const data = {
+                timestamp: new Date().toISOString(),
+                spriteMode: spriteMode,
+                pokemonId: result.pokemonId,
+                pokemonName: result.pokemon,
+                correctTypes: result.correctTypes,
+                userTypes: result.userTypes,
+                points: result.points
+            };
+            try {
+                await fetch(GOOGLE_SHEET_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+            }
+        }
+
+        function submitAnswer() {
+            if (selectedTypes.length === 0) return;
+            const currentPokemon = quizPokemon[currentIndex];
+            const correctTypes = currentPokemon.types.sort();
+            const userTypes = [...selectedTypes].sort();
+            const points = calculateScore(correctTypes, userTypes);
+            const result = {
+                pokemonId: currentPokemon.id,
+                pokemon: currentPokemon.name,
+                correctTypes: correctTypes.join(', '),
+                userTypes: userTypes.join(', '),
+                points: points
+            };
+            results.push(result);
+            submitAnswerBackground(result);
+            selectedTypes = [];
+            if (currentIndex < quizPokemon.length - 1) {
+                currentIndex++;
+                render();
+            } else {
+                screen = 'submitting';
+                render();
+                setTimeout(() => { screen = 'complete'; render(); }, 300);
+            }
+        }
+
+        function renderLanguageOptions() {
+            const langs = [
+                ['en', 'English'], ['ja', '日本語'], ['es', 'Espanol'],
+                ['zh-Hans', '简体中文'], ['zh-Hant', '繁體中文'],
+                ['fr', 'Francais'], ['de', 'Deutsch'], ['ko', '한국어'],
+                ['it', 'Italiano'], ['pt', 'Portugues'], ['id', 'Bahasa Indonesia'],
+                ['th', 'ไทย'], ['ru', 'Русский'], ['tr', 'Turkce'],
+                ['hi', 'हिन्दी'], ['ms', 'Bahasa Malaysia'], ['bg', 'Български'],
+                ['cs', 'Cestina'], ['da', 'Dansk'], ['nl', 'Nederlands'],
+                ['fi', 'Suomi'], ['el', 'Ελληνικά'], ['he', 'עברית'],
+                ['hu', 'Magyar'], ['no', 'Norsk'], ['pl', 'Polski'],
+                ['ro', 'Romana'], ['sv', 'Svenska'], ['vi', 'Tieng Viet']
+            ];
+            return langs.map(([code, label]) =>
+                `<option value="${code}" ${currentLang === code ? 'selected' : ''}>${label}</option>`
+            ).join('');
+        }
+
+        function renderSettingsPanel() {
+            const allowedGens = getAllowedGens(spriteMode);
+            const spriteModes = ['default', 'palette', 'gb', 'gbc', 'gif', '3d', 'card'];
+
+            return `
+                <div id="settings-panel" class="settings-panel ${settingsOpen ? 'open' : ''}">
+                    <div class="settings-inner">
+                        <div class="settings-section">
+                            <div class="settings-label">${translateText('selectLanguage', 'Language')}</div>
+                            <select class="lang-select" onchange="setLanguage(this.value)" aria-label="${translateText('selectLanguage', 'Select Language')}">
+                                ${renderLanguageOptions()}
+                            </select>
+                        </div>
+                        <div class="settings-section">
+                            <div class="settings-label">${translateText('imageMode', 'Image Mode')}</div>
+                            <div class="sprite-modes" role="radiogroup" aria-label="Sprite mode">
+                                ${spriteModes.map(m => `
+                                    <button class="sprite-pill ${spriteMode === m ? 'active' : ''}"
+                                        onclick="setSpriteMode('${m}')"
+                                        role="radio" aria-checked="${spriteMode === m}"
+                                    >${getSpriteModeLabel(m)}</button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <div class="settings-label">${translateText('filterByGen', 'Generation')}</div>
+                            ${hasGenRestrictions(spriteMode) ? `<div class="restriction-notice">${translateText('modeRestrictionGen1Gen2', 'This mode only supports Gen 1 + Gen 2')}</div>` : ''}
+                            <div class="gen-chips" role="group" aria-label="Generation filter">
+                                <button class="gen-chip gen-chip-all ${selectedGens.length === allowedGens.length ? 'active' : ''}"
+                                    onclick="toggleAllGens()" aria-label="Select all generations">${translateText('all', 'ALL')}</button>
+                                ${[1,2,3,4,5,6,7,8,9].map(gen => {
+                                    const isAllowed = allowedGens.includes(gen);
+                                    const isSelected = selectedGens.includes(gen);
+                                    return `<button class="gen-chip ${isSelected ? 'active' : ''} ${!isAllowed ? 'disabled' : ''}"
+                                        ${isAllowed ? `onclick="toggleGen(${gen})"` : 'disabled'}
+                                        aria-label="Generation ${gen} - ${GEN_REGIONS[gen]}"
+                                        aria-pressed="${isSelected}"
+                                        title="${GEN_REGIONS[gen]}">${gen}</button>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSpriteHTML(pokemon) {
+            if (spriteMode === 'default') {
+                return `<img src="${pokemon.sprite}"
+                    onerror="this.onerror=null; this.src='${pokemon.spriteBackup}';"
+                    alt="${pokemon.name}" style="max-width:100%; max-height:100%; object-fit:contain;" />`;
+            }
+            if (spriteMode === '3d' || spriteMode === 'gif') {
+                return `<div class="video-wrap" onclick="const v=this.querySelector('video'); v.currentTime=0; v.play();">
+                    <video src="${pokemon.sprite}" muted playsinline
+                        onended="this.pause(); this.currentTime=0;"
+                        style="max-width:100%; max-height:100%; ${spriteMode === 'gif' ? 'image-rendering:pixelated;' : ''}${spriteMode === '3d' ? 'clip-path:inset(0 0 1px 0);' : ''}"
+                    ></video>
+                    <div class="play-indicator"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                </div>`;
+            }
+            if (spriteMode === 'palette') {
+                return `<div style="border:6px solid var(--border); background:#888; display:flex; align-items:center; justify-content:center; cursor:pointer; max-width:100%; max-height:100%;"
+                    onclick="showPaletteModal('${pokemon.sprite}', '${pokemon.name}')">
+                    <img src="${pokemon.sprite}" alt="${pokemon.name}" style="max-height:100%; pointer-events:none;" />
+                </div>`;
+            }
+            const isPixel = ['gb', 'gbc'].includes(spriteMode);
+            return `<img src="${pokemon.sprite}" alt="${pokemon.name}"
+                style="max-width:100%; max-height:100%; object-fit:contain; ${isPixel ? 'image-rendering:pixelated;' : ''}" />`;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+
+            if (screen === 'submitting') {
+                app.innerHTML = `<div class="loading-shell"><div class="spinner"></div></div>`;
+                return;
+            }
+
+            if (screen === 'complete') {
+                const totalPoints = results.reduce((sum, r) => sum + r.points, 0);
+                const maxPoints = quizPokemon.reduce((sum, p) => sum + (p.types.length === 1 ? 2 : 3), 0);
+                const pct = Math.round((totalPoints / maxPoints) * 100);
+
+                const resultsHTML = results.map((result, idx) => {
+                    const isCorrect = result.correctTypes === result.userTypes;
+                    const maxPossible = result.correctTypes.split(', ').length === 1 ? 2 : 3;
+                    const quizPoke = quizPokemon.find(p => p.name === result.pokemon);
+                    const pokeId = quizPoke ? quizPoke.id : (idx + 1);
+                    const imgPath = `icons/poke/${pokeId}.png`;
+                    const translatedName = translatePokemonName(pokeId, result.pokemon);
+                    const translatedCorrect = result.correctTypes.split(', ').map(t => translateType(t.trim())).join(', ');
+                    const translatedUser = result.userTypes.split(', ').map(t => translateType(t.trim())).join(', ');
+
+                    return `
+                        <div class="result-card ${isCorrect ? 'correct' : 'wrong'}">
+                            <img src="${imgPath}" alt="${translatedName}" class="result-sprite"
+                                onerror="this.style.display='none'" />
+                            <div class="result-info">
+                                <div class="result-name">${translatedName}</div>
+                                <div class="result-types">
+                                    ${translateText('correct', 'Correct')}: <span style="color:var(--success)">${translatedCorrect}</span><br>
+                                    ${translateText('yourAnswer', 'Yours')}: <span style="color:${isCorrect ? 'var(--success)' : 'var(--error)'}">${translatedUser}</span>
+                                </div>
+                            </div>
+                            <div class="result-pts ${isCorrect ? 'correct' : 'wrong'}">${result.points}/${maxPossible}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                app.innerHTML = `
+                    <div class="results-shell">
+                        <div class="results-inner">
+                            <div class="results-header">
+                                <div class="results-check">
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                </div>
+                                <div class="results-title">${translateText('evaluationComplete', 'Evaluation Complete')}</div>
+                                <div class="results-subtitle">${translateText('trainerRankRecorded', 'Your Trainer Rank has been recorded.')}</div>
+                            </div>
+                            <div class="score-card">
+                                <div class="score-label">${translateText('yourScore', 'Your Score')}</div>
+                                <div class="score-value">${totalPoints}/${maxPoints}</div>
+                                <div class="score-pct">${pct}%</div>
+                            </div>
+                            ${resultsHTML}
+                            <button class="retry-btn" onclick="initQuiz()">${translateText('takeQuizAgain', 'Take Quiz Again')}</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // --- Quiz screen ---
+            if (selectedGens.length === 0) {
+                app.innerHTML = `
+                    <div class="quiz-shell">
+                        <div class="top-bar">
+                            <div class="top-bar-left">
+                                <span class="progress-text">${translateText('quizTitle', 'Pokemon Type Quiz')}</span>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <button class="settings-btn" onclick="toggleSettings()" aria-label="Settings" aria-expanded="${settingsOpen}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v1.5M12 19.5V21M4.22 4.22l1.06 1.06M17.72 17.72l1.06 1.06M3 12h1.5M19.5 12H21M4.22 19.78l1.06-1.06M17.72 6.28l1.06-1.06"/><circle cx="12" cy="12" r="3"/></svg>
+                                    Settings
+                                </button>
+                                <button class="settings-btn" onclick="document.getElementById('aboutOverlay').classList.add('active')" aria-label="About">?</button>
+                            </div>
+                        </div>
+                        ${renderSettingsPanel()}
+                        <div class="empty-msg">
+                            ${translateText('selectAtLeastOneGen', 'Please select at least one generation to start the quiz')}
+                        </div>
+                        ${renderAboutModal()}
+                    </div>
+                `;
+                return;
+            }
+
+            const currentPokemon = quizPokemon[currentIndex];
+            const translatedName = translatePokemonName(currentPokemon.id, currentPokemon.name);
+            const progressPct = ((currentIndex) / quizPokemon.length) * 100;
+
+            app.innerHTML = `
+                <div class="quiz-shell">
+                    <div class="top-bar">
+                        <div class="top-bar-left">
+                            <span class="progress-text">${currentIndex + 1} / ${quizPokemon.length}</span>
+                            <div class="progress-bar-track">
+                                <div class="progress-bar-fill" style="width: ${progressPct}%"></div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button class="settings-btn" onclick="toggleSettings()" aria-label="Settings" aria-expanded="${settingsOpen}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v1.5M12 19.5V21M4.22 4.22l1.06 1.06M17.72 17.72l1.06 1.06M3 12h1.5M19.5 12H21M4.22 19.78l1.06-1.06M17.72 6.28l1.06-1.06"/><circle cx="12" cy="12" r="3"/></svg>
+                                Settings
+                            </button>
+                            <button class="settings-btn" onclick="document.getElementById('aboutOverlay').classList.add('active')" aria-label="About">?</button>
+                        </div>
+                    </div>
+
+                    ${renderSettingsPanel()}
+
+                    <div class="pokemon-area">
+                        <div class="pokemon-sprite-wrap" role="img" aria-label="${translatedName} sprite">
+                            ${renderSpriteHTML(currentPokemon)}
+                        </div>
+                        <div class="pokemon-name ${spriteMode === 'palette' ? '' : ''}">${spriteMode === 'palette' ? '' : translatedName}</div>
+                        <div class="selected-display" id="selected-types-display" aria-live="polite"></div>
+                    </div>
+
+                    <div class="type-section" role="group" aria-label="${translateText('quizInstructions', 'Select 1 or 2 types')}">
+                        <div class="type-grid">
+                            ${types.map(type => {
+                                const isSelected = selectedTypes.includes(type);
+                                const isDimmed = selectedTypes.length === 2 && !isSelected;
+                                return `<button class="type-btn ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''}"
+                                    data-type="${type}"
+                                    onclick="toggleType('${type}')"
+                                    style="background-color: ${TYPE_COLORS[type]}; ${type === 'electric' ? 'color:#333;' : ''}"
+                                    role="checkbox" aria-checked="${isSelected}"
+                                    aria-label="${translateType(type)}"
+                                    ${isDimmed ? 'aria-disabled="true"' : ''}
+                                ><span class="type-icon">${getIconChar(type)}</span><span class="type-label">${translateType(type)}</span></button>`;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="submit-area">
+                        <button id="submit-btn" class="submit-btn" onclick="submitAnswer()"
+                            ${selectedTypes.length === 0 ? 'disabled' : ''}
+                            aria-label="${currentIndex < quizPokemon.length - 1 ? translateText('next', 'Next') : translateText('submit', 'Submit')}"
+                        >${currentIndex < quizPokemon.length - 1 ? translateText('next', 'Next') : translateText('submit', 'Submit')}</button>
+                    </div>
+
+                    ${renderAboutModal()}
+                    ${spriteMode === 'palette' ? renderPaletteModal() : ''}
+                </div>
+            `;
+
+            updateTypeButtons();
+        }
+
+        function renderAboutModal() {
+            return `
+                <div id="aboutOverlay" class="about-overlay" onclick="if(event.target===this) this.classList.remove('active')">
+                    <div class="about-modal" role="dialog" aria-label="About">
+                        <h2>About</h2>
+                        <p>
+                            Since 1996, over 1000 Pokemon species have been discovered, each assigned up to 2 elemental attributes called <strong>types</strong>. This quiz gathers data to survey which visual designs are most intuitive for identifying these types.
+                        </p>
+                        <p>
+                            Custom font by Philippe Van Lieu. Fan sprites by mbcmechachu and National Pokedex Version Delta. Pokemon &copy; 1995 Nintendo. Used for commentary and informational purposes only.
+                        </p>
+                        <button class="about-close" onclick="document.getElementById('aboutOverlay').classList.remove('active')">Close</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPaletteModal() {
+            return `
+                <div id="paletteModal" class="palette-overlay" onclick="closePaletteModal()">
+                    <div class="palette-content" onclick="event.stopPropagation()">
+                        <div id="paletteImgWrap" class="palette-img-wrap">
+                            <img id="paletteModalImg" src="" alt="" />
+                        </div>
+                        <div class="palette-controls">
+                            <button onclick="setPaletteBg('light')" style="background:#fff; color:#333;">Light</button>
+                            <button onclick="setPaletteBg('dark')" style="background:#1a1a1a; color:#fff;">Dark</button>
+                            <button onclick="closePaletteModal()" style="background:var(--error); color:#fff;">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.onload = function() {
+            try {
+                initQuiz();
+            } catch (error) {
+                console.error('Error on load:', error);
+                document.getElementById('app').innerHTML = `
+                    <div class="loading-shell">
+                        <p style="color: var(--error); font-weight: 600;">Error loading quiz</p>
+                        <p style="color: var(--fg-dim); font-size: 0.85rem; margin-top: 8px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        };
+    </script>
+    <p id="copyright">Pokemon &copy; 1995 Nintendo. Used for commentary and informational purposes only.</p>
+</body>
+</html>
