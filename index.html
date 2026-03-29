@@ -344,16 +344,39 @@
       justify-content: center;
       font-size: 2.6rem;
     }
-    .case-card:nth-child(1) .case-thumbnail { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-    .case-card:nth-child(2) .case-thumbnail { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-    .case-card:nth-child(3) .case-thumbnail { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-    .case-card:nth-child(4) .case-thumbnail { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-    .case-card:nth-child(5) .case-thumbnail { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+    .case-card:nth-child(1) .case-thumbnail { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .case-card:nth-child(2) .case-thumbnail { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .case-card:nth-child(3) .case-thumbnail { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
     .case-content { padding: 16px; }
     .case-title { font-size: 1.05rem; font-weight: 700; color: #222; margin: 0 0 6px 0; }
     .case-description { color: #666; line-height: 1.5; font-size: 0.85rem; margin-bottom: 10px; }
     .case-tags { display: flex; flex-wrap: wrap; gap: 5px; }
     .case-tag { background: rgba(0,0,0,0.05); padding: 3px 8px; border-radius: 8px; font-size: 0.72rem; color: #666; }
+
+    /* ── More Projects row ── */
+    .more-projects {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: rgba(0,0,0,0.06);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .project-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      background: #fff;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s;
+    }
+    .project-link:hover { background: rgba(108,99,255,0.03); }
+    .project-emoji { font-size: 1.4rem; flex-shrink: 0; }
+    .project-link strong { display: block; font-size: 0.92rem; color: #222; margin-bottom: 2px; }
+    .project-desc { font-size: 0.8rem; color: #888; }
+    .external-arrow { color: #aaa; font-size: 1rem; margin-left: auto; flex-shrink: 0; }
 
     /* About / Footer */
     .about-footer {
@@ -530,38 +553,22 @@
 
   <!-- Case Studies -->
   <div>
-    <h2 class="section-title">Case Studies &amp; Projects</h2>
+    <h2 class="section-title">Case Studies</h2>
     <div class="case-studies-grid">
-      <div class="case-card" onclick="window.open('find_table_case_study.html')">
-        <div class="case-thumbnail">😷</div>
-        <div class="case-content">
-          <h3 class="case-title">COVID-19 Dining</h3>
-          <p class="case-description">Help students find comfort in uncomfortable environments through design research</p>
-          <div class="case-tags"><span class="case-tag">Safety</span><span class="case-tag">Prototyping</span><span class="case-tag">Contextual Inquiry</span></div>
-        </div>
-      </div>
-      <div class="case-card" onclick="window.open('https://davidtaylor.framer.website/cafe', '_blank')">
-        <div class="case-thumbnail">🥯</div>
-        <div class="case-content">
-          <h3 class="case-title">Caf&eacute; Menu Ontology</h3>
-          <p class="case-description">Structured taxonomy using PoolParty and SKOS for improved discoverability</p>
-          <div class="case-tags"><span class="case-tag">Taxonomy</span><span class="case-tag">PoolParty</span><span class="case-tag">SKOS</span></div>
-        </div>
-      </div>
-      <div class="case-card" onclick="window.open('fhe.html', '_blank')">
-        <div class="case-thumbnail">🥊</div>
-        <div class="case-content">
-          <h3 class="case-title">FHE Fighter</h3>
-          <p class="case-description">Interactive Street Fighter-style survey for group activity preferences</p>
-          <div class="case-tags"><span class="case-tag">Survey Design</span><span class="case-tag">Web Dev</span><span class="case-tag">Gamification</span></div>
-        </div>
-      </div>
       <div class="case-card" onclick="window.location.href='semantic.html'">
         <div class="case-thumbnail">⚡</div>
         <div class="case-content">
           <h3 class="case-title">Pok&eacute;mon Semantic Tools</h3>
           <p class="case-description">Ontology and linked data framework for 1,025 Pok&eacute;mon with AI querying</p>
           <div class="case-tags"><span class="case-tag">IA</span><span class="case-tag">AI Prompts</span><span class="case-tag">Data Modeling</span></div>
+        </div>
+      </div>
+      <div class="case-card" onclick="window.open('find_table_case_study.html')">
+        <div class="case-thumbnail">😷</div>
+        <div class="case-content">
+          <h3 class="case-title">COVID-19 Dining</h3>
+          <p class="case-description">Help students find comfort in uncomfortable environments through design research</p>
+          <div class="case-tags"><span class="case-tag">Safety</span><span class="case-tag">Prototyping</span><span class="case-tag">Contextual Inquiry</span></div>
         </div>
       </div>
       <div class="case-card" onclick="window.location.href='https://vimeo.com/1139636394'">
@@ -572,6 +579,26 @@
           <div class="case-tags"><span class="case-tag">Speaking</span><span class="case-tag">UX Research</span><span class="case-tag">Accessibility</span></div>
         </div>
       </div>
+    </div>
+
+    <h2 class="section-title" style="font-size:1.1rem; margin-top:32px;">More Projects</h2>
+    <div class="more-projects">
+      <a href="https://davidtaylor.framer.website/cafe" target="_blank" class="project-link">
+        <span class="project-emoji">🥯</span>
+        <div>
+          <strong>Caf&eacute; Menu Ontology</strong>
+          <span class="project-desc">Structured taxonomy using PoolParty and SKOS</span>
+        </div>
+        <span class="external-arrow">&nearr;</span>
+      </a>
+      <a href="fhe.html" target="_blank" class="project-link">
+        <span class="project-emoji">🥊</span>
+        <div>
+          <strong>FHE Fighter</strong>
+          <span class="project-desc">Interactive Street Fighter-style survey for group activity preferences</span>
+        </div>
+        <span class="external-arrow">&nearr;</span>
+      </a>
     </div>
   </div>
 
