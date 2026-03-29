@@ -5,36 +5,696 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pokémon Semantic Tools - David Taylor</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-    
+    * { box-sizing: border-box; }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f5f5f5;
+      background-color: #fff;
+      color: #444;
     }
-    
+
+    /* ── Header ── */
     .header {
-      background-color: white;
-      padding: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      padding: 14px 24px;
       position: sticky;
       top: 0;
       z-index: 100;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
     }
-    
     .header-content {
-      max-width: 1200px;
+      max-width: 1600px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
-    .header h1 {
-      margin: 0;
+    .header h1 { margin: 0; font-size: 1.1rem; color: #222; font-weight: 600; letter-spacing: 0.5px; }
+    .header h1 span { color: #6c63ff; }
+    .header h1 a { text-decoration: none; color: inherit; }
+    .header-links { display: flex; gap: 6px; }
+    .header-links a {
+      color: #666; text-decoration: none; font-size: 0.82rem; font-weight: 500;
+      padding: 6px 14px; border-radius: 20px; transition: all 0.2s; border: 1px solid transparent;
+    }
+    .header-links a:hover { color: #222; background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); }
+
+    /* ── Layout ── */
+    .case-container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    .wide { max-width: 1100px; margin-left: auto; margin-right: auto; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #6c63ff; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+      margin-bottom: 30px;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    /* ── Hero ── */
+    .hero-section {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      padding: 50px 40px;
+      border-radius: 16px;
+      color: white;
+      margin-bottom: 48px;
+    }
+    .hero-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 36px;
+      align-items: center;
+    }
+    .hero-text h2 { font-size: 2.4rem; margin: 0 0 12px; font-weight: 700; }
+    .hero-text p { font-size: 1.15rem; margin: 0 0 20px; opacity: 0.95; line-height: 1.5; }
+    .hero-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .hero-tag { background: rgba(255,255,255,0.25); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+    .hero-metrics { background: rgba(255,255,255,0.15); padding: 24px; border-radius: 12px; backdrop-filter: blur(10px); }
+    .metric-item { margin-bottom: 18px; }
+    .metric-item:last-child { margin-bottom: 0; }
+    .metric-number { font-size: 2.2rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .metric-label { font-size: 0.9rem; opacity: 0.9; }
+
+    /* ── Intro / narrative ── */
+    .intro {
+      margin-bottom: 48px;
+      line-height: 1.8;
+    }
+    .intro p {
+      color: #555; font-size: 1rem; margin: 0 0 16px;
+    }
+    .intro a { color: #6c63ff; text-decoration: none; font-weight: 500; }
+    .intro a:hover { text-decoration: underline; }
+
+    /* ── Featured tools ── */
+    .featured-tools {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .tool-card {
+      background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06);
+      padding: 24px; border-radius: 12px;
+      text-decoration: none; color: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .tool-card:hover { border-color: rgba(108,99,255,0.3); box-shadow: 0 4px 16px rgba(108,99,255,0.08); }
+    .tool-card h3 { margin: 0 0 8px; font-size: 1.1rem; color: #222; }
+    .tool-card p { margin: 0; color: #666; font-size: 0.9rem; line-height: 1.5; }
+    .tool-card .tool-badge {
+      display: inline-block; margin-top: 12px; font-size: 0.78rem; font-weight: 600;
+      color: #6c63ff; background: rgba(108,99,255,0.08); padding: 4px 10px; border-radius: 10px;
+    }
+
+    /* ── Overview cards ── */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .overview-card {
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.06);
+      padding: 24px;
+      border-radius: 12px;
+    }
+    .overview-card h3 { margin: 0 0 10px; color: #222; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .overview-icon { font-size: 1.5rem; }
+    .overview-card p { margin: 0; color: #666; line-height: 1.6; font-size: 0.95rem; }
+
+    /* ── Callout ── */
+    .callout {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 36px; border-radius: 12px; color: white;
+      margin: 48px 0; text-align: center;
+    }
+    .callout h3 { font-size: 1.5rem; margin: 0 0 10px; }
+    .callout p { font-size: 1.05rem; margin: 0; opacity: 0.95; line-height: 1.6; }
+
+    /* ── Section divider ── */
+    .section-label {
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      color: #6c63ff; margin: 0 0 24px; padding-bottom: 10px;
+      border-bottom: 2px solid rgba(108,99,255,0.15);
+    }
+
+    /* ── Process steps ── */
+    .step {
+      margin-bottom: 56px;
+      position: relative;
+    }
+    .step-number {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white; width: 36px; height: 36px; border-radius: 50%;
+      font-size: 1rem; font-weight: 700; margin-bottom: 12px;
+    }
+    .step h3 { margin: 0 0 14px; font-size: 1.4rem; color: #222; line-height: 1.3; }
+    .step p { color: #555; line-height: 1.8; font-size: 1rem; margin: 0 0 14px; }
+
+    /* ── Images ── */
+    .img-block {
+      margin: 24px 0;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .img-block img { width: 100%; height: auto; border-radius: 8px; display: block; }
+    .img-caption {
+      margin-top: 12px; text-align: center; font-size: 0.88rem; color: #888; line-height: 1.5;
+    }
+    .img-caption strong { display: block; color: #333; font-size: 0.95rem; margin-bottom: 3px; font-style: normal; }
+
+    /* ── Comparison grid ── */
+    .comparison-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0;
+    }
+    .comparison-item {
+      background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06);
+      padding: 16px; border-radius: 12px;
+    }
+    .comparison-label {
+      display: inline-block; padding: 5px 12px; border-radius: 16px;
+      font-weight: 700; font-size: 0.8rem; color: white; margin-bottom: 12px;
+      background: #6c63ff;
+    }
+    .comparison-item.after .comparison-label { background: #10b981; }
+    .comparison-item img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
+    .comparison-item p { color: #666; margin: 0; line-height: 1.5; font-size: 0.9rem; }
+
+    /* ── Taxonomy breakdown ── */
+    .taxonomy-tree {
+      background: rgba(108,99,255,0.04); border: 1px solid rgba(108,99,255,0.12);
+      border-radius: 12px; padding: 28px; margin: 24px 0;
+    }
+    .taxonomy-tree h4 { margin: 0 0 14px; color: #222; font-size: 1.05rem; }
+    .taxonomy-tree ul { margin: 0; padding-left: 20px; color: #555; line-height: 1.8; font-size: 0.95rem; }
+    .taxonomy-tree li strong { color: #333; }
+
+    /* ── Read more links ── */
+    .read-more {
+      background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 12px; padding: 24px; margin: 36px 0;
+    }
+    .read-more h4 { margin: 0 0 12px; font-size: 1rem; color: #222; }
+    .read-more ul { margin: 0; padding: 0; list-style: none; }
+    .read-more li { margin-bottom: 8px; }
+    .read-more li:last-child { margin-bottom: 0; }
+    .read-more a { color: #6c63ff; text-decoration: none; font-size: 0.92rem; font-weight: 500; }
+    .read-more a:hover { text-decoration: underline; }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06);
+      padding: 40px; border-radius: 12px; text-align: center; margin-top: 48px;
+    }
+    .cta-section h2 { margin: 0 0 20px; font-size: 1.6rem; color: #222; }
+    .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .cta-btn {
+      display: inline-block; padding: 12px 24px; background: #6c63ff; color: white;
+      text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(108,99,255,0.3); }
+    .cta-btn.secondary { background: white; color: #6c63ff; border: 2px solid #6c63ff; }
+
+    /* ── Carousel ── */
+    .carousel {
+      position: relative;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 24px 0;
+    }
+    .carousel-track {
+      display: flex;
+      transition: transform 0.4s ease;
+    }
+    .carousel-slide {
+      min-width: 100%;
+      padding: 16px;
+    }
+    .carousel-slide img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+    }
+    .carousel-slide .img-caption {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: #888;
+      line-height: 1.5;
+    }
+    .carousel-slide .img-caption strong {
+      display: block;
+      color: #333;
+      font-size: 0.95rem;
+      margin-bottom: 3px;
+    }
+    .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0,0,0,0.12);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: #444;
+      z-index: 2;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .carousel-nav:hover {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .carousel-nav.prev { left: 10px; }
+    .carousel-nav.next { right: 10px; }
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 0;
+    }
+    .carousel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.15);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.2s;
+    }
+    .carousel-dot.active {
+      background: #6c63ff;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero-content { grid-template-columns: 1fr; }
+      .hero-text h2 { font-size: 1.8rem; }
+      .comparison-grid, .featured-tools { grid-template-columns: 1fr; }
+      .case-container { padding: 24px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <h1><a href="index.html">DAVID TAYLOR <span>|</span> CONTENT DESIGNER</a></h1>
+    <div class="header-links">
+      <a href="about.html">About</a>
+      <a href="mailto:email@daviddot.com">Contact</a>
+    </div>
+  </div>
+</div>
+
+<div class="case-container">
+
+  <a href="index.html" class="back-link">&larr; Back to portfolio</a>
+
+  <!-- Hero -->
+  <div class="hero-section wide">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h2>Pok&eacute;mon Semantic Tools</h2>
+        <p>A semantic search engine for 1,025 Pok&eacute;mon&mdash;built with AI, powered by information architecture</p>
+        <div class="hero-tags">
+          <span class="hero-tag">Personal Project</span>
+          <span class="hero-tag">2023&ndash;2026</span>
+          <span class="hero-tag">Information Architecture</span>
+          <span class="hero-tag">AI + Content Design</span>
+        </div>
+      </div>
+      <div class="hero-metrics">
+        <div class="metric-item">
+          <div class="metric-number">500K+</div>
+          <div class="metric-label">Words Analyzed</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-number">100+</div>
+          <div class="metric-label">Semantic Tags Created</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-number">0</div>
+          <div class="metric-label">Lines of Code Written by Me</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Personal intro -->
+  <div class="intro">
+    <p>This project started as a desire to analyze and filter Pok&eacute;mon data in ways that weren't available from other fansites. It also helped me learn to code with AI. Yes, AI handled all the coding. No, I still don't know how to write a Python script. Does it matter? You decide.</p>
+    <p>The real challenge wasn't code&mdash;it was structure.</p>
+    <p><a href="https://veekun.com/dex/pokemon/search" target="_blank">Veekun</a> is probably the most sophisticated search engine out there, and <a href="https://bulbapedia.bulbagarden.net/wiki/Main_Page" target="_blank">Bulbapedia</a> is the most comprehensive. I guess I like lists and labels.</p>
+    <p>As far as I know, I'm the only person to feed the entire Pok&eacute;dex into AI and have it classify each sentence into a concept from a controlled vocabulary. A semantic-based Pok&eacute;mon search engine? Anything is possible with Claude AI.</p>
+  </div>
+
+  <!-- Featured tools -->
+  <p class="section-label">Live Tools</p>
+  <div class="featured-tools">
+    <a href="oak.html" class="tool-card">
+      <h3>Semantic Pok&eacute;dex</h3>
+      <p>The full semantic search engine. Filter by habitat, behavior, body traits, powers, and 100+ structured tags across all 1,025 Pok&eacute;mon.</p>
+      <span class="tool-badge">Flagship Tool &rarr;</span>
+    </a>
+    <a href="size.html" class="tool-card">
+      <h3>Size Comparison Tool</h3>
+      <p>Visual height and weight comparisons for Pok&eacute;mon's 30th anniversary. How big is a Wailord compared to a Joltik?</p>
+      <span class="tool-badge">30th Anniversary &rarr;</span>
+    </a>
+    <a href="algori.html" class="tool-card">
+      <h3>Similarity Grouper</h3>
+      <p>Find each Pok&eacute;mon's nearest neighbor by adjusting attribute weights&mdash;color, type, shape, stats.</p>
+      <span class="tool-badge">Explore &rarr;</span>
+    </a>
+    <a href="taxonomy.html" class="tool-card">
+      <h3>Taxonomy Browser</h3>
+      <p>Every text element and icon is a clickable filter. Unlimited filter combinations with real-time updates.</p>
+      <span class="tool-badge">Explore &rarr;</span>
+    </a>
+  </div>
+
+  <!-- Oak screenshots carousel -->
+  <p class="section-label">Semantic Pok&eacute;dex in Action</p>
+  <p style="color:#555; font-size:1rem; line-height:1.6; margin-bottom:16px;">The flagship tool doesn't just filter&mdash;it <strong>summarizes</strong>. Select any combination of filters and the Pok&eacute;dex instantly generates aggregate stats: type distributions, most common abilities, shared moves, and top lore tags across your results. It turns 1,025 creatures into answerable questions.</p>
+
+  <div class="carousel" id="oak-carousel">
+    <div class="carousel-track">
+      <div class="carousel-slide">
+        <img src="oak_filters.jpg" alt="Oak filter panel showing Nature &amp; Habitat taxonomy">
+        <div class="img-caption">
+          <strong>100+ Semantic Filters</strong>
+          The full classification taxonomy is browsable and clickable&mdash;filter by habitat, weather, ecology, body type, and more
+        </div>
+      </div>
+      <div class="carousel-slide">
+        <img src="oak_detail.jpg" alt="Heatran detail view with Metallic lore classification">
+        <div class="img-caption">
+          <strong>Every Pok&eacute;mon Entry, Classified</strong>
+          Each Pok&eacute;dex sentence is mapped to semantic tags&mdash;Heatran's &ldquo;rugged steel&rdquo; becomes [Metallic, Torso, Rough]
+        </div>
+      </div>
+      <div class="carousel-slide">
+        <img src="oak_search.jpg" alt="Aggregate stats for Rock-type Irondefense users">
+        <div class="img-caption">
+          <strong>Instant Data Summaries</strong>
+          Filter to Rock-types that know Irondefense and get aggregate breakdowns&mdash;type %, color %, top abilities, and most common lore tags
+        </div>
+      </div>
+    </div>
+    <button class="carousel-nav prev" onclick="moveCarousel('oak-carousel', -1)">&lsaquo;</button>
+    <button class="carousel-nav next" onclick="moveCarousel('oak-carousel', 1)">&rsaquo;</button>
+    <div class="carousel-dots">
+      <button class="carousel-dot active" onclick="goToSlide('oak-carousel', 0)"></button>
+      <button class="carousel-dot" onclick="goToSlide('oak-carousel', 1)"></button>
+      <button class="carousel-dot" onclick="goToSlide('oak-carousel', 2)"></button>
+    </div>
+  </div>
+
+  <!-- Size comparison carousel -->
+  <p class="section-label" style="margin-top:48px;">Size Comparison Tool</p>
+  <p style="color:#555; font-size:1rem; line-height:1.6; margin-bottom:16px;">Built for Pok&eacute;mon's 30th anniversary. Compare any combination of Pok&eacute;mon side-by-side with accurate height scaling, a human silhouette for reference, and toggleable grid lines. Supports both static artwork and animated sprites.</p>
+
+  <div class="carousel" id="size-carousel">
+    <div class="carousel-track">
+      <div class="carousel-slide">
+        <img src="size_static.jpg" alt="Size comparison of Ekans and Fearow with static sprites">
+        <div class="img-caption">
+          <strong>Static Sprite Mode</strong>
+          Ekans (0'11") vs Fearow (8'10")&mdash;with human silhouette and height grid for real-world scale
+        </div>
+      </div>
+      <div class="carousel-slide">
+        <img src="size_animated.jpg" alt="Size comparison of Magnemite, Gholdengo, and Sirfetch'd with animated sprites">
+        <div class="img-caption">
+          <strong>Animated Sprite Mode</strong>
+          Compare multiple Pok&eacute;mon at once with animated 3D models&mdash;toggle between static and animated views
+        </div>
+      </div>
+    </div>
+    <button class="carousel-nav prev" onclick="moveCarousel('size-carousel', -1)">&lsaquo;</button>
+    <button class="carousel-nav next" onclick="moveCarousel('size-carousel', 1)">&rsaquo;</button>
+    <div class="carousel-dots">
+      <button class="carousel-dot active" onclick="goToSlide('size-carousel', 0)"></button>
+      <button class="carousel-dot" onclick="goToSlide('size-carousel', 1)"></button>
+    </div>
+  </div>
+
+  <!-- Why it matters -->
+  <div class="callout">
+    <h3>Why Better Grouping Matters</h3>
+    <p>Most official Pok&eacute;mon products just group by elemental type&mdash;&ldquo;Fire&rdquo; or &ldquo;Grass&rdquo;&mdash;which gets boring across 1,000+ creatures. As live-service games like Pok&eacute;mon GO and Pok&eacute;mon Pocket TCG use seasonal events and quests, there's a bigger need for more interesting ways to group Pok&eacute;mon: by climate, by body type, by behavior. Structure matters just as much as code.</p>
+  </div>
+
+  <!-- At a glance -->
+  <div class="overview-grid">
+    <div class="overview-card">
+      <h3><span class="overview-icon">🎯</span> Challenge</h3>
+      <p>30 years of Pok&eacute;mon flavor text with no fixed schema. Entries are recycled, incomplete, and impossible to compare across species.</p>
+    </div>
+    <div class="overview-card">
+      <h3><span class="overview-icon">💡</span> Solution</h3>
+      <p>Custom AI-coded tools to deduplicate entries, classify phrases into structured categories, and create interactive filtering&mdash;all built in plain English.</p>
+    </div>
+    <div class="overview-card">
+      <h3><span class="overview-icon">🤖</span> AI as Employee</h3>
+      <p>Gave instructions to Claude AI and ChatGPT to build dozens of single-use scripts, treating the computer like a team member. All data from publicly available sources.</p>
+    </div>
+  </div>
+
+  <!-- Process -->
+  <p class="section-label">Process</p>
+
+  <!-- The Problem -->
+  <div class="img-block">
+    <img src="bulba2.jpg" alt="Before - messy data">
+    <div class="img-caption">
+      <strong>The Problem: 30 Years of Inconsistent Data</strong>
+      Bulbapedia and PokeAPI rely on fan maintenance&mdash;data is overwhelming, sloppy, and always incomplete
+    </div>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="step">
+    <div class="step-number">1</div>
+    <h3>AI-Powered Data Cleanup Scripts</h3>
+    <p>Started with a script to pull all Pok&eacute;dex text entries, then another to deduplicate recycled text. Each problem required a new single-use tool&mdash;AI coded word frequency counters, categorization tools, and term mergers all in plain English instructions.</p>
+    <p>All data comes from publicly available sources. When looking through the data I didn't need it all&mdash;I renamed a few things, switched up some list systems, and found inaccuracies that became good practice in data integrity.</p>
+    <div class="img-block">
+      <img src="7.jpg" alt="Custom scripts">
+      <div class="img-caption">
+        <strong>Dozens of Custom AI Scripts</strong>
+        Each tool solved a specific data problem&mdash;deduplication, frequency analysis, categorization, and merging
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Semantic classification -->
+  <div class="step">
+    <div class="step-number">2</div>
+    <h3>Semantic Classification: 500K Words &rarr; 100+ Tags</h3>
+    <p>Over 500,000 words of Pok&eacute;dex text were analyzed phrase by phrase. Every phrase was classified into structured categories using a controlled vocabulary I designed, making messy unstructured text fully searchable and filterable.</p>
+
+    <div class="taxonomy-tree">
+      <h4>Hierarchical Taxonomy: 5 categories &rarr; 38 subcategories &rarr; 100+ tags</h4>
+      <ul>
+        <li><strong>Body:</strong> traits, coverings, senses, size</li>
+        <li><strong>Powers &amp; Abilities:</strong> elements, movement, attack/defense, psychic</li>
+        <li><strong>Nature &amp; Habitat:</strong> land, water, sky, weather, ecology</li>
+        <li><strong>Behavior:</strong> social, temperament, communication, reproduction</li>
+        <li><strong>Culture &amp; Stats:</strong> mythology, symbolism, human use, comparisons</li>
+      </ul>
+    </div>
+
+    <div class="img-block">
+      <img src="fil2.jpg" alt="Taxonomy interface">
+      <div class="img-caption">
+        <strong>Everything Is a Filter</strong>
+        Mobile-friendly filter menu (inspired by the Amazon shopping app)&mdash;filter, search, and explore across 8 dimensions without cognitive overload
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Color -->
+  <div class="step">
+    <div class="step-number">3</div>
+    <h3>K-Means Color Analysis &amp; Sprite Palettes</h3>
+    <p>Discovered that color was the biggest factor in how people interpret Pok&eacute;mon designs. Used K-means clustering to generate color palettes from sprites, then sorted by hex values to find patterns and duplicates.</p>
+    <div class="comparison-grid">
+      <div class="comparison-item">
+        <div class="comparison-label">Game Boy Sprites</div>
+        <img src="kme1.jpg" alt="Gameboy sprites">
+        <p>Original 2-color sprites&mdash;too much black/white for accurate color analysis</p>
+      </div>
+      <div class="comparison-item after">
+        <div class="comparison-label">3D Models</div>
+        <img src="col2.jpg" alt="3D model palettes">
+        <p>Modern 3D models provided accurate color proportions for palette extraction</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="img-block">
+    <img src="col1.jpg" alt="Color sorting">
+    <div class="img-caption">
+      <strong>Sorted by Hex Color Hue</strong>
+      Using Google Sheets formulas and ChatGPT, created automated color sorting to find patterns and duplicates
+    </div>
+  </div>
+
+  <!-- Step 4: Similarity -->
+  <div class="step">
+    <div class="step-number">4</div>
+    <h3>Pok&eacute;mon Similarity Grouper</h3>
+    <p>One of my goals was to discover relationships&mdash;mostly to improve fan projects and encourage better merchandise, since most attributes get ignored or don't have assigned labels for things like &ldquo;climate&rdquo; or &ldquo;dog.&rdquo;</p>
+    <p>Built a weighted similarity calculator that scores Pok&eacute;mon across color, type, shape, and stats. Users can adjust attribute weights in real-time&mdash;a good experiment in determining each Pok&eacute;mon's nearest neighbor.</p>
+    <p>By creating new groups and connections, it naturally triggers completionist behaviors in fans, enables product collections for merchandising, and supports highly specific use cases&mdash;Pok&eacute;mon for a construction site, a pirate party, or even a breakfast cereal tie-in.</p>
+    <div class="img-block">
+      <img src="cats.jpg" alt="Similarity tool">
+      <div class="img-caption">
+        <strong>Weighted Similarity Calculator</strong>
+        Adjust attribute weights to answer: &ldquo;Find 10 Pok&eacute;mon most similar to Liepard when prioritizing body shape over color&rdquo;
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5: Quiz -->
+  <div class="step">
+    <div class="step-number">5</div>
+    <h3>Interactive Type Association Quiz</h3>
+    <p>Early user research revealed a critical gap: how do people actually associate visual designs with type labels? A traditional Google Form couldn't capture the nuance&mdash;I needed something smarter that could randomize Pok&eacute;mon, track partial credit scoring, and adapt to different visual modes.</p>
+    <p>Built an AI-powered quiz that collects data on how users associate visual qualities with elemental types. Users select 1&ndash;2 types per Pok&eacute;mon across different image modes (artwork, grayscale, sprites, 3D motion, palettes).</p>
+    <div class="img-block">
+      <img src="spr5.jpg" alt="Type quiz">
+      <div class="img-caption">
+        <strong>Smarter User Research Survey</strong>
+        Test type associations across 7 image modes and 9 generations&mdash;collecting data that Google Forms can't capture
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6: Languages -->
+  <div class="step">
+    <div class="step-number">6</div>
+    <h3>Global Accessibility: 29 Language Options</h3>
+    <p>To reach a global audience&mdash;especially users unfamiliar with Pok&eacute;mon&mdash;I added instant language switching. The interface updates on the spot, allowing anyone to participate regardless of their native language.</p>
+    <p>This wasn't just about translation. Different type labels in different languages could bias design decisions. Does &ldquo;Agua&rdquo; (Spanish for Water) evoke different visual associations than &ldquo;みず&rdquo; (Japanese) or &ldquo;Eau&rdquo; (French)?</p>
+    <div class="img-block">
+      <img src="langse.jpg" alt="Language options">
+      <div class="img-caption">
+        <strong>29+ Language Options with Instant Switching</strong>
+        Global accessibility reveals how type labels bias design interpretation across cultures
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 7: Recognition game -->
+  <div class="step">
+    <div class="step-number">7</div>
+    <h3>&ldquo;Who's That Pok&eacute;mon?&rdquo; Recognition Game</h3>
+    <p>Players identify Pok&eacute;mon before they &ldquo;flee&rdquo;&mdash;testing whether the core visual identity is strong enough for global recognition. The game serves as both user research validation and a demonstration of content localization challenges in global products.</p>
+    <div class="img-block">
+      <img src="quiz4.jpg" alt="Quiz game">
+      <div class="img-caption">
+        <strong>Image Recognition Testing</strong>
+        Can users identify Pok&eacute;mon? Tests visual identity strength
+      </div>
+    </div>
+  </div>
+
+  <!-- What this demonstrates -->
+  <p class="section-label">What This Demonstrates</p>
+  <div class="overview-grid">
+    <div class="overview-card">
+      <h3><span class="overview-icon">📊</span> User Research Design</h3>
+      <p>Built smarter research tools than Google Forms&mdash;randomization, partial credit scoring, multi-modal testing across 7 image types</p>
+    </div>
+    <div class="overview-card">
+      <h3><span class="overview-icon">🌍</span> Global Content Strategy</h3>
+      <p>29+ language options reveal how type labels bias visual perception&mdash;critical for localization and international products</p>
+    </div>
+    <div class="overview-card">
+      <h3><span class="overview-icon">🤖</span> AI-Powered Content Tools</h3>
+      <p>Built interactive research surveys, similarity calculators, and validation games using AI without coding knowledge</p>
+    </div>
+    <div class="overview-card">
+      <h3><span class="overview-icon">🏗️</span> IA at Scale</h3>
+      <p>Structural thinking turns messy, inconsistent data into organized, findable product inspiration&mdash;proving that structure matters as much as code</p>
+    </div>
+  </div>
+
+  <!-- Read more -->
+  <div class="read-more">
+    <h4>Read the Full Journey</h4>
+    <ul>
+      <li><a href="https://www.linkedin.com/pulse/pok%C3%A9dex-text-meets-ai-creating-structured-searchable-semantic-taylor-hvwzc/" target="_blank">Pok&eacute;dex Text Meets AI: Creating Structured, Searchable Semantic Data &rarr;</a></li>
+      <li><a href="https://www.linkedin.com/pulse/gotta-sort-em-all-my-pokemon-taxonomy-tool-evolved-ai-david-taylor-pafic/" target="_blank">Gotta Sort 'Em All: My Pok&eacute;mon Taxonomy Tool Evolved with AI &rarr;</a></li>
+      <li><a href="https://www.linkedin.com/pulse/charged-knowledge-electric-tale-ai-pok%C3%A9mon-taxonomy-david-taylor-vk8ec/" target="_blank">Charged with Knowledge: An Electric Tale of AI &amp; Pok&eacute;mon Taxonomy &rarr;</a></li>
+    </ul>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Explore the Live Tools</h2>
+    <div class="cta-buttons">
+      <a href="oak.html" class="cta-btn">Semantic Pok&eacute;dex</a>
+      <a href="size.html" class="cta-btn">Size Comparison</a>
+      <a href="algori.html" class="cta-btn">Similarity Grouper</a>
+      <a href="taxonomy.html" class="cta-btn secondary">Taxonomy Browser</a>
+      <a href="poke.html" class="cta-btn secondary">Quiz Game</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function moveCarousel(id, dir) {
+  var el = document.getElementById(id);
+  var track = el.querySelector('.carousel-track');
+  var slides = el.querySelectorAll('.carousel-slide');
+  var dots = el.querySelectorAll('.carousel-dot');
+  var current = 0;
+  dots.forEach(function(d, i) { if (d.classList.contains('active')) current = i; });
+  var next = current + dir;
+  if (next < 0) next = slides.length - 1;
+  if (next >= slides.length) next = 0;
+  track.style.transform = 'translateX(-' + (next * 100) + '%)';
+  dots.forEach(function(d) { d.classList.remove('active'); });
+  dots[next].classList.add('active');
+}
+
+function goToSlide(id, index) {
+  var el = document.getElementById(id);
+  var track = el.querySelector('.carousel-track');
+  var dots = el.querySelectorAll('.carousel-dot');
+  track.style.transform = 'translateX(-' + (index * 100) + '%)';
+  dots.forEach(function(d) { d.classList.remove('active'); });
+  dots[index].classList.add('active');
+}
+</script>
+</body>
+</html>      margin: 0;
       font-size: 1.5rem;
       color: #333;
     }
