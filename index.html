@@ -5,905 +5,1303 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DAVID TAYLOR: CONTENT DESIGNER</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f5f5f5;
-    }
-    
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #333; }
+
+    /* ── Header ── */
     .header {
-      background-color: white;
-      padding: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      padding: 14px 24px;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 300;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
     }
-    
     .header-content {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
-    .header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #333;
-    }
-    
+    .header h1 { margin: 0; font-size: 1.1rem; color: #222; font-weight: 600; letter-spacing: 0.5px; }
+    .header h1 span { color: #6c63ff; }
+    .header-links { display: flex; gap: 6px; }
     .header-links a {
-      margin-left: 20px;
-      color: #333;
+      color: #666;
       text-decoration: none;
-      font-weight: bold;
-      transition: color 0.3s;
-    }
-    
-    .header-links a:hover {
-      color: #6c63ff;
-    }
-    
-    .main-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 40px 20px;
-      display: grid;
-      grid-template-columns: 1fr 280px;
-      gap: 40px;
-    }
-    
-    .content-area {
-      min-width: 0;
-    }
-    
-    /* Bio Section */
-    .bio-section {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      margin-bottom: 30px;
-    }
-    
-    .bio-section h2 {
-      margin-top: 0;
-      color: #333;
-      font-size: 1.8rem;
-    }
-    
-    .bio-text {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      color: #555;
-      margin-bottom: 20px;
-    }
-    
-    .bio-highlights {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-top: 20px;
-    }
-    
-    .highlight-tag {
-      background: #dbdf00;
-      padding: 8px 16px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 6px 14px;
       border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #333;
+      transition: all 0.2s;
+      border: 1px solid transparent;
     }
-    
-    .section-title {
-      font-size: 2rem;
-      color: #333;
-      margin-bottom: 25px;
-      border-bottom: 3px solid #dbdf00;
-      padding-bottom: 10px;
+    .header-links a:hover { color: #222; background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); }
+
+    /* ── Graph Hero ── */
+    .graph-hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      padding-top: 52px; /* header height */
+      overflow: hidden;
+      background: #f8f9fc;
     }
-    
-    /* Chatbot Section */
-    .chatbot-section {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      margin-bottom: 30px;
+    #graph-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
     }
-    
-    .search-container {
+    #graph-container svg { display: block; }
+    .link { stroke: rgba(0,0,0,0.12); stroke-opacity: 1; }
+    .node-label { font-size: 12px; fill: rgba(0,0,0,0.7); pointer-events: none; font-weight: 500; }
+    .link-label { font-size: 10px; fill: rgba(0,0,0,0.45); pointer-events: none; }
+
+    /* ── Graph Overlays ── */
+    .graph-overlay {
+      position: absolute;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .graph-overlay > * { pointer-events: auto; }
+
+    /* Top-left: legend + filters */
+    .graph-controls {
+      top: 62px; left: 16px;
       display: flex;
+      flex-direction: column;
       gap: 10px;
-      margin-bottom: 20px;
+      max-width: 420px;
     }
-    
-    #search-input {
+    .graph-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: #666; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .filter-btn {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0,0,0,0.12);
+      padding: 6px 14px;
+      border-radius: 18px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #666;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { color: #222; border-color: rgba(0,0,0,0.25); }
+    .filter-btn.active { background: #6c63ff; color: #fff; border-color: #6c63ff; }
+
+    /* ── Chatbot floating panel ── */
+    .chat-panel {
+      bottom: 20px; right: 20px;
+      width: 380px;
+      max-height: calc(100vh - 100px);
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .chat-panel.collapsed { max-height: 52px; }
+    .chat-panel.collapsed .chat-body { display: none; }
+    .chat-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-shrink: 0;
+    }
+    .chat-panel-header h3 { margin: 0; font-size: 0.9rem; color: #222; font-weight: 600; }
+    .chat-toggle-icon {
+      width: 20px; height: 20px;
+      color: #888;
+      transition: transform 0.3s;
+    }
+    .chat-panel.collapsed .chat-toggle-icon { transform: rotate(180deg); }
+    .chat-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .chat-messages {
       flex: 1;
-      padding: 12px 18px;
-      border: 2px solid #ddd;
-      border-radius: 25px;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.3s;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px;
+      max-height: 280px;
+      scroll-behavior: smooth;
     }
-    
-    #search-input:focus {
-      border-color: #6c63ff;
+    .chat-msg {
+      max-width: 88%;
+      padding: 9px 14px;
+      border-radius: 14px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      word-wrap: break-word;
     }
-    
-    .search-send-btn {
-      padding: 12px 24px;
+    .chat-msg.bot {
+      background: rgba(0,0,0,0.04);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-bottom-left-radius: 4px;
+      align-self: flex-start;
+      color: #444;
+    }
+    .chat-msg.user {
       background: #6c63ff;
       color: white;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: background 0.3s;
+      border-bottom-right-radius: 4px;
+      align-self: flex-end;
     }
-    
-    .search-send-btn:hover {
-      background: #574fe3;
-    }
-    
+    .chat-msg.typing { color: #999; font-style: italic; }
     #quickPrompts {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 15px;
+      gap: 5px;
+      padding: 0 14px 10px;
     }
-    
     .quick-prompt-btn {
-      padding: 8px 14px;
-      font-size: 0.85rem;
-      color: #6366f1;
-      background: #e0e7ff;
-      border: none;
-      border-radius: 15px;
+      padding: 5px 11px;
+      font-size: 0.72rem;
+      color: #a5a0ff;
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s;
     }
-    
-    .quick-prompt-btn:hover {
-      background: #c7d2fe;
-    }
-    
-    #responseDisplay {
-      padding: 20px;
-      background: #f9f9f9;
-      border-left: 4px solid #dbdf00;
-      border-radius: 4px;
-      line-height: 1.6;
-      color: #333;
-      min-height: 60px;
-    }
-    
-    /* Knowledge Graph */
-    .graph-section {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      margin-bottom: 30px;
-    }
-    
-    .filters {
-      margin-bottom: 20px;
+    .quick-prompt-btn:hover { background: rgba(108,99,255,0.2); color: #574fe3; }
+    .chat-input-row {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px 14px;
+      border-top: 1px solid rgba(0,0,0,0.06);
     }
-    
-    .filter-btn {
-      background: white;
-      border: 2px solid #ddd;
-      padding: 8px 16px;
+    #search-input {
+      flex: 1;
+      padding: 9px 14px;
+      border: 1px solid rgba(0,0,0,0.15);
       border-radius: 20px;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-weight: 500;
+      font-size: 0.82rem;
+      outline: none;
+      background: rgba(0,0,0,0.03);
+      color: #333;
+      transition: border-color 0.2s;
     }
-    
-    .filter-btn:hover, .filter-btn.active {
+    #search-input:focus { border-color: #6c63ff; }
+    #search-input::placeholder { color: #aaa; }
+    .search-send-btn {
+      padding: 9px 18px;
       background: #6c63ff;
       color: white;
-      border-color: #6c63ff;
-    }
-    
-    #graph-container {
-      width: 100%;
-      height: 600px;
-      background: #fafafa;
-      border-radius: 8px;
-      position: relative;
-    }
-    
-    .node {
+      border: none;
+      border-radius: 20px;
       cursor: pointer;
-      stroke-width: 2px;
+      font-weight: 600;
+      font-size: 0.82rem;
+      transition: background 0.2s;
     }
-    
-    .link {
-      stroke: #999;
-      stroke-opacity: 0.6;
+    .search-send-btn:hover { background: #574fe3; }
+
+    /* ── Node Detail floating panel ── */
+    .detail-panel {
+      bottom: 20px; left: 20px;
+      width: 360px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+      padding: 18px;
+      display: none;
     }
-    
-    .link-label {
-      font-size: 10px;
-      fill: #555;
+    .detail-panel.visible { display: block; }
+    .detail-close {
+      float: right;
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
     }
-    
-    /* Case Studies Gallery */
-    .case-studies {
-      margin-bottom: 40px;
+    .detail-close:hover { color: #222; }
+    .node-detail-name { font-size: 1.1rem; font-weight: 700; color: #222; margin: 0 0 6px 0; }
+    .node-detail-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #000;
+      margin-bottom: 10px;
     }
-    
+    .node-detail-desc { color: #666; font-size: 0.85rem; line-height: 1.6; margin: 0 0 12px 0; }
+    .connections-label { font-size: 0.78rem; font-weight: 600; color: #666; margin-bottom: 6px; }
+    .connection-chip {
+      display: inline-block;
+      margin: 2px 3px 2px 0;
+      padding: 3px 8px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 8px;
+      font-size: 0.72rem;
+      color: #666;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .ask-btn {
+      margin-top: 10px;
+      padding: 6px 14px;
+      background: #6c63ff;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      transition: background 0.2s;
+    }
+    .ask-btn:hover { background: #574fe3; }
+
+    /* ── Scroll hint ── */
+    .scroll-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: rgba(0,0,0,0.3);
+      font-size: 0.72rem;
+      animation: pulse-down 2s ease infinite;
+    }
+    @keyframes pulse-down {
+      0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.5; }
+      50% { transform: translateX(-50%) translateY(6px); opacity: 1; }
+    }
+
+    /* ── Bottom sections ── */
+    .bottom-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 50px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      color: #222;
+      margin: 0 0 20px 0;
+      border-bottom: 2px solid #6c63ff;
+      padding-bottom: 8px;
+      display: inline-block;
+    }
+
+    /* Case Studies */
     .case-studies-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 20px;
     }
-    
     .case-card {
-      background: white;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.08);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      transition: transform 0.3s, box-shadow 0.3s;
+      transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
       cursor: pointer;
     }
-    
-    .case-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    
+    .case-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.15); }
     .case-thumbnail {
       width: 100%;
-      height: 180px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 140px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3rem;
-      color: white;
+      font-size: 2.6rem;
     }
-    
-    .case-card:nth-child(1) .case-thumbnail {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    .case-card:nth-child(1) .case-thumbnail { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .case-card:nth-child(2) .case-thumbnail { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .case-card:nth-child(3) .case-thumbnail { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .case-card:nth-child(4) .case-thumbnail { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .case-card:nth-child(5) .case-thumbnail { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+    .case-content { padding: 16px; }
+    .case-title { font-size: 1.05rem; font-weight: 700; color: #222; margin: 0 0 6px 0; }
+    .case-description { color: #666; line-height: 1.5; font-size: 0.85rem; margin-bottom: 10px; }
+    .case-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .case-tag { background: rgba(0,0,0,0.05); padding: 3px 8px; border-radius: 8px; font-size: 0.72rem; color: #666; }
+
+    /* About / Footer */
+    .about-footer {
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      padding: 36px;
     }
-    
-    .case-card:nth-child(2) .case-thumbnail {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
     }
-    
-    .case-card:nth-child(3) .case-thumbnail {
-      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    .about-bio h2 { margin: 0 0 12px 0; font-size: 1.4rem; color: #222; }
+    .about-bio p { color: #666; line-height: 1.7; font-size: 0.92rem; margin: 0 0 16px 0; }
+    .bio-highlights { display: flex; gap: 8px; flex-wrap: wrap; }
+    .highlight-tag {
+      background: rgba(108,99,255,0.1);
+      color: #6c63ff;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid rgba(108,99,255,0.2);
     }
-    
-    .case-card:nth-child(4) .case-thumbnail {
-      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    }
-    
-    .case-card:nth-child(5) .case-thumbnail {
-      background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-    }
-    
-    .case-content {
-      padding: 20px;
-    }
-    
-    .case-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #333;
-      margin: 0 0 10px 0;
-    }
-    
-    .case-description {
-      color: #666;
-      line-height: 1.5;
-      font-size: 0.95rem;
-      margin-bottom: 15px;
-    }
-    
-    .case-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    
-    .case-tag {
-      background: #f0f0f0;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      color: #555;
-    }
-    
-    /* Sticky Notes Sidebar */
-    .sticky-sidebar {
-      position: sticky;
-      top: 100px;
-      height: fit-content;
-    }
-    
+    .sticky-strip { display: flex; flex-direction: column; gap: 16px; }
     .sticky-note {
-      background-color: #ffeb3b;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 3px 3px 8px rgba(0,0,0,0.15);
-      margin-bottom: 20px;
-      position: relative;
-      transform: rotate(-2deg);
-      transition: all 0.3s ease;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 16px 18px;
+      border-radius: 10px;
+      transition: border-color 0.2s;
     }
-    
-    .sticky-note:hover {
-      transform: rotate(0deg) scale(1.02);
-      box-shadow: 5px 5px 12px rgba(0,0,0,0.2);
-    }
-    
-    .sticky-note:nth-child(2) {
-      transform: rotate(1.5deg);
-      background-color: #64ffda;
-    }
-    
-    .sticky-note:nth-child(3) {
-      transform: rotate(-1deg);
-      background-color: #ff9ff3;
-    }
-    
-    .sticky-note h3 {
-      margin: 0 0 12px 0;
-      font-size: 1rem;
-      color: #2d3436;
-    }
-    
-    .sticky-note p {
-      margin: 8px 0;
-      font-size: 0.85rem;
-      line-height: 1.4;
-      color: #2d3436;
-    }
-    
+    .sticky-note:hover { border-color: rgba(0,0,0,0.15); }
+    .sticky-note h3 { margin: 0 0 6px 0; font-size: 0.88rem; color: #333; }
+    .sticky-note p { margin: 4px 0; font-size: 0.8rem; line-height: 1.4; color: #666; }
     .sticky-note a {
-      display: block;
-      margin-top: 10px;
-      color: #2d3436;
+      display: inline-block;
+      margin-top: 6px;
+      margin-right: 8px;
+      color: #6c63ff;
       text-decoration: none;
       font-weight: 600;
-      font-size: 0.85rem;
-      padding: 8px;
-      background: rgba(255,255,255,0.5);
-      border-radius: 4px;
-      transition: background 0.3s;
+      font-size: 0.78rem;
+      transition: color 0.2s;
     }
-    
-    .sticky-note a:hover {
-      background: rgba(255,255,255,0.8);
+    .sticky-note a:hover { color: #574fe3; }
+
+    /* ── Instructions tip ── */
+    .graph-tip {
+      top: 62px; right: 16px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      padding: 14px 16px;
+      max-width: 220px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      font-size: 0.78rem;
+      color: #555;
+      line-height: 1.55;
+      animation: tipFadeIn 0.5s ease 1s both;
     }
-    
-    @media (max-width: 1200px) {
-      .main-container {
-        grid-template-columns: 1fr;
-      }
-      
-      .sticky-sidebar {
-        position: static;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-      }
-      
-      .sticky-note {
-        transform: rotate(0deg) !important;
-      }
+    .graph-tip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .graph-tip-header strong {
+      font-size: 0.82rem;
+      color: #222;
+    }
+    .graph-tip-close {
+      background: none;
+      border: none;
+      color: #999;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 1;
+    }
+    .graph-tip-close:hover { color: #444; }
+    .graph-tip ul {
+      margin: 0;
+      padding-left: 16px;
+    }
+    .graph-tip li {
+      margin-bottom: 4px;
+    }
+    .graph-tip li:last-child { margin-bottom: 0; }
+    .graph-tip.hidden { display: none; }
+    @keyframes tipFadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      .chat-panel { width: 320px; right: 10px; bottom: 10px; }
+      .detail-panel { width: 300px; left: 10px; bottom: 10px; }
+      .about-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .chat-panel { width: calc(100% - 20px); right: 10px; left: 10px; }
+      .detail-panel { display: none !important; }
+      .graph-controls { max-width: calc(100% - 20px); }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="header-content">
-      <h1>DAVID TAYLOR | CONTENT DESIGNER</h1>
-      <div class="header-links">
-        <a href="https://grad.substack.com" target="_blank">blog</a>
-        <a href="https://podcasts.apple.com/us/podcast/co-design-with-mom-users-who-matter-most/id1817758084" target="_blank">podcast</a>
-        <a href="about.html">about</a>
-        <a href="mailto:email@daviddot.com">contact</a>
-      </div>
-    </div>
-  </div>
 
-  <div class="main-container">
-    <div class="content-area">
-     
-
-      <!-- Interactive Chatbot -->
-      <div class="chatbot-section">
-        <h2 class="section-title">Ask About My Experience</h2>
-        <div class="search-container">
-          <input type="text" id="search-input" placeholder="Try: 'Fortune 100 experience' or 'technical skills'">
-          <button id="sendButton" class="search-send-btn">Send</button>
-        </div>
-        <div id="quickPrompts"></div>
-        <div id="responseDisplay">Hi! I'm David's AI assistant. Ask me anything about his experience, skills, or achievements. Try clicking a quick prompt above!</div>
-      </div>
-
-      <!-- Knowledge Graph -->
-      <div class="graph-section">
-        <h2 class="section-title">Interactive Knowledge Graph</h2>
-        <p style="color: #666; margin-bottom: 20px;">Explore my experience, skills, and connections visually. Click nodes for details or use filters to focus on specific areas.</p>
-        <div class="filters">
-          <button class="filter-btn active" data-filter="all">All</button>
-          <button class="filter-btn" data-filter="education">Education</button>
-          <button class="filter-btn" data-filter="work">Work</button>
-          <button class="filter-btn" data-filter="skills">Skills</button>
-          <button class="filter-btn" data-filter="personal">Personal</button>
-        </div>
-        <div id="graph-container"></div>
-      </div>
-
-      <!-- Case Studies -->
-      <div class="case-studies">
-        <h2 class="section-title">Case Studies & Projects</h2>
-        <div class="case-studies-grid">
-          
-         <div class="case-card" onclick="window.open('find_table_case_study.html')">
-  <div class="case-thumbnail">😷</div>
-  <div class="case-content">
-    <h3 class="case-title">COVID-19 Dining</h3>
-    <p class="case-description">Help students find comfort in uncomfortable environments through design research methods</p>
-    <div class="case-tags">
-      <span class="case-tag">Safety</span>
-      <span class="case-tag">Prototyping</span>
-      <span class="case-tag">Contextual Inquiry</span>
+<!-- Header -->
+<div class="header">
+  <div class="header-content">
+    <h1>DAVID TAYLOR <span>|</span> CONTENT DESIGNER</h1>
+    <div class="header-links">
+      <a href="about.html">About</a>
+      <a href="mailto:email@daviddot.com">Contact</a>
     </div>
   </div>
 </div>
 
-<div class="case-card" onclick="window.open('https://davidtaylor.framer.website/cafe', '_blank')">
-  <div class="case-thumbnail">🥯</div>
-  <div class="case-content">
-    <h3 class="case-title">Café Menu Ontology</h3>
-    <p class="case-description">Structured taxonomy using PoolParty and SKOS for improved menu discoverability</p>
-    <div class="case-tags">
-      <span class="case-tag">Taxonomy</span>
-      <span class="case-tag">PoolParty</span>
-      <span class="case-tag">SKOS</span>
+<!-- Graph Hero (full viewport) -->
+<div class="graph-hero">
+  <div id="graph-container"></div>
+
+  <!-- Overlay: controls top-left -->
+  <div class="graph-overlay graph-controls">
+    <div class="graph-legend" id="graph-legend"></div>
+    <div class="filters" id="filter-buttons"></div>
+  </div>
+
+  <!-- Overlay: instructions tip top-right -->
+  <div class="graph-overlay graph-tip" id="graph-tip">
+    <div class="graph-tip-header">
+      <strong>How to explore</strong>
+      <button class="graph-tip-close" onclick="document.getElementById('graph-tip').classList.add('hidden')">&times;</button>
     </div>
+    <ul>
+      <li><strong>Drag</strong> to pan around</li>
+      <li><strong>Click a node</strong> for details</li>
+      <li><strong>Use filters</strong> to highlight topics</li>
+    </ul>
+  </div>
+
+  <!-- Overlay: chatbot bottom-right -->
+  <div class="graph-overlay chat-panel" id="chat-panel">
+    <div class="chat-panel-header" id="chat-panel-header">
+      <h3>Explore David's Experience</h3>
+      <svg class="chat-toggle-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
+    </div>
+    <div class="chat-body">
+      <div class="chat-messages" id="chat-messages"></div>
+      <div id="quickPrompts"></div>
+      <div class="chat-input-row">
+        <input type="text" id="search-input" placeholder="Ask about skills, GDPR, Disney...">
+        <button id="sendButton" class="search-send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay: node detail bottom-left -->
+  <div class="graph-overlay detail-panel" id="node-detail"></div>
+
+  <!-- Scroll hint -->
+  <div class="scroll-hint">
+    <span>Case Studies &amp; About</span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11.5l-5-5h10l-5 5z"/></svg>
   </div>
 </div>
 
-<div class="case-card" onclick="window.open('fhe.html', '_blank')">
-  <div class="case-thumbnail">🥊</div>
-  <div class="case-content">
-    <h3 class="case-title">FHE Fighter</h3>
-    <p class="case-description">Interactive Street Fighter-style survey for discovering group activity preferences</p>
-    <div class="case-tags">
-      <span class="case-tag">Survey Design</span>
-      <span class="case-tag">Web Dev</span>
-      <span class="case-tag">Gamification</span>
-    </div>
-  </div>
-</div>
-          <div class="case-card" onclick="window.location.href='semantic.html'">
-            <div class="case-thumbnail">⚡</div>
-            <div class="case-content">
-              <h3 class="case-title">Pokémon Semantic Tools</h3>
-              <p class="case-description">Comprehensive ontology and linked data framework for 1,025 Pokémon with AI-powered querying</p>
-              <div class="case-tags">
-                <span class="case-tag">Information Architecture</span>
-                <span class="case-tag">AI Prompts</span>
-                <span class="case-tag">Data Modeling</span>
-              </div>
-            </div>
-          </div>
+<!-- Bottom Content -->
+<div class="bottom-content">
 
-          <div class="case-card" onclick="window.location.href='https://vimeo.com/1139636394'">
-            <div class="case-thumbnail">🎤</div>
-            <div class="case-content">
-              <h3 class="case-title">Designing For My Mom</h3>
-              <p class="case-description">World IA Conference talk on empathy-driven human-centered design and usability testing</p>
-              <div class="case-tags">
-                <span class="case-tag">Speaking</span>
-                <span class="case-tag">UX Research</span>
-                <span class="case-tag">Accessibility</span>
-              </div>
-            </div>
-          </div>
-
+  <!-- Case Studies -->
+  <div>
+    <h2 class="section-title">Case Studies &amp; Projects</h2>
+    <div class="case-studies-grid">
+      <div class="case-card" onclick="window.open('find_table_case_study.html')">
+        <div class="case-thumbnail">😷</div>
+        <div class="case-content">
+          <h3 class="case-title">COVID-19 Dining</h3>
+          <p class="case-description">Help students find comfort in uncomfortable environments through design research</p>
+          <div class="case-tags"><span class="case-tag">Safety</span><span class="case-tag">Prototyping</span><span class="case-tag">Contextual Inquiry</span></div>
+        </div>
+      </div>
+      <div class="case-card" onclick="window.open('https://davidtaylor.framer.website/cafe', '_blank')">
+        <div class="case-thumbnail">🥯</div>
+        <div class="case-content">
+          <h3 class="case-title">Caf&eacute; Menu Ontology</h3>
+          <p class="case-description">Structured taxonomy using PoolParty and SKOS for improved discoverability</p>
+          <div class="case-tags"><span class="case-tag">Taxonomy</span><span class="case-tag">PoolParty</span><span class="case-tag">SKOS</span></div>
+        </div>
+      </div>
+      <div class="case-card" onclick="window.open('fhe.html', '_blank')">
+        <div class="case-thumbnail">🥊</div>
+        <div class="case-content">
+          <h3 class="case-title">FHE Fighter</h3>
+          <p class="case-description">Interactive Street Fighter-style survey for group activity preferences</p>
+          <div class="case-tags"><span class="case-tag">Survey Design</span><span class="case-tag">Web Dev</span><span class="case-tag">Gamification</span></div>
+        </div>
+      </div>
+      <div class="case-card" onclick="window.location.href='semantic.html'">
+        <div class="case-thumbnail">⚡</div>
+        <div class="case-content">
+          <h3 class="case-title">Pok&eacute;mon Semantic Tools</h3>
+          <p class="case-description">Ontology and linked data framework for 1,025 Pok&eacute;mon with AI querying</p>
+          <div class="case-tags"><span class="case-tag">IA</span><span class="case-tag">AI Prompts</span><span class="case-tag">Data Modeling</span></div>
+        </div>
+      </div>
+      <div class="case-card" onclick="window.location.href='https://vimeo.com/1139636394'">
+        <div class="case-thumbnail">🎤</div>
+        <div class="case-content">
+          <h3 class="case-title">Designing For My Mom</h3>
+          <p class="case-description">World Information Architecture talk on empathy-driven HCD and usability testing</p>
+          <div class="case-tags"><span class="case-tag">Speaking</span><span class="case-tag">UX Research</span><span class="case-tag">Accessibility</span></div>
         </div>
       </div>
     </div>
-
-    <!-- Sticky Notes Sidebar -->
-    <div class="sticky-sidebar">
-      <div class="sticky-note">
-        <h3>🎤 Recent Talk</h3>
-        <p>Presented "Designing for My Mom" at World IA Association Conference</p>
-        <a href="https://vimeo.com/1139636394" target="_blank">Watch on Vimeo →</a>
-      </div>
-      
-      <div class="sticky-note">
-        <h3>🎮 Fun Stuff</h3>
-        <p>Interactive tools I've built</p>
-        <a href="fhe.html" target="_blank">Street Fighter Survey →</a>
-        <a href="wip.html" target="_blank">Future Projects →</a>
-      </div>
-      
-      <div class="sticky-note">
-        <h3>💬 Let's Connect!</h3>
-        <p>Glad we met at IA Conference 2025</p>
-        <a href="mailto:email@daviddot.com">Email Me →</a>
-      </div>
-    </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-  <script>
-    // Chatbot functionality
-    const resumeFacts = [
-      { id: 1, action: "Compliance & Governance", context: "Deloitte (GDPR Workflows)", outcome: "Reduced Fines by $500K+", result: "Labeled personal data deletion workflows across global media websites, ensuring GDPR compliance and reducing potential fines by $500K–$1M+.", tags: ["profit", "fortune100", "consulting"], company: "Deloitte" },
-      { id: 2, action: "Cross-functional Collaboration", context: "Deloitte (OneTrust Automation)", outcome: "Saved Hundreds of Staff Hours", result: "Project-managed engineers and legal teams to implement automated OneTrust workflows, replacing manual email requests and saving hundreds of staff hours.", tags: ["time-savings", "managing-others", "fortune100", "consulting"], company: "Deloitte" },
-      { id: 3, action: "Stakeholder Communication", context: "Deloitte (Regulator Transparency)", outcome: "Enhanced Clarity/Transparency", result: "Edited privacy program documentation and client presentations, enhancing clarity and supporting regulator-facing transparency.", tags: ["fortune100", "consulting", "c-suite"], company: "Deloitte" },
-      { id: 11, action: "Management Consulting", context: "Deloitte (C-Suite Fortune 100)", outcome: "Advised Fortune 100 Executives", result: "Consulted with C-suite executives at Fortune 100 media companies on data privacy strategies, translating complex regulatory requirements into actionable business recommendations.", tags: ["consulting", "c-suite", "fortune100"], company: "Deloitte" },
-      { id: 4, action: "Cross-functional Collaboration", context: "Disney (Global Safety Comms)", outcome: "Reached 200,000+ Employees", result: "Developed multilingual safety, security, and crisis materials—including posters, blogs, emails, and graphics—for 200,000+ employees globally.", tags: ["fortune100", "time-zone"], company: "Disney" },
-      { id: 5, action: "Data Structuring & Analysis", context: "Pokemon Semantic Data Tools (AI)", outcome: "Built 1,025 Pokémon Framework", result: "Built a semantic ontology and linked data framework for 1,025 Pokémon, using custom AI programs to query weighted attributes for filtering and analysis.", tags: ["technical"], company: "Personal Project" },
-      { id: 7, action: "Process & Efficiency Optimization", context: "Microsoft (Power BI Adoption)", outcome: "Cut Report Creation Time 15–20%", result: "Conducted UX research and affinity mapping on Power BI adoption, generating insights that cut report creation time 15–20%.", tags: ["time-savings", "fortune100"], company: "Microsoft" }
-    ];
 
-    const quickPrompts = ["Fortune 100 experience", "Cost savings delivered", "Management consulting", "Technical skills", "C-suite experience"];
+</div>
 
-    function generateResponse(userMessage) {
-      const lowerMessage = userMessage.toLowerCase();
-      
-      if (lowerMessage.includes('fortune 100') || lowerMessage.includes('fortune100')) {
-        const fortune100Facts = resumeFacts.filter(f => f.tags.includes('fortune100'));
-        return `I have extensive Fortune 100 experience with **Deloitte, Disney, and Microsoft**:\n\n${fortune100Facts.slice(0, 3).map(f => `• **${f.company}**: ${f.result}`).join('\n\n')}`;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════
+   GRAPH DATA
+═══════════════════════════════════════════════════════ */
+var GROUP_COLORS = {
+  personal:  '#6c63ff',
+  education: '#dbdf00',
+  work:      '#aea1ff',
+  skills:    '#4ecdc4',
+  projects:  '#ff6b6b',
+  concepts:  '#ffd93d',
+  location:  '#95afc0',
+  media:     '#eb4d4b'
+};
+var GROUP_LABELS = {
+  personal:  'Identity',
+  education: 'Education',
+  work:      'Experience',
+  skills:    'Skills',
+  projects:  'Projects',
+  concepts:  'Concepts',
+  location:  'Locations',
+  media:     'Talks & Media'
+};
+
+var graphData = {
+  nodes: [
+    { id: 'n0',  caption: 'David Taylor',          group: 'personal',  details: 'Content designer and information architect. Makes complex things clear for humans.' },
+    { id: 'n60', caption: 'Humanist',              group: 'personal',  details: 'David is a scholar of the humanities \u2014 his design work is fundamentally human-centered.' },
+    { id: 'n61', caption: 'Creative',              group: 'personal',  details: 'Creativity is not just a trait for David \u2014 it is a professional practice and identity.' },
+    { id: 'n7',  caption: 'UW',                   group: 'education', details: 'University of Washington \u2014 where David earned his M.S. in Information Management, 2022.' },
+    { id: 'n6',  caption: 'iSchool',              group: 'education', details: 'The UW School of Information \u2014 home to graduate studies in IA, UX, and data management.' },
+    { id: 'n12', caption: 'M.S. Info Mgmt',       group: 'education', details: 'Master of Science in Information Management from UW, 2022.' },
+    { id: 'n10', caption: 'BYU',                  group: 'education', details: 'Brigham Young University \u2014 where David earned his B.A. in Advertising, 2016.' },
+    { id: 'n9',  caption: 'College of Fine Arts', group: 'education', details: 'The BYU college where David studied advertising, copywriting, media effects, and research.' },
+    { id: 'n13', caption: 'B.A. Advertising',     group: 'education', details: 'Bachelor of Arts in Advertising from BYU, 2016.' },
+    { id: 'n22', caption: 'Deloitte',             group: 'work',      details: 'Data Privacy Advisory Analyst, Aug 2022\u2013Oct 2023. Advised Fortune 100 media companies on GDPR compliance, privacy workflows, and program documentation.' },
+    { id: 'n32', caption: 'Disney Corporate',     group: 'work',      details: 'Global Communications Intern, Jun\u2013Sep 2016. Developed multilingual safety and crisis materials for 200,000+ employees worldwide.' },
+    { id: 'n38', caption: 'Microsoft',            group: 'work',      details: 'UX research capstone via University of Washington. Studied Power BI adoption, cutting report creation time 15\u201320%.' },
+    { id: 'n40', caption: 'Disneyland',           group: 'work',      details: 'Summer job as QSR cashier. First-hand experience in experience design and customer service.' },
+    { id: 'n43', caption: 'Daily Universe',       group: 'work',      details: 'Student newspaper at BYU. Developed project management and writing skills.' },
+    { id: 'sk1', caption: 'Plain-Language Writing',  group: 'skills', details: 'Making complex regulatory, technical, or corporate content clear and accessible. Applied at Disney, Deloitte, and in published talks.' },
+    { id: 'sk2', caption: 'Content Strategy',        group: 'skills', details: 'Planning, structuring, and governing content for discoverability and user needs.' },
+    { id: 'sk3', caption: 'Human-Centered Design',   group: 'skills', details: 'Design philosophy that starts with people. Thread across all of David\'s work.' },
+    { id: 'sk4', caption: 'Info Architecture',        group: 'skills', details: 'Organizing information so people can find and understand it. David\'s central discipline.' },
+    { id: 'sk5', caption: 'UX Research',              group: 'skills', details: 'Discovering user needs through contextual inquiry, affinity mapping, and usability testing.' },
+    { id: 'sk6', caption: 'Journey Mapping',          group: 'skills', details: 'Visualizing user experiences across time and touchpoints.' },
+    { id: 'sk7', caption: 'Microcopy',                group: 'skills', details: 'The small UI text that makes or breaks a user experience.' },
+    { id: 'sk8', caption: 'Workshop Facilitation',    group: 'skills', details: 'Leading collaborative working sessions with cross-functional teams.' },
+    { id: 'sk9', caption: 'Program Management',       group: 'skills', details: 'Managing complex initiatives across teams. At Deloitte, managed engineers and legal teams for OneTrust.' },
+    { id: 'n14', caption: 'Adv. Copywriting',         group: 'skills', details: 'Persuasive, audience-first writing. Studied at BYU.' },
+    { id: 'n16', caption: 'Qualitative Research',     group: 'skills', details: 'Interviews, observation, affinity mapping. Foundational to UX and consulting work.' },
+    { id: 'n18', caption: 'Trust & Privacy',           group: 'skills', details: 'Specialization from Deloitte: GDPR, data subject rights, privacy program management.' },
+    { id: 'n47', caption: 'AI Prompting',              group: 'skills', details: 'Designing effective AI prompts using Claude AI and ChatGPT for the Pok\u00e9mon semantic framework.' },
+    { id: 'n48', caption: 'Web Dev',                   group: 'skills', details: 'HTML, CSS, JavaScript \u2014 portfolio sites, data tools, and interactive experiences.' },
+    { id: 'n50', caption: 'PoolParty',                 group: 'skills', details: 'Enterprise taxonomy and ontology management platform. Used for the Caf\u00e9 Menu SKOS taxonomy.' },
+    { id: 'n35', caption: 'Crisis Communications',     group: 'skills', details: 'Clear, fast, multilingual communications in high-stakes situations. Learned at Disney.' },
+    { id: 'n3',  caption: 'Pok\u00e9mon Ontology',    group: 'projects',  details: 'Semantic ontology and linked data framework for 1,025 Pok\u00e9mon with AI-powered querying.' },
+    { id: 'n49', caption: 'Caf\u00e9 Menu Ontology',  group: 'projects',  details: 'SKOS-based taxonomy in PoolParty for a caf\u00e9 menu. Boosts discoverability and recommendations.' },
+    { id: 'n51', caption: 'UX Prototypes',        group: 'projects',  details: 'Group prototype projects via the iSchool \u2014 contextual inquiry, wireframing, system thinking.' },
+    { id: 'c1',  caption: 'Ontology',             group: 'concepts',  details: 'A formal representation of knowledge \u2014 defining concepts, properties, and relationships.' },
+    { id: 'c2',  caption: 'SKOS',                 group: 'concepts',  details: 'Simple Knowledge Organization System \u2014 W3C standard for taxonomies as linked data.' },
+    { id: 'c3',  caption: 'Knowledge Graph',      group: 'concepts',  details: 'A network of entities and relationships (like this visualization).' },
+    { id: 'c4',  caption: 'Schema',               group: 'concepts',  details: 'A structured blueprint for organizing data. Foundational to ontologies and linked data.' },
+    { id: 'c5',  caption: 'GDPR',                 group: 'concepts',  details: 'EU General Data Protection Regulation. David reduced fines by $500K\u2013$1M+ at Deloitte.' },
+    { id: 'c6',  caption: 'DSAR',                 group: 'concepts',  details: 'Data Subject Access Request \u2014 formal right under GDPR for personal data access.' },
+    { id: 'c7',  caption: 'RACI',                 group: 'concepts',  details: 'Responsibility assignment matrix: Responsible, Accountable, Consulted, Informed.' },
+    { id: 'c8',  caption: 'Steering Committee',   group: 'concepts',  details: 'A governing body providing oversight and direction.' },
+    { id: 'c9',  caption: 'Contextual Inquiry',   group: 'concepts',  details: 'UX field research method: observe and interview users in their natural context.' },
+    { id: 'c10', caption: 'Empathy',              group: 'concepts',  details: '"Designing for My Mom" is literally a demonstration of empathy as a design tool.' },
+    { id: 'c11', caption: 'Service Blueprint',    group: 'concepts',  details: 'A diagram mapping frontstage, backstage, and support processes.' },
+    { id: 'c12', caption: 'Lean Canvas',          group: 'concepts',  details: 'A one-page business model tool for rapid problem framing.' },
+    { id: 'c13', caption: 'Wizard of Oz',         group: 'concepts',  details: 'UX prototyping technique \u2014 human simulates system responses to test users.' },
+    { id: 'c14', caption: 'k-means Clustering',  group: 'concepts',  details: 'ML algorithm for grouping data by similarity. Used in Pok\u00e9mon attribute analysis.' },
+    { id: 'c15', caption: 'Holacracy',            group: 'concepts',  details: 'Self-management organizational structure with distributed authority.' },
+    { id: 'c16', caption: 'Coolhunting',          group: 'concepts',  details: 'Identifying emerging cultural trends. Background in advertising at BYU.' },
+    { id: 'c17', caption: 'Designated Market Area', group: 'concepts', details: 'Geographic TV market region (Nielsen). Relevant to Disney communications.' },
+    { id: 'c18', caption: 'FLOSS',               group: 'concepts',  details: 'Free/Libre/Open Source Software. Aligns with open data principles.' },
+    { id: 'c19', caption: 'System Thinking',     group: 'concepts',  details: 'Understanding how components of a system interrelate.' },
+    { id: 'm1',  caption: 'Designing for My Mom', group: 'media',    details: 'Talk at World IA Association Conference and Rutgers. Empathy-driven HCD.' },
+    { id: 'm2',  caption: 'IA Conference 2025',   group: 'media',    details: 'Poster at IA Conference 2025 Poster Night \u2014 visualizing research findings.' },
+    { id: 'n8',  caption: 'Seattle',              group: 'location',  details: 'City where University of Washington is located.' },
+    { id: 'n11', caption: 'Utah',                 group: 'location',  details: 'Home of Brigham Young University.' },
+    { id: 'n25', caption: 'Orange County',        group: 'location',  details: 'Where David was transferred with Deloitte. Home to Disneyland.' },
+    { id: 'n34', caption: 'Burbank',              group: 'location',  details: 'Location of Disney Corporate HQ.' },
+  ],
+  links: [
+    { source: 'n0', target: 'n60', type: 'is' },
+    { source: 'n0', target: 'n61', type: 'is' },
+    { source: 'n0', target: 'n7',  type: 'studied at' },
+    { source: 'n0', target: 'n10', type: 'studied at' },
+    { source: 'n7', target: 'n6',  type: 'includes' },
+    { source: 'n7', target: 'n12', type: 'awarded' },
+    { source: 'n10', target: 'n9', type: 'includes' },
+    { source: 'n10', target: 'n13', type: 'awarded' },
+    { source: 'n7', target: 'n8',  type: 'in' },
+    { source: 'n10', target: 'n11', type: 'in' },
+    { source: 'n6', target: 'sk4', type: 'taught' },
+    { source: 'n6', target: 'sk5', type: 'taught' },
+    { source: 'n6', target: 'sk6', type: 'taught' },
+    { source: 'n6', target: 'sk8', type: 'taught' },
+    { source: 'n6', target: 'n18', type: 'taught' },
+    { source: 'n6', target: 'sk9', type: 'taught' },
+    { source: 'n9', target: 'n14', type: 'taught' },
+    { source: 'n9', target: 'n16', type: 'taught' },
+    { source: 'n9', target: 'sk1', type: 'taught' },
+    { source: 'n0', target: 'n22', type: 'worked at' },
+    { source: 'n0', target: 'n32', type: 'interned at' },
+    { source: 'n0', target: 'n38', type: 'capstone with' },
+    { source: 'n0', target: 'n40', type: 'worked at' },
+    { source: 'n0', target: 'n43', type: 'worked at' },
+    { source: 'n22', target: 'n25', type: 'transferred to' },
+    { source: 'n22', target: 'sk9', type: 'used' },
+    { source: 'n22', target: 'n18', type: 'specialized in' },
+    { source: 'n22', target: 'sk1', type: 'used' },
+    { source: 'n22', target: 'sk8', type: 'used' },
+    { source: 'n22', target: 'c5',  type: 'implemented' },
+    { source: 'n22', target: 'c6',  type: 'managed' },
+    { source: 'n22', target: 'c7',  type: 'used' },
+    { source: 'n22', target: 'c8',  type: 'engaged' },
+    { source: 'n32', target: 'n34', type: 'in' },
+    { source: 'n32', target: 'n35', type: 'taught' },
+    { source: 'n32', target: 'sk1', type: 'used' },
+    { source: 'n32', target: 'n40', type: 'free admission' },
+    { source: 'n32', target: 'c17', type: 'aware of' },
+    { source: 'n38', target: 'sk5', type: 'applied' },
+    { source: 'n38', target: 'n16', type: 'applied' },
+    { source: 'n38', target: 'n8',  type: 'in' },
+    { source: 'n40', target: 'n25', type: 'in' },
+    { source: 'n43', target: 'n14', type: 'used' },
+    { source: 'n43', target: 'sk1', type: 'used' },
+    { source: 'n0', target: 'n3',  type: 'built' },
+    { source: 'n0', target: 'n49', type: 'built' },
+    { source: 'n0', target: 'n51', type: 'built' },
+    { source: 'n3', target: 'n47', type: 'required' },
+    { source: 'n3', target: 'n48', type: 'required' },
+    { source: 'n3', target: 'c1',  type: 'is a' },
+    { source: 'n3', target: 'c14', type: 'used' },
+    { source: 'n3', target: 'c3',  type: 'exemplifies' },
+    { source: 'n49', target: 'n50', type: 'built with' },
+    { source: 'n49', target: 'c2',  type: 'uses' },
+    { source: 'n49', target: 'c1',  type: 'is a' },
+    { source: 'n49', target: 'n6',  type: 'via' },
+    { source: 'n51', target: 'c9',  type: 'used' },
+    { source: 'n51', target: 'c13', type: 'used' },
+    { source: 'n51', target: 'c12', type: 'used' },
+    { source: 'n51', target: 'c19', type: 'applied' },
+    { source: 'n51', target: 'n6',  type: 'via' },
+    { source: 'c1', target: 'c2',  type: 'expressed in' },
+    { source: 'c1', target: 'c4',  type: 'defined by' },
+    { source: 'c1', target: 'c3',  type: 'enables' },
+    { source: 'c2', target: 'n50', type: 'managed via' },
+    { source: 'c3', target: 'sk4', type: 'tool of' },
+    { source: 'c4', target: 'sk4', type: 'underpins' },
+    { source: 'c5', target: 'c6',  type: 'creates rights' },
+    { source: 'c5', target: 'n18', type: 'requires' },
+    { source: 'c7', target: 'sk9', type: 'supports' },
+    { source: 'c8', target: 'sk9', type: 'reports to' },
+    { source: 'c9', target: 'sk5', type: 'method of' },
+    { source: 'c9', target: 'sk3', type: 'embodies' },
+    { source: 'c10', target: 'sk3', type: 'informs' },
+    { source: 'c11', target: 'sk6', type: 'tool for' },
+    { source: 'c13', target: 'sk5', type: 'technique in' },
+    { source: 'c14', target: 'n47', type: 'complements' },
+    { source: 'c16', target: 'n14', type: 'relates to' },
+    { source: 'c18', target: 'c1',  type: 'principle of' },
+    { source: 'c19', target: 'sk4', type: 'underpins' },
+    { source: 'sk1', target: 'sk2', type: 'enables' },
+    { source: 'sk1', target: 'sk7', type: 'includes' },
+    { source: 'sk2', target: 'sk4', type: 'via' },
+    { source: 'sk3', target: 'c10', type: 'requires' },
+    { source: 'sk3', target: 'sk5', type: 'uses' },
+    { source: 'sk4', target: 'c3',  type: 'produces' },
+    { source: 'sk5', target: 'n16', type: 'uses' },
+    { source: 'sk6', target: 'c11', type: 'uses' },
+    { source: 'n0',  target: 'm1', type: 'presented' },
+    { source: 'n0',  target: 'm2', type: 'presented at' },
+    { source: 'm1',  target: 'c10', type: 'demonstrates' },
+    { source: 'm1',  target: 'sk3', type: 'about' },
+    { source: 'm1',  target: 'sk5', type: 'uses' },
+    { source: 'm2',  target: 'sk4', type: 'about' },
+  ]
+};
+
+var nodeCategories = {
+  education: ['n7','n6','n12','n10','n9','n13','n8','n11'],
+  work:      ['n22','n32','n38','n40','n43','n25','n34'],
+  skills:    ['sk1','sk2','sk3','sk4','sk5','sk6','sk7','sk8','sk9','n14','n16','n18','n47','n48','n50','n35'],
+  projects:  ['n3','n49','n51'],
+  concepts:  ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19'],
+  media:     ['m1','m2'],
+  personal:  ['n0','n60','n61'],
+};
+
+/* ═══════════════════════════════════════════════════════
+   D3 GRAPH
+═══════════════════════════════════════════════════════ */
+function initGraph() {
+  var container = document.getElementById('graph-container');
+  var width = container.clientWidth;
+  var height = container.clientHeight;
+
+  var svg = d3.select('#graph-container')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+  var g = svg.append('g');
+  var zoom = d3.zoom()
+    .scaleExtent([0.15, 4])
+    .on('zoom', function(e) { g.attr('transform', e.transform); });
+  svg.call(zoom).on('wheel.zoom', null).on('dblclick.zoom', null);
+
+  // Legend
+  var legendEl = document.getElementById('graph-legend');
+  Object.keys(GROUP_LABELS).forEach(function(key) {
+    var item = document.createElement('div');
+    item.className = 'legend-item';
+    var dot = document.createElement('div');
+    dot.className = 'legend-dot';
+    dot.style.background = GROUP_COLORS[key];
+    var span = document.createElement('span');
+    span.textContent = GROUP_LABELS[key];
+    item.appendChild(dot);
+    item.appendChild(span);
+    legendEl.appendChild(item);
+  });
+
+  // Filters
+  var filterEl = document.getElementById('filter-buttons');
+  [{ label: 'All', key: 'all' },{ label: 'Education', key: 'education' },{ label: 'Experience', key: 'work' },
+   { label: 'Skills', key: 'skills' },{ label: 'Projects', key: 'projects' },{ label: 'Concepts', key: 'concepts' },
+   { label: 'Talks', key: 'media' }].forEach(function(f) {
+    var btn = document.createElement('button');
+    btn.className = 'filter-btn' + (f.key === 'all' ? ' active' : '');
+    btn.setAttribute('data-filter', f.key);
+    btn.textContent = f.label;
+    filterEl.appendChild(btn);
+  });
+
+  // Prep
+  var connCount = {};
+  graphData.nodes.forEach(function(n) { connCount[n.id] = 0; });
+  graphData.links.forEach(function(l) {
+    connCount[l.source] = (connCount[l.source] || 0) + 1;
+    connCount[l.target] = (connCount[l.target] || 0) + 1;
+  });
+  var nodeById = {};
+  graphData.nodes.forEach(function(n) { nodeById[n.id] = n; });
+
+  function nodeRadius(d) {
+    if (d.id === 'n0') return 38;
+    var c = connCount[d.id] || 0;
+    return Math.max(14, Math.min(26, 12 + c * 1.6));
+  }
+
+  // Links
+  var link = g.append('g').selectAll('line').data(graphData.links).enter().append('line')
+    .attr('class', 'link').attr('stroke-width', 1.8);
+  var linkLabel = g.append('g').selectAll('text').data(graphData.links).enter().append('text')
+    .attr('class', 'link-label').attr('text-anchor', 'middle').attr('opacity', 0)
+    .text(function(d) { return d.type; });
+
+  // Nodes
+  var node = g.append('g').selectAll('circle').data(graphData.nodes).enter().append('circle')
+    .attr('r', nodeRadius)
+    .attr('fill', function(d) { return GROUP_COLORS[d.group] || '#ccc'; })
+    .attr('stroke', function(d) { return d.id === 'n0' ? '#333' : 'rgba(0,0,0,0.12)'; })
+    .attr('stroke-width', function(d) { return d.id === 'n0' ? 3.5 : 1.5; })
+    .style('cursor', 'pointer')
+    .call(d3.drag()
+      .on('start', function(event, d) { if (!event.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', function(event, d) { d.fx = event.x; d.fy = event.y; })
+      .on('end', function(event, d) { if (!event.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })
+    );
+
+  var nodeLabel = g.append('g').selectAll('text').data(graphData.nodes).enter().append('text')
+    .attr('class', 'node-label').attr('text-anchor', 'middle')
+    .attr('dy', function(d) { return -(nodeRadius(d) + 6); })
+    .text(function(d) { return d.caption; });
+
+  // Simulation
+  var simulation = d3.forceSimulation(graphData.nodes)
+    .force('link', d3.forceLink(graphData.links).id(function(d) { return d.id; }).distance(100))
+    .force('charge', d3.forceManyBody().strength(-250))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(function(d) { return nodeRadius(d) + 14; }));
+
+  simulation.on('tick', function() {
+    link.attr('x1', function(d) { return d.source.x; }).attr('y1', function(d) { return d.source.y; })
+        .attr('x2', function(d) { return d.target.x; }).attr('y2', function(d) { return d.target.y; });
+    node.attr('cx', function(d) { return d.x; }).attr('cy', function(d) { return d.y; });
+    nodeLabel.attr('x', function(d) { return d.x; }).attr('y', function(d) { return d.y; });
+    linkLabel.attr('x', function(d) { return (d.source.x + d.target.x) / 2; })
+             .attr('y', function(d) { return (d.source.y + d.target.y) / 2; });
+  });
+
+  // Zoom to fit function — centers on graph with a generous minimum scale
+  function zoomToFit(duration) {
+    try {
+      var bounds = g.node().getBBox();
+      if (bounds.width < 10 || bounds.height < 10) return;
+      var pad = 60;
+      var scaleW = (width - pad * 2) / bounds.width;
+      var scaleH = (height - pad * 2) / bounds.height;
+      var scale = Math.min(scaleW, scaleH);
+      // Ensure nodes are always large and readable — clamp to at least 1.0
+      scale = Math.max(1.0, Math.min(scale, 1.8));
+      var cx = bounds.x + bounds.width / 2;
+      var cy = bounds.y + bounds.height / 2;
+      var t = d3.zoomIdentity.translate(width / 2 - scale * cx, height / 2 - scale * cy).scale(scale);
+      if (duration) {
+        svg.transition().duration(duration).call(zoom.transform, t);
+      } else {
+        svg.call(zoom.transform, t);
       }
-      
-      if (lowerMessage.includes('cost') || lowerMessage.includes('profit') || lowerMessage.includes('savings')) {
-        const profitFacts = resumeFacts.filter(f => f.tags.includes('profit') || f.tags.includes('time-savings'));
-        return `I've delivered significant cost savings:\n\n${profitFacts.map(f => `• **${f.outcome}** at ${f.company}: ${f.result}`).join('\n\n')}`;
+    } catch(e) {}
+  }
+
+  // Zoom to fit specific nodes
+  function zoomToNodes(nodeIds, duration) {
+    if (!nodeIds || !nodeIds.length) return;
+    try {
+      var targetNodes = graphData.nodes.filter(function(n) { return nodeIds.indexOf(n.id) !== -1; });
+      if (!targetNodes.length) return;
+      // Also include connected nodes for a wider view
+      var expandedIds = {};
+      nodeIds.forEach(function(id) { expandedIds[id] = true; });
+      graphData.links.forEach(function(l) {
+        var sid = typeof l.source === 'object' ? l.source.id : l.source;
+        var tid = typeof l.target === 'object' ? l.target.id : l.target;
+        if (expandedIds[sid]) expandedIds[tid] = true;
+        if (expandedIds[tid]) expandedIds[sid] = true;
+      });
+      var allNodes = graphData.nodes.filter(function(n) { return expandedIds[n.id]; });
+      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      allNodes.forEach(function(n) {
+        if (n.x < minX) minX = n.x;
+        if (n.x > maxX) maxX = n.x;
+        if (n.y < minY) minY = n.y;
+        if (n.y > maxY) maxY = n.y;
+      });
+      var bw = maxX - minX || 100;
+      var bh = maxY - minY || 100;
+      var pad = 80;
+      var scaleW = (width - pad * 2) / bw;
+      var scaleH = (height - pad * 2) / bh;
+      var scale = Math.min(scaleW, scaleH);
+      scale = Math.max(0.8, Math.min(scale, 2.5));
+      var cx = (minX + maxX) / 2;
+      var cy = (minY + maxY) / 2;
+      var t = d3.zoomIdentity.translate(width / 2 - scale * cx, height / 2 - scale * cy).scale(scale);
+      svg.transition().duration(duration || 600).call(zoom.transform, t);
+    } catch(e) {}
+  }
+
+  // Fit on simulation progress and end
+  var fitCount = 0;
+  var fitInterval = setInterval(function() {
+    zoomToFit(300);
+    fitCount++;
+    if (fitCount >= 8) clearInterval(fitInterval);
+  }, 500);
+  simulation.on('end', function() {
+    clearInterval(fitInterval);
+    zoomToFit(600);
+  });
+
+  // Resize handler
+  window.addEventListener('resize', function() {
+    width = container.clientWidth;
+    height = container.clientHeight;
+    svg.attr('width', width).attr('height', height);
+    simulation.force('center', d3.forceCenter(width / 2, height / 2));
+    zoomToFit(400);
+  });
+
+  // Click: highlight + detail panel
+  var detailPanel = document.getElementById('node-detail');
+
+  function resetHighlight() {
+    node.style('opacity', 1).attr('stroke-width', function(d) { return d.id === 'n0' ? 3 : 1; });
+    link.style('opacity', 1).attr('stroke', 'rgba(0,0,0,0.12)');
+    nodeLabel.style('opacity', 1);
+    linkLabel.style('opacity', 0);
+    detailPanel.classList.remove('visible');
+    detailPanel.innerHTML = '';
+  }
+
+  svg.on('click', resetHighlight);
+
+  node.on('click', function(event, d) {
+    event.stopPropagation();
+    var connIds = {};
+    connIds[d.id] = true;
+    var connLinks = [];
+    graphData.links.forEach(function(l) {
+      var sid = typeof l.source === 'object' ? l.source.id : l.source;
+      var tid = typeof l.target === 'object' ? l.target.id : l.target;
+      if (sid === d.id || tid === d.id) {
+        connIds[sid] = true; connIds[tid] = true;
+        connLinks.push({ link: l, otherId: sid === d.id ? tid : sid });
       }
-      
-      if (lowerMessage.includes('consulting')) {
-        const consultingFacts = resumeFacts.filter(f => f.tags.includes('consulting'));
-        return `My management consulting experience includes:\n\n${consultingFacts.map(f => `• **${f.action}**: ${f.result}`).join('\n\n')}`;
-      }
-      
-      if (lowerMessage.includes('technical') || lowerMessage.includes('tech')) {
-        const techFacts = resumeFacts.filter(f => f.tags.includes('technical'));
-        return `My technical skills include:\n\n${techFacts.map(f => `• **${f.action}**: ${f.result}`).join('\n\n')}`;
-      }
-      
-      if (lowerMessage.includes('c-suite') || lowerMessage.includes('executive')) {
-        const csuiteFacts = resumeFacts.filter(f => f.tags.includes('c-suite'));
-        return `I've worked directly with C-suite executives:\n\n${csuiteFacts.map(f => `• ${f.result}`).join('\n\n')}`;
-      }
-      
-      const randomFact = resumeFacts[Math.floor(Math.random() * resumeFacts.length)];
-      return `Here's an interesting achievement:\n\n**${randomFact.action}** at ${randomFact.company}: ${randomFact.result}\n\nWhat else would you like to know?`;
+    });
+
+    node.style('opacity', function(n) { return connIds[n.id] ? 1 : 0.08; })
+        .attr('stroke-width', function(n) { return n.id === d.id ? 4 : (n.id === 'n0' ? 3 : 1); });
+    nodeLabel.style('opacity', function(n) { return connIds[n.id] ? 1 : 0.04; });
+    link.style('opacity', function(l) {
+      var sid = typeof l.source === 'object' ? l.source.id : l.source;
+      var tid = typeof l.target === 'object' ? l.target.id : l.target;
+      return (sid === d.id || tid === d.id) ? 1 : 0.03;
+    }).attr('stroke', function(l) {
+      var sid = typeof l.source === 'object' ? l.source.id : l.source;
+      var tid = typeof l.target === 'object' ? l.target.id : l.target;
+      return (sid === d.id || tid === d.id) ? GROUP_COLORS[d.group] : 'rgba(0,0,0,0.12)';
+    });
+    linkLabel.style('opacity', function(l) {
+      var sid = typeof l.source === 'object' ? l.source.id : l.source;
+      var tid = typeof l.target === 'object' ? l.target.id : l.target;
+      return (sid === d.id || tid === d.id) ? 1 : 0;
+    });
+
+    // Detail panel
+    detailPanel.innerHTML = '';
+    detailPanel.classList.add('visible');
+
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'detail-close';
+    closeBtn.textContent = '\u00d7';
+    closeBtn.addEventListener('click', function(e) { e.stopPropagation(); resetHighlight(); });
+    detailPanel.appendChild(closeBtn);
+
+    var nameEl = document.createElement('p');
+    nameEl.className = 'node-detail-name';
+    nameEl.textContent = d.caption;
+    detailPanel.appendChild(nameEl);
+
+    var badge = document.createElement('span');
+    badge.className = 'node-detail-badge';
+    badge.style.background = GROUP_COLORS[d.group] || '#888';
+    badge.textContent = GROUP_LABELS[d.group] || d.group;
+    detailPanel.appendChild(badge);
+
+    var desc = document.createElement('p');
+    desc.className = 'node-detail-desc';
+    desc.textContent = d.details;
+    detailPanel.appendChild(desc);
+
+    if (connLinks.length) {
+      var cl = document.createElement('p');
+      cl.className = 'connections-label';
+      cl.textContent = 'Connected to:';
+      detailPanel.appendChild(cl);
+      var chips = document.createElement('div');
+      connLinks.forEach(function(item) {
+        var other = nodeById[item.otherId];
+        if (!other) return;
+        var chip = document.createElement('span');
+        chip.className = 'connection-chip';
+        chip.textContent = other.caption + ' (' + item.link.type + ')';
+        chips.appendChild(chip);
+      });
+      detailPanel.appendChild(chips);
     }
 
-    function formatContent(content) {
-      const contentWithBreaks = content.replace(/\n/g, '<br>');
-      return contentWithBreaks.split('**').map((part, i) => 
-        i % 2 === 0 ? part : `<strong>${part}</strong>`
-      ).join('');
-    }
+    var askBtn = document.createElement('button');
+    askBtn.className = 'ask-btn';
+    askBtn.textContent = 'Ask chatbot about this \u2192';
+    askBtn.addEventListener('click', function() { askAboutNode(d.caption); });
+    detailPanel.appendChild(askBtn);
+  });
 
-    function displayResponse(content) {
-      document.getElementById('responseDisplay').innerHTML = formatContent(content);
-    }
+  // Filters
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      resetHighlight();
+      var filter = this.getAttribute('data-filter');
+      if (filter === 'all') {
+        node.style('opacity', 1); nodeLabel.style('opacity', 1);
+        link.style('opacity', 1).attr('stroke', 'rgba(0,0,0,0.12)');
+        zoomToFit(600);
+        return;
+      }
+      var relevant = {};
+      var filterNodeIds = nodeCategories[filter] || [];
+      filterNodeIds.forEach(function(id) { relevant[id] = true; });
+      node.style('opacity', function(d) { return relevant[d.id] ? 1 : 0.06; });
+      nodeLabel.style('opacity', function(d) { return relevant[d.id] ? 1 : 0.03; });
+      link.style('opacity', function(l) {
+        var sid = typeof l.source === 'object' ? l.source.id : l.source;
+        var tid = typeof l.target === 'object' ? l.target.id : l.target;
+        return (relevant[sid] || relevant[tid]) ? 0.6 : 0.02;
+      });
+      zoomToNodes(filterNodeIds, 600);
+    });
+  });
 
-    async function handleSend() {
-      const input = document.getElementById('search-input');
-      const message = input.value.trim();
-      if (!message) return;
-      
-      displayResponse('Thinking...');
-      input.value = '';
-      
-      await new Promise(resolve => setTimeout(resolve, 600));
-      displayResponse(generateResponse(message));
-    }
+  // Expose for chatbot
+  window.highlightGraphNodes = function(nodeIds) {
+    if (!nodeIds || !nodeIds.length) return;
+    var primary = {};
+    nodeIds.forEach(function(id) { primary[id] = true; });
+    // Also include nodes connected to any primary node
+    var expanded = {};
+    nodeIds.forEach(function(id) { expanded[id] = true; });
+    graphData.links.forEach(function(l) {
+      var sid = typeof l.source === 'object' ? l.source.id : l.source;
+      var tid = typeof l.target === 'object' ? l.target.id : l.target;
+      if (primary[sid]) expanded[tid] = true;
+      if (primary[tid]) expanded[sid] = true;
+    });
+    node.style('opacity', function(n) {
+      if (primary[n.id]) return 1;
+      if (expanded[n.id]) return 0.6;
+      return 0.06;
+    });
+    nodeLabel.style('opacity', function(n) {
+      if (primary[n.id]) return 1;
+      if (expanded[n.id]) return 0.5;
+      return 0.02;
+    });
+    link.style('opacity', function(l) {
+      var sid = typeof l.source === 'object' ? l.source.id : l.source;
+      var tid = typeof l.target === 'object' ? l.target.id : l.target;
+      // Show link if it touches a primary node
+      if (primary[sid] || primary[tid]) return 0.8;
+      return 0.02;
+    }).attr('stroke', function(l) {
+      var sid = typeof l.source === 'object' ? l.source.id : l.source;
+      var tid = typeof l.target === 'object' ? l.target.id : l.target;
+      if (primary[sid]) return GROUP_COLORS[nodeById[sid].group] || '#fff';
+      if (primary[tid]) return GROUP_COLORS[nodeById[tid].group] || '#fff';
+      return 'rgba(0,0,0,0.12)';
+    });
+    linkLabel.style('opacity', function(l) {
+      var sid = typeof l.source === 'object' ? l.source.id : l.source;
+      var tid = typeof l.target === 'object' ? l.target.id : l.target;
+      return (primary[sid] || primary[tid]) ? 0.9 : 0;
+    });
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    zoomToNodes(nodeIds, 600);
+  };
+  window.zoomToFit = function() { zoomToFit(600); };
+}
 
-    function renderQuickPrompts() {
-      const container = document.getElementById('quickPrompts');
-      container.innerHTML = quickPrompts.map(prompt => `
-        <button onclick="document.getElementById('search-input').value = '${prompt}'; handleSend();" class="quick-prompt-btn">${prompt}</button>
-      `).join('');
-    }
+/* ═══════════════════════════════════════════════════════
+   CHATBOT
+═══════════════════════════════════════════════════════ */
+var knowledgeBase = {
+  fortune100: { nodeIds: ['n22','n32','n38'], response: 'David has worked with three Fortune 100 companies:\n\nDeloitte \u2014 Data Privacy Advisory Analyst advising Fortune 100 media companies on GDPR compliance. Reduced potential fines by $500K\u2013$1M+.\n\nDisney \u2014 Global Communications Intern developing multilingual safety and crisis materials for 200,000+ employees.\n\nMicrosoft \u2014 UX research capstone via UW, cutting report creation time 15\u201320%.' },
+  deloitte: { nodeIds: ['n22','c5','c6','c7','n18','sk9'], response: 'At Deloitte (Aug 2022\u2013Oct 2023):\n\n\u2022 Labeled personal data deletion workflows for GDPR, reducing fines by $500K\u2013$1M+\n\u2022 Project-managed engineers and legal teams for OneTrust automation\n\u2022 Edited privacy docs for regulator-facing transparency\n\u2022 Consulted C-suite executives on data privacy strategy' },
+  disney: { nodeIds: ['n32','n34','n35','sk1'], response: 'At Disney Corporate (Jun\u2013Sep 2016):\n\n\u2022 Developed multilingual safety and crisis materials for 200,000+ employees\n\u2022 Created posters, blogs, emails, and graphics across languages\n\u2022 Gained expertise in crisis communications and global security' },
+  microsoft: { nodeIds: ['n38','sk5','n16'], response: 'Microsoft (UW capstone):\n\n\u2022 UX research and affinity mapping on Power BI adoption\n\u2022 Cut report creation time by 15\u201320%\n\u2022 Applied contextual inquiry, qualitative research, journey mapping' },
+  skills: { nodeIds: ['sk1','sk2','sk3','sk4','sk5','sk6','sk7','sk8','sk9'], response: 'Core skills:\n\nWriting: Plain-Language Writing, Content Strategy, Microcopy, Copywriting\nDesign: Human-Centered Design, UX Research, Journey Mapping, Workshop Facilitation\nIA: Information Architecture, Ontology, SKOS, Knowledge Graphs\nTechnical: AI Prompting, Web Dev, PoolParty\nGovernance: Trust & Privacy, Program Management, GDPR, RACI' },
+  ia: { nodeIds: ['sk4','c1','c3','c4','c2','n49','n3'], response: 'Information Architecture is David\'s central discipline:\n\n\u2022 M.S. in Information Management from UW iSchool\n\u2022 Caf\u00e9 Menu Ontology \u2014 SKOS taxonomy in PoolParty\n\u2022 Pok\u00e9mon Semantic Framework \u2014 linked data for 1,025 Pok\u00e9mon\n\u2022 IA Conference 2025 poster presentation\n\u2022 Connects ontology, taxonomy, knowledge graphs, and schema' },
+  ontology: { nodeIds: ['c1','c2','c3','c4','n49','n3','n50'], response: 'David is an ontology practitioner:\n\n\u2022 SKOS taxonomy in PoolParty for caf\u00e9 menu discoverability\n\u2022 Semantic ontology for 1,025 Pok\u00e9mon with AI querying\n\u2022 Schema design, knowledge graphs, linked data principles\n\nConnects IA background to AI and data systems.' },
+  gdpr: { nodeIds: ['c5','c6','n22','n18'], response: 'GDPR compliance experience:\n\n\u2022 Labeled data deletion workflows for global media sites\n\u2022 Reduced potential fines by $500K\u2013$1M+\n\u2022 Managed DSAR processes\n\u2022 OneTrust automation replacing manual workflows\n\nAll at Deloitte\'s Data Privacy Advisory practice.' },
+  writing: { nodeIds: ['sk1','sk7','sk2','n14'], response: 'Writing is core:\n\n\u2022 Plain-Language Writing \u2014 complex content made clear\n\u2022 Microcopy \u2014 buttons, labels, error messages\n\u2022 Content Strategy \u2014 planning content for users\n\u2022 Copywriting \u2014 audience-first writing from BYU\n\u2022 Crisis Communications \u2014 multilingual messaging at Disney' },
+  hcd: { nodeIds: ['sk3','c10','sk5','m1'], response: 'Human-Centered Design philosophy:\n\n\u2022 People\'s needs at the center of every decision\n\u2022 "Designing for My Mom" \u2014 conference talk demonstrating HCD\n\u2022 Contextual inquiry, usability testing, journey mapping\n\u2022 Empathy as structured, repeatable practice' },
+  talk: { nodeIds: ['m1','m2','c10','sk3'], response: 'Speaking:\n\n"Designing for My Mom" \u2014 World IA Association Conference + Rutgers. Empathy-driven HCD with personal usability testing.\n\nIA Conference 2025 \u2014 Poster Night presentation visualizing research findings.' },
+  education: { nodeIds: ['n7','n6','n12','n10','n9','n13'], response: 'Two degrees:\n\nM.S. Information Management \u2014 UW iSchool, 2022 (IA, UX, taxonomy, service design)\n\nB.A. Advertising \u2014 BYU, 2016 (copywriting, media effects, qualitative research)\n\nArc: storytelling (BYU) \u2192 systems thinking (UW)' },
+  projects: { nodeIds: ['n3','n49','n51','m1'], response: 'Projects:\n\n\u2022 Pok\u00e9mon Semantic Ontology \u2014 linked data for 1,025 Pok\u00e9mon\n\u2022 Caf\u00e9 Menu Taxonomy \u2014 SKOS in PoolParty\n\u2022 FHE Fighter \u2014 gamified survey\n\u2022 COVID-19 Dining \u2014 UX research\n\u2022 Designing For My Mom \u2014 conference talk' },
+  ai: { nodeIds: ['n47','n3','c14'], response: 'AI as a design tool:\n\n\u2022 Custom AI prompts (Claude AI + ChatGPT) for Pok\u00e9mon framework\n\u2022 Weighted attribute filtering and analysis\n\u2022 k-means clustering concepts for data grouping\n\nPractical, IA-grounded AI use.' },
+  semantic: { nodeIds: ['n3','c1','c2','c3','n47','n48'], response: 'Semantic data work:\n\n\u2022 Pok\u00e9mon Ontology \u2014 full linked data framework\n\u2022 Caf\u00e9 Menu SKOS Taxonomy in PoolParty\n\u2022 RDF, SKOS, schema, ontology modeling\n\nIA as knowledge engineering, not just navigation.' },
+  greeting: { nodeIds: ['n0'], response: 'Hi! I pull from David\'s career ontology to answer questions.\n\nHe\'s a content designer and IA who\'s worked with Deloitte, Disney, and Microsoft.\n\nTry: "GDPR work", "ontology projects", or "core skills"' }
+};
 
-    document.addEventListener('DOMContentLoaded', () => {
-      renderQuickPrompts();
-      document.getElementById('sendButton').addEventListener('click', handleSend);
-      document.getElementById('search-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleSend();
+// Keyword-to-topic scoring for smarter matching
+var topicKeywords = {
+  fortune100: ['fortune', '100', 'fortune 100', 'big companies', 'major companies', 'enterprise'],
+  deloitte: ['deloitte', 'onetrust', 'advisory', 'analyst', 'consulting', 'consultant', 'privacy advisory'],
+  disney: ['disney', 'disneyland', 'global comm', 'crisis comm', 'multilingual', 'burbank', 'theme park', 'intern'],
+  microsoft: ['microsoft', 'power bi', 'powerbi', 'capstone', 'msft'],
+  gdpr: ['gdpr', 'dsar', 'data subject', 'compliance', 'regulation', 'privacy', 'data protection', 'fines', 'deletion'],
+  ontology: ['ontology', 'skos', 'taxonomy', 'poolparty', 'linked data', 'rdf', 'classification', 'vocab'],
+  semantic: ['semantic', 'linked data', 'rdf', 'structured data', 'metadata'],
+  ia: ['information architecture', 'info arch', 'ia', 'organize', 'findability', 'navigation', 'structure'],
+  writing: ['writing', 'content strategy', 'microcopy', 'copy', 'copywriting', 'plain language', 'content design', 'editor', 'technical writing'],
+  hcd: ['human centered', 'human-centered', 'hcd', 'empathy', 'user centered', 'design thinking', 'usability', 'accessibility'],
+  talk: ['talk', 'speak', 'conference', 'lecture', 'rutgers', 'world ia', 'vimeo', 'presentation', 'poster', 'designing for my mom'],
+  education: ['education', 'study', 'degree', 'university', 'school', 'byu', 'ischool', 'uw', 'masters', 'bachelor', 'graduate', 'college'],
+  projects: ['project', 'case study', 'pokemon', 'pokémon', 'cafe', 'café', 'fhe', 'covid', 'dining', 'fighter', 'portfolio'],
+  skills: ['skill', 'can david', 'what does', 'what do', 'background', 'abilities', 'expertise', 'capable', 'strengths', 'experience overview'],
+  ai: ['ai', 'artificial intelligence', 'prompt', 'chatgpt', 'claude', 'machine learning', 'ml', 'gpt', 'llm'],
+  greeting: ['hi', 'hello', 'hey', 'howdy', 'who are you', 'what is this', 'help']
+};
+
+function generateResponse(query) {
+  var q = query.toLowerCase().trim();
+  // Exact regex matches first (high confidence)
+  if (/^(hi|hello|hey|what'?s up|howdy|who are you|help|what is this)/i.test(q)) return knowledgeBase.greeting;
+  if (/fortune.?100/i.test(q)) return knowledgeBase.fortune100;
+  if (/deloitte|onetrust/i.test(q)) return knowledgeBase.deloitte;
+  if (/disney|global comm|crisis comm|multilingual|burbank/i.test(q)) return knowledgeBase.disney;
+  if (/microsoft|power.?bi|capstone|msft/i.test(q)) return knowledgeBase.microsoft;
+  if (/gdpr|dsar|data subject|compliance|regulation|data.?prot|deletion.?work/i.test(q)) return knowledgeBase.gdpr;
+  if (/ontolog|skos|taxonomy|poolparty|linked.?data|rdf/i.test(q)) return knowledgeBase.ontology;
+  if (/semantic|structured.?data|metadata/i.test(q)) return knowledgeBase.semantic;
+  if (/information.?arch|info.?arch|\bia\b|findab/i.test(q)) return knowledgeBase.ia;
+  if (/writ|content.?(strat|design)|microcopy|copy|plain.?lang|editor/i.test(q)) return knowledgeBase.writing;
+  if (/human.?centered|hcd|empathy|user.?centered|design.?think|usabil|accessib/i.test(q)) return knowledgeBase.hcd;
+  if (/talk|speak|conference|lecture|rutgers|world ia|vimeo|present|poster|designing for/i.test(q)) return knowledgeBase.talk;
+  if (/educat|study|degree|university|school|byu|ischool|\buw\b|master|bachelor|graduat|college/i.test(q)) return knowledgeBase.education;
+  if (/project|case.?study|pokemon|pok.mon|cafe|caf.?menu|fhe|covid|dining|fighter|portfolio/i.test(q)) return knowledgeBase.projects;
+  if (/skill|can david|what.?do|what.?does|background|abilit|expert|capable|strength/i.test(q)) return knowledgeBase.skills;
+  if (/\bai\b|artificial.?intel|prompt|chatgpt|claude|\bml\b|\bgpt\b|\bllm\b/i.test(q)) return knowledgeBase.ai;
+
+  // Fuzzy scoring: count keyword matches per topic
+  var scores = {};
+  var words = q.split(/\s+/);
+  Object.keys(topicKeywords).forEach(function(topic) {
+    var score = 0;
+    topicKeywords[topic].forEach(function(kw) {
+      if (q.indexOf(kw) !== -1) score += kw.split(' ').length * 2;
+    });
+    // Also check individual word overlap
+    words.forEach(function(w) {
+      if (w.length < 3) return;
+      topicKeywords[topic].forEach(function(kw) {
+        if (kw.indexOf(w) !== -1 || w.indexOf(kw) !== -1) score += 1;
       });
     });
+    if (score > 0) scores[topic] = score;
+  });
+  var bestTopic = null, bestScore = 0;
+  Object.keys(scores).forEach(function(topic) {
+    if (scores[topic] > bestScore) { bestScore = scores[topic]; bestTopic = topic; }
+  });
+  if (bestTopic && bestScore >= 2 && knowledgeBase[bestTopic]) return knowledgeBase[bestTopic];
 
-    // Knowledge Graph
-    const graphData = {
-      nodes: [
-        {id: "n0", caption: "David", group: "personal", details: "Central person in this knowledge graph."},
-        {id: "n1", caption: "College Graduate", group: "education", details: "David is a college graduate with degrees from multiple institutions."},
-        {id: "n3", caption: "Pokemon Taxonomy", group: "projects", details: "A project David worked on involving Pokemon classification."},
-        {id: "n4", caption: "Engineer", group: "career", details: "David is not an engineer and does not know any programming languages."},
-        {id: "n5", caption: "Phone calls", group: "communication", details: "David replies to phone calls."},
-        {id: "n6", caption: "iSchool", group: "education", details: "The UW School of Information where David studied."},
-        {id: "n7", caption: "University of Washington", group: "education", details: "University where David received his M.S."},
-        {id: "n8", caption: "Seattle", group: "location", details: "City where University of Washington is located."},
-        {id: "n9", caption: "College of Fine Arts & Communications", group: "education", details: "College at BYU where David studied."},
-        {id: "n10", caption: "BYU", group: "education", details: "Brigham Young University, where David received his B.A."},
-        {id: "n11", caption: "Utah", group: "location", details: "State where BYU is located."},
-        {id: "n12", caption: "M.S.", group: "education", details: "Master of Science degree earned by David."},
-        {id: "n13", caption: "B.A.", group: "education", details: "Bachelor of Arts degree earned by David."},
-        {id: "n14", caption: "Advertising Copywriting", group: "skills", details: "A skill David studied at the College of Fine Arts & Communications."},
-        {id: "n15", caption: "Media Effects", group: "skills", details: "A skill David studied at the College of Fine Arts & Communications."},
-        {id: "n16", caption: "Qualitative Research", group: "skills", details: "A skill David studied at the College of Fine Arts & Communications."},
-        {id: "n17", caption: "Media Ethics", group: "skills", details: "A skill David studied at the College of Fine Arts & Communications."},
-        {id: "n18", caption: "UX Research", group: "skills", details: "A major skill David studied at the iSchool and worked on at Microsoft."},
-        {id: "n19", caption: "Policy & Ethics", group: "skills", details: "A skill David studied at the iSchool and worked on at Deloitte."},
-        {id: "n20", caption: "Management", group: "skills", details: "A skill David studied at the iSchool and worked on at Deloitte."},
-        {id: "n21", caption: "Info Architecture", group: "skills", details: "A skill David studied at the iSchool."},
-        {id: "n22", caption: "Deloitte", group: "work", details: "A company where David worked."},
-        {id: "n23", caption: "Trust & Privacy", group: "skills", details: "A skill David learned at Deloitte."},
-        {id: "n24", caption: "Program Management", group: "skills", details: "A skill David learned at Deloitte."},
-        {id: "n25", caption: "Orange County", group: "location", details: "Location where David was transferred with Deloitte."},
-        {id: "n29", caption: "the beach", group: "personal", details: "A place near Orange County."},
-        {id: "n30", caption: "John Wayne", group: "location", details: "David's favorite airport in Orange County."},
-        {id: "n32", caption: "Disney Corporate", group: "work", details: "Company where David interned from BYU."},
-        {id: "n34", caption: "Burbank", group: "location", details: "Location of Disney Corporate."},
-        {id: "n35", caption: "Crisis Communications", group: "skills", details: "A skill David learned at Disney Corporate."},
-        {id: "n36", caption: "Global Security", group: "skills", details: "A skill David learned at Disney Corporate."},
-        {id: "n38", caption: "Microsoft", group: "work", details: "Company David worked with through University of Washington."},
-        {id: "n39", caption: "In-N-Out", group: "personal", details: "David's favorite restaurant in Orange County."},
-        {id: "n40", caption: "Disneyland", group: "work", details: "David's favorite place in Orange County and where he had a summer job."},
-        {id: "n41", caption: "QSR cashier", group: "work", details: "David's summer job at Disneyland."},
-        {id: "n42", caption: "Experience Design", group: "skills", details: "A skill David learned at Disneyland."},
-        {id: "n43", caption: "Daily Universe Newspaper", group: "work", details: "David worked here while at BYU."},
-        {id: "n44", caption: "Project Management", group: "skills", details: "A skill David learned at the Daily Universe Newspaper."},
-        {id: "n45", caption: "Print Design", group: "skills", details: "A skill David learned at the Daily Universe Newspaper."},
-        {id: "n46", caption: "Customer Service", group: "skills", details: "A skill David learned as a QSR cashier."},
-        {id: "n47", caption: "AI prompts", group: "skills", details: "A skill David learned working on Pokemon Taxonomy using Claude AI and ChatGPT."},
-        {id: "n48", caption: "Web dev", group: "skills", details: "A skill David learned working on Pokemon Taxonomy."},
-        {id: "n49", caption: "Cafe Menu", group: "projects", details: "A project David worked on via the iSchool."},
-        {id: "n50", caption: "PoolParty", group: "skills", details: "A skill David learned working on Cafe Menu for his taxonomy class."},
-        {id: "n51", caption: "Prototypes", group: "projects", details: "Many group projects David worked on via the iSchool."},
-        {id: "n52", caption: "Contextual Inquiry", group: "skills", details: "A skill David learned working on Prototypes via the iSchool."},
-        {id: "n53", caption: "Balsamiq", group: "skills", details: "A skill David learned working on Prototypes."},
-        {id: "n54", caption: "System Thinking", group: "skills", details: "A skill David learned working on Prototypes via the iSchool."},
-        {id: "n55", caption: "Lean Canvas", group: "skills", details: "A skill David learned via the iSchool."},
-        {id: "n56", caption: "Service Design", group: "skills", details: "A skill related to David's Designing Information Experiences graduate coursework."},
-        {id: "n57", caption: "Auditor", group: "career", details: "David is not an auditor and has never taken a course in accounting, finance, or Excel."},
-        {id: "n58", caption: "Lawyer", group: "career", details: "David is not a lawyer no matter how many recruiters message him about legal positions."},
-        {id: "n59", caption: "Video chats", group: "communication", details: "David replies to video chats."},
-        {id: "n60", caption: "Humanist", group: "personal", details: "David is a scholar of the humanities."},
-        {id: "n61", caption: "Creative", group: "personal", details: "David is a creative, not just a trait."}
-      ],
-      links: [
-        {source: "n0", target: "n1", type: "is_a"},
-        {source: "n0", target: "n3", type: "worked_on"},
-        {source: "n0", target: "n4", type: "is_not_a"},
-        {source: "n0", target: "n5", type: "replies_to"},
-        {source: "n1", target: "n6", type: "from"},
-        {source: "n6", target: "n7", type: "at"},
-        {source: "n7", target: "n8", type: "in"},
-        {source: "n1", target: "n9", type: "from"},
-        {source: "n9", target: "n10", type: "at"},
-        {source: "n10", target: "n11", type: "in"},
-        {source: "n1", target: "n12", type: "received"},
-        {source: "n12", target: "n7", type: "from"},
-        {source: "n1", target: "n13", type: "received"},
-        {source: "n13", target: "n10", type: "from"},
-        {source: "n9", target: "n14", type: "studied"},
-        {source: "n9", target: "n15", type: "studied"},
-        {source: "n9", target: "n16", type: "studied"},
-        {source: "n9", target: "n17", type: "studied"},
-        {source: "n6", target: "n18", type: "studied"},
-        {source: "n6", target: "n19", type: "studied"},
-        {source: "n6", target: "n20", type: "studied"},
-        {source: "n6", target: "n21", type: "studied"},
-        {source: "n7", target: "n22", type: "was recruited"},
-        {source: "n22", target: "n8", type: "in"},
-        {source: "n22", target: "n20", type: "worked in"},
-        {source: "n22", target: "n19", type: "worked in"},
-        {source: "n22", target: "n23", type: "learned"},
-        {source: "n22", target: "n24", type: "learned"},
-        {source: "n22", target: "n25", type: "transferred"},
-        {source: "n25", target: "n29", type: "near"},
-        {source: "n25", target: "n30", type: "favorite airport"},
-        {source: "n32", target: "n34", type: "in"},
-        {source: "n7", target: "n38", type: "capstone"},
-        {source: "n10", target: "n32", type: "interned"},
-        {source: "n32", target: "n35", type: "learned"},
-        {source: "n32", target: "n36", type: "learned"},
-        {source: "n38", target: "n18", type: "worked in"},
-        {source: "n25", target: "n39", type: "favorite restaurant"},
-        {source: "n25", target: "n40", type: "favorite place"},
-        {source: "n40", target: "n41", type: "summer job"},
-        {source: "n32", target: "n40", type: "free admission to"},
-        {source: "n40", target: "n42", type: "learned"},
-        {source: "n10", target: "n43", type: "worked"},
-        {source: "n43", target: "n44", type: "learned"},
-        {source: "n43", target: "n45", type: "learned"},
-        {source: "n41", target: "n46", type: "learned"},
-        {source: "n3", target: "n47", type: "learned"},
-        {source: "n3", target: "n48", type: "learned"},
-        {source: "n0", target: "n49", type: "worked on"},
-        {source: "n49", target: "n6", type: "via"},
-        {source: "n49", target: "n50", type: "learned"},
-        {source: "n0", target: "n51", type: "worked on"},
-        {source: "n51", target: "n52", type: "learned"},
-        {source: "n51", target: "n53", type: "learned"},
-        {source: "n51", target: "n54", type: "learned"},
-        {source: "n51", target: "n6", type: "via"},
-        {source: "n51", target: "n55", type: "learned"},
-        {source: "n51", target: "n56", type: "learned"},
-        {source: "n0", target: "n57", type: "is_not_a"},
-        {source: "n0", target: "n58", type: "is_not_a"},
-        {source: "n0", target: "n59", type: "replies to"},
-        {source: "n0", target: "n60", type: "is_a"},
-        {source: "n0", target: "n61", type: "is_a"}
-      ]
+  // Fallback: search node captions and details
+  var matched = graphData.nodes.filter(function(n) {
+    var cap = n.caption.toLowerCase();
+    var det = n.details.toLowerCase();
+    return words.some(function(w) { return w.length >= 3 && (cap.indexOf(w) !== -1 || det.indexOf(w) !== -1); });
+  });
+  if (matched.length) {
+    return {
+      nodeIds: matched.map(function(n) { return n.id; }),
+      response: matched.slice(0, 3).map(function(n) {
+        return n.caption + ' (' + (GROUP_LABELS[n.group] || n.group) + '): ' + n.details;
+      }).join('\n\n') + (matched.length > 3 ? '\n\n+' + (matched.length - 3) + ' more in the graph.' : '')
     };
+  }
+  return { nodeIds: [], response: 'I don\'t have that yet. David\'s career spans content design, IA, UX research, GDPR, and semantic data.\n\nTry: skills, GDPR, Disney, Deloitte, Microsoft, ontology, or talks.' };
+}
 
-    const nodeCategories = {
-      "education": ["n1", "n6", "n7", "n8", "n9", "n10", "n11", "n12", "n13"],
-      "work": ["n22", "n32", "n38", "n40", "n41", "n43"],
-      "skills": ["n14", "n15", "n16", "n17", "n18", "n19", "n20", "n21", "n23", "n24", "n35", "n36", "n42", "n44", "n45", "n46", "n47", "n48", "n50", "n52", "n53", "n54", "n55", "n56"],
-      "personal": ["n0", "n29", "n39", "n60", "n61"]
-    };
+var chatEl = document.getElementById('chat-messages');
 
-    const width = document.getElementById('graph-container').clientWidth;
-    const height = document.getElementById('graph-container').clientHeight;
+function addMessage(role, text) {
+  var div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  if (role === 'user') {
+    div.textContent = text;
+  } else {
+    div.textContent = text;
+    div.innerHTML = div.innerHTML.replace(/\n/g, '<br>');
+  }
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
 
-    const svg = d3.select('#graph-container')
-      .append('svg')
-      .attr('width', width)
-      .attr('height', height);
+function handleSend() {
+  var input = document.getElementById('search-input');
+  var message = input.value.trim();
+  if (!message) return;
+  input.value = '';
+  addMessage('user', message);
+  var typing = document.createElement('div');
+  typing.className = 'chat-msg bot typing';
+  typing.textContent = 'Thinking\u2026';
+  chatEl.appendChild(typing);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  setTimeout(function() {
+    typing.remove();
+    var result = generateResponse(message);
+    addMessage('bot', result.response);
+    if (result.nodeIds && result.nodeIds.length && window.highlightGraphNodes) {
+      highlightGraphNodes(result.nodeIds);
+    }
+  }, 450);
+}
 
-    const colorScale = d3.scaleOrdinal()
-      .domain(['personal', 'education', 'work', 'skills', 'projects', 'career', 'communication', 'location'])
-      .range(['#ffffff', '#dbdf00', '#aea1ff', '#fcdc00', '#68ccca', '#f44e3b', '#68ccca', '#4a90e2']);
+function askAboutNode(caption) {
+  var panel = document.getElementById('chat-panel');
+  panel.classList.remove('collapsed');
+  document.getElementById('search-input').value = caption;
+  handleSend();
+}
 
-    const simulation = d3.forceSimulation()
-      .force('link', d3.forceLink().id(d => d.id).distance(100))
-      .force('charge', d3.forceManyBody().strength(-200))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(50));
-
-    const link = svg.append('g')
-      .selectAll('line')
-      .data(graphData.links)
-      .enter()
-      .append('line')
-      .attr('class', 'link')
-      .attr('stroke-width', 2);
-
-    const linkText = svg.append('g')
-      .selectAll('text')
-      .data(graphData.links)
-      .enter()
-      .append('text')
-      .attr('class', 'link-label')
-      .attr('dy', -5)
-      .attr('text-anchor', 'middle')
-      .text(d => d.type);
-
-    const node = svg.append('g')
-      .selectAll('circle')
-      .data(graphData.nodes)
-      .enter()
-      .append('circle')
-      .attr('class', 'node')
-      .attr('r', d => {
-        if (d.id === 'n0') return 25;
-        if (['n7', 'n10', 'n22', 'n32', 'n38', 'n40', 'n43'].includes(d.id)) return 20;
-        if (['n6', 'n9'].includes(d.id)) return 18;
-        return 12;
-      })
-      .attr('fill', d => colorScale(d.group))
-      .attr('stroke', '#000')
-      .call(d3.drag()
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended));
-
-    const nodeText = svg.append('g')
-      .selectAll('text')
-      .data(graphData.nodes)
-      .enter()
-      .append('text')
-      .text(d => d.caption)
-      .attr('font-size', '10px')
-      .attr('dx', 15)
-      .attr('dy', 4);
-
-    node.on('click', function(event, d) {
-      alert(d.caption + ': ' + d.details);
+// Quick prompts
+function renderQuickPrompts() {
+  var c = document.getElementById('quickPrompts');
+  ['GDPR work', 'Info architecture', 'Ontology', 'UX research', 'Talks'].forEach(function(p) {
+    var btn = document.createElement('button');
+    btn.className = 'quick-prompt-btn';
+    btn.textContent = p;
+    btn.addEventListener('click', function() {
+      document.getElementById('search-input').value = p;
+      handleSend();
     });
+    c.appendChild(btn);
+  });
+}
 
-    simulation.nodes(graphData.nodes).on('tick', ticked);
-    simulation.force('link').links(graphData.links);
+// Init
+document.addEventListener('DOMContentLoaded', function() {
+  renderQuickPrompts();
+  addMessage('bot', 'Hi! I\'m linked to the career ontology behind you. Ask about David\'s skills, experience, or projects \u2014 I\'ll highlight the relevant nodes.');
 
-    function ticked() {
-      link
-        .attr('x1', d => d.source.x)
-        .attr('y1', d => d.source.y)
-        .attr('x2', d => d.target.x)
-        .attr('y2', d => d.target.y);
+  document.getElementById('sendButton').addEventListener('click', handleSend);
+  document.getElementById('search-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') handleSend(); });
 
-      node
-        .attr('cx', d => d.x = Math.max(20, Math.min(width - 20, d.x)))
-        .attr('cy', d => d.y = Math.max(20, Math.min(height - 20, d.y)));
+  // Chat panel toggle
+  document.getElementById('chat-panel-header').addEventListener('click', function() {
+    document.getElementById('chat-panel').classList.toggle('collapsed');
+  });
 
-      nodeText
-        .attr('x', d => d.x)
-        .attr('y', d => d.y);
-
-      linkText
-        .attr('x', d => (d.source.x + d.target.x) / 2)
-        .attr('y', d => (d.source.y + d.target.y) / 2);
-    }
-
-    function dragstarted(event) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      event.subject.fx = event.subject.x;
-      event.subject.fy = event.subject.y;
-    }
-
-    function dragged(event) {
-      event.subject.fx = event.x;
-      event.subject.fy = event.y;
-    }
-
-    function dragended(event) {
-      if (!event.active) simulation.alphaTarget(0);
-      event.subject.fx = null;
-      event.subject.fy = null;
-    }
-
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        
-        const filter = this.getAttribute('data-filter');
-        
-        if (filter === 'all') {
-          node.style('opacity', 1);
-          link.style('opacity', 0.6);
-          nodeText.style('opacity', 1);
-          linkText.style('opacity', 1);
-          return;
-        }
-        
-        const relevantNodes = nodeCategories[filter] || [];
-        
-        node.style('opacity', d => relevantNodes.includes(d.id) ? 1 : 0.2);
-        nodeText.style('opacity', d => relevantNodes.includes(d.id) ? 1 : 0.2);
-        
-        link.style('opacity', d => 
-          (relevantNodes.includes(d.source.id) || relevantNodes.includes(d.target.id)) ? 0.8 : 0.1
-        );
-        
-        linkText.style('opacity', d => 
-          (relevantNodes.includes(d.source.id) || relevantNodes.includes(d.target.id)) ? 1 : 0.1
-        );
-      });
-    });
-  </script>
+  initGraph();
+});
+</script>
 </body>
 </html>
